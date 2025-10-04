@@ -2,8 +2,6 @@ package edu.uth.evservice.EVService.model;
 
 import java.time.LocalDate;
 
-import org.hibernate.annotations.Nationalized;
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -26,7 +24,6 @@ public class Inventory {
     @GeneratedValue(strategy = GenerationType.AUTO)
     Integer inventory_id;
 
-    @Nationalized
     long quantity;
     long min_quantity;
 

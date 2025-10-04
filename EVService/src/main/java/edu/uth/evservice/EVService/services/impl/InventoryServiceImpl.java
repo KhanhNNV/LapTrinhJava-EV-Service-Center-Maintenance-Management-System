@@ -10,7 +10,7 @@ import edu.uth.evservice.EVService.dto.InventoryDto;
 import edu.uth.evservice.EVService.model.Inventory;
 import edu.uth.evservice.EVService.repositories.IInventoryRepository;
 import edu.uth.evservice.EVService.requests.InventoryRequest;
-import edu.uth.evservice.EVService.services.InventoryService;
+import edu.uth.evservice.EVService.services.IInventoryService;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -18,11 +18,11 @@ import lombok.experimental.FieldDefaults;
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @AllArgsConstructor
-public class InventoryServiceImpl implements InventoryService {
+public class InventoryServiceImpl implements IInventoryService {
     IInventoryRepository inventoryRepository;
 
     @Override
-    public List<InventoryDto> getInventories() {
+    public List<InventoryDto> getAllInventories() {
         List<Inventory> inventories = inventoryRepository.findAll();
         return inventories.stream().map(this::toDto).collect(Collectors.toList());
     }
@@ -52,5 +52,31 @@ public class InventoryServiceImpl implements InventoryService {
             return null;
         }
         return new InventoryDto(inv.getInventory_id(), inv.getQuantity(), inv.getMin_quantity());
+    }
+
+    @Override
+    public Inventory updateInventory(Integer id, Inventory inventory) {
+        if (id == null || inventory == null) {
+            return null;
+        }
+
+        return inventoryRepository.findById(id).map(existing -> {
+            // update only allowed fields
+            existing.setQuantity(inventory.getQuantity());
+            existing.setMin_quantity(inventory.getMin_quantity());
+            existing.setUpdatedAt(LocalDate.now());
+            return inventoryRepository.save(existing);
+        }).orElse(null);
+    }
+
+    @Override
+    public void deleteInventory(Integer id) {
+        if (id == null) {
+            return;
+        }
+
+        if (inventoryRepository.existsById(id)) {
+            inventoryRepository.deleteById(id);
+        }
     }
 }
