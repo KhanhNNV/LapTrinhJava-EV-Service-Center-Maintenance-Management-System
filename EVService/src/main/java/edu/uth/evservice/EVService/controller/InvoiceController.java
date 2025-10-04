@@ -1,84 +1,43 @@
 package edu.uth.evservice.EVService.controller;
 
 import edu.uth.evservice.EVService.dto.InvoiceDto;
-import edu.uth.evservice.EVService.model.Invoice;
-import edu.uth.evservice.EVService.services.InvoiceService;
+import edu.uth.evservice.EVService.requests.CreateInvoiceRequest;
+import edu.uth.evservice.EVService.services.IInvoiceService;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
+@RestController
+@RequestMapping("/invoices")
+@AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class InvoiceController {
+    IInvoiceService invoiceService;
 
-    private InvoiceService invoiceService;
-
-    // Constructor
-    public InvoiceController(InvoiceService invoiceService) {
-        this.invoiceService = invoiceService;
+    @GetMapping
+    public List<InvoiceDto> getInvoices() {
+        return invoiceService.getAllInvoices();
     }
 
-    // ==========================
-    // Mapper Entity -> DTO
-    // ==========================
-    public InvoiceDto toDTO(Invoice invoice) {
-        return new InvoiceDto(
-                invoice.getInvoiceId(),
-                invoice.getCustomerId(),
-                invoice.getTotalAmount(),
-                invoice.getPaymentMethod(),
-                invoice.getPaymentStatus(),
-                invoice.getTicketID(),
-                invoice.getCustomerID()
-        );
+    @GetMapping("/{id}")
+    public InvoiceDto getInvoiceById(@PathVariable Integer id) {
+        return invoiceService.getInvoiceById(id);
     }
 
-    // ==========================
-    // Mapper DTO -> Entity
-    // ==========================
-    public Invoice toEntity(InvoiceDto dto) {
-        return new Invoice(
-                dto.getInvoiceId(),
-                dto.getCustomerId(),
-                dto.getTotalAmount(),
-                dto.getPaymentMethod(),
-                dto.getPaymentStatus(),
-                dto.getTicketID(),
-                dto.getCustomerID()
-        );
+    @PostMapping
+    public InvoiceDto createInvoice(@RequestBody CreateInvoiceRequest request) {
+        return invoiceService.createInvoice(request);
     }
 
-    // ==========================
-    // CRUD Methods trực tiếp
-    // ==========================
-
-    public List<InvoiceDto> getAllInvoices() {
-        return invoiceService.getAllInvoices()
-                .stream()
-                .map(this::toDTO)
-                .collect(Collectors.toList());
+    @PutMapping("/{id}")
+    public InvoiceDto updateInvoice(@PathVariable Integer id, @RequestBody CreateInvoiceRequest request) {
+        return invoiceService.updateInvoice(id, request);
     }
 
-    public InvoiceDto getInvoiceById(int id) {
-        return invoiceService.getInvoiceById(id)
-                .map(this::toDTO)
-                .orElse(null); // trả về null nếu không tìm thấy
-    }
-
-    public InvoiceDto createInvoice(InvoiceDto dto) {
-        Invoice saved = invoiceService.saveInvoice(toEntity(dto));
-        return toDTO(saved);
-    }
-
-    public InvoiceDto updateInvoice(int id, InvoiceDto dto) {
-        dto.setInvoiceId(id);
-        Invoice updated = invoiceService.saveInvoice(toEntity(dto));
-        return toDTO(updated);
-    }
-
-    public boolean deleteInvoice(int id) {
-        if (invoiceService.getInvoiceById(id).isPresent()) {
-            invoiceService.deleteInvoice(id);
-            return true;
-        }
-        return false; // trả về false nếu ID không tồn tại
+    @DeleteMapping("/{id}")
+    public void deleteInvoice(@PathVariable Integer id) {
+        invoiceService.deleteInvoice(id);
     }
 }

@@ -1,4 +1,4 @@
-package edu.uth.evservice.EVService.dto;
+package edu.uth.evservice.EVService.requests;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -7,11 +7,8 @@ import java.time.LocalDate;
 
 @Setter
 @Getter
-@AllArgsConstructor
-@NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class InvoiceDto {
-    private Integer invoiceId;
+public class CreateInvoiceRequest {
     private LocalDate invoiceDate;
     private Double totalAmount;
     private String paymentStatus;
