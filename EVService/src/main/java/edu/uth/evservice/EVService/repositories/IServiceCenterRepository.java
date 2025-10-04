@@ -6,5 +6,5 @@ import org.springframework.stereotype.Repository;
 import edu.uth.evservice.EVService.model.ServiceCenter;
 
 @Repository
-public interface ServiceCenterRepository extends JpaRepository<ServiceCenter,Integer> {
+public interface IServiceCenterRepository extends JpaRepository<ServiceCenter,Integer> {
 }
