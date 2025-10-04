@@ -2,7 +2,7 @@ package edu.uth.evservice.EVService.controller;
 
 import edu.uth.evservice.EVService.requests.AppointmentRequest;
 import edu.uth.evservice.EVService.respones.AppointmentResponse;
-import edu.uth.evservice.EVService.services.AppointmentService;
+import edu.uth.evservice.EVService.services.IAppointmentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,7 +14,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AppointmentController {
 
-    private final AppointmentService appointmentService;
+    private final IAppointmentService appointmentService;
 
     @GetMapping
     public List<AppointmentResponse> getAppointments() {

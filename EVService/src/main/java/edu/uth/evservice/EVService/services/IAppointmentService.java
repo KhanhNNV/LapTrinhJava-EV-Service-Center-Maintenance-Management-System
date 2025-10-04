@@ -6,7 +6,7 @@ import edu.uth.evservice.EVService.respones.AppointmentResponse;
 
 import java.util.List;
 
-public interface AppointmentService {
+public interface IAppointmentService {
     List<AppointmentResponse> getAllAppointments();
     AppointmentResponse getAppointmentById(int id);
     AppointmentResponse createAppointment(AppointmentRequest request);

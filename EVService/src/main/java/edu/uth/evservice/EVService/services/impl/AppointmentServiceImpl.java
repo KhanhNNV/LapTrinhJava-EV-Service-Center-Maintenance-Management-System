@@ -1,10 +1,11 @@
-package edu.uth.evservice.EVService.services;
+package edu.uth.evservice.EVService.services.impl;
 
 // import edu.uth.evservice.EVService.dto.AppointmentDto;
 import edu.uth.evservice.EVService.model.Appointment;
-import edu.uth.evservice.EVService.repositories.AppointmentRepository;
+import edu.uth.evservice.EVService.repositories.IAppointmentRepository;
 import edu.uth.evservice.EVService.requests.AppointmentRequest;
 import edu.uth.evservice.EVService.respones.AppointmentResponse;
+import edu.uth.evservice.EVService.services.IAppointmentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -13,9 +14,9 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class AppointmentServiceImpl implements AppointmentService {
+public class AppointmentServiceImpl implements IAppointmentService {
 
-    private final AppointmentRepository appointmentRepository;
+    private final IAppointmentRepository appointmentRepository;
 
     @Override
     public List<AppointmentResponse> getAllAppointments() {
