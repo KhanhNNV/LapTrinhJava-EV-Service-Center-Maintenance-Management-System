@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import edu.uth.evservice.EVService.dto.InventoryDto;
-import edu.uth.evservice.EVService.model.Inventory;
 import edu.uth.evservice.EVService.requests.InventoryRequest;
 import edu.uth.evservice.EVService.services.IInventoryService;
 import lombok.AccessLevel;
@@ -44,7 +43,7 @@ public class InventoryController {
     }
 
     @PutMapping("{id}")
-    public Inventory updateInventory(@PathVariable Integer id, @RequestBody Inventory inventory) {
+    public InventoryDto updateInventory(@PathVariable Integer id, @RequestBody InventoryRequest inventory) {
         return inventoryService.updateInventory(id, inventory);
     }
 

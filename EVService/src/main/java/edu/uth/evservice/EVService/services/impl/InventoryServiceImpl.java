@@ -37,13 +37,13 @@ public class InventoryServiceImpl implements IInventoryService {
         if (request == null) {
             return null;
         }
-        Inventory entity = new Inventory();
-        entity.setQuantity(request.getQuantity());
-        entity.setMin_quantity(request.getMin_quantity());
-        entity.setCreatedAt(LocalDate.now());
+        Inventory inventory = new Inventory();
+        inventory.setQuantity(request.getQuantity());
+        inventory.setMin_quantity(request.getMin_quantity());
+        inventory.setCreatedAt(LocalDate.now());
         // updatedAt stays null on create
 
-        Inventory saved = inventoryRepository.save(entity);
+        Inventory saved = inventoryRepository.save(inventory);
         return toDto(saved);
     }
 
@@ -55,17 +55,17 @@ public class InventoryServiceImpl implements IInventoryService {
     }
 
     @Override
-    public Inventory updateInventory(Integer id, Inventory inventory) {
+    public InventoryDto updateInventory(Integer id, InventoryRequest inventory) {
         if (id == null || inventory == null) {
             return null;
         }
 
         return inventoryRepository.findById(id).map(existing -> {
-            // update only allowed fields
             existing.setQuantity(inventory.getQuantity());
             existing.setMin_quantity(inventory.getMin_quantity());
             existing.setUpdatedAt(LocalDate.now());
-            return inventoryRepository.save(existing);
+            Inventory updated = inventoryRepository.save(existing);
+            return toDto(updated);
         }).orElse(null);
     }
 
