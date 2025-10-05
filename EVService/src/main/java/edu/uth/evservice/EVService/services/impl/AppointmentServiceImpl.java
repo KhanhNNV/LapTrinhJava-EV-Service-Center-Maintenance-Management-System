@@ -1,10 +1,9 @@
 package edu.uth.evservice.EVService.services.impl;
 
-// import edu.uth.evservice.EVService.dto.AppointmentDto;
+import edu.uth.evservice.EVService.dto.AppointmentDto;
 import edu.uth.evservice.EVService.model.Appointment;
 import edu.uth.evservice.EVService.repositories.IAppointmentRepository;
 import edu.uth.evservice.EVService.requests.AppointmentRequest;
-import edu.uth.evservice.EVService.respones.AppointmentResponse;
 import edu.uth.evservice.EVService.services.IAppointmentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -19,21 +18,21 @@ public class AppointmentServiceImpl implements IAppointmentService {
     private final IAppointmentRepository appointmentRepository;
 
     @Override
-    public List<AppointmentResponse> getAllAppointments() {
+    public List<AppointmentDto> getAllAppointments() {
         return appointmentRepository.findAll().stream()
-                .map(this::toResponse)
+                .map(this::toDto)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public AppointmentResponse getAppointmentById(int id) {
+    public AppointmentDto getAppointmentById(int id) {
         return appointmentRepository.findById(id)
-                .map(this::toResponse)
+                .map(this::toDto)
                 .orElseThrow(() -> new RuntimeException("Appointment not found"));
     }
 
     @Override
-    public AppointmentResponse createAppointment(AppointmentRequest request) {
+    public AppointmentDto createAppointment(AppointmentRequest request) {
         Appointment appointment = Appointment.builder()
                 .customerId(request.getCustomerId())
                 .centerId(request.getCenterId())
@@ -43,11 +42,11 @@ public class AppointmentServiceImpl implements IAppointmentService {
                 .status("pending")
                 .note(request.getNote())
                 .build();
-        return toResponse(appointmentRepository.save(appointment));
+        return toDto(appointmentRepository.save(appointment));
     }
 
     @Override
-    public AppointmentResponse updateAppointment(int id, AppointmentRequest request) {
+    public AppointmentDto updateAppointment(int id, AppointmentRequest request) {
         Appointment appointment = appointmentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Appointment not found"));
 
@@ -56,7 +55,7 @@ public class AppointmentServiceImpl implements IAppointmentService {
         appointment.setNote(request.getNote());
         appointment.setEmployeeId(request.getEmployeeId());
 
-        return toResponse(appointmentRepository.save(appointment));
+        return toDto(appointmentRepository.save(appointment));
     }
 
     @Override
@@ -64,8 +63,8 @@ public class AppointmentServiceImpl implements IAppointmentService {
         appointmentRepository.deleteById(id);
     }
 
-    private AppointmentResponse toResponse(Appointment appointment) {
-        return AppointmentResponse.builder()
+    private AppointmentDto toDto(Appointment appointment) {
+        return AppointmentDto.builder()
                 .appointmentId(appointment.getAppointmentId())
                 .appointmentDate(appointment.getAppointmentDate())
                 .serviceType(appointment.getServiceType())

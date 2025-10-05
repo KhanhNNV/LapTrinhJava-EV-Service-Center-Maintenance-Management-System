@@ -1,7 +1,7 @@
 package edu.uth.evservice.EVService.controller;
 
 import edu.uth.evservice.EVService.requests.AppointmentRequest;
-import edu.uth.evservice.EVService.respones.AppointmentResponse;
+import edu.uth.evservice.EVService.dto.AppointmentDto;
 import edu.uth.evservice.EVService.services.IAppointmentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,22 +17,22 @@ public class AppointmentController {
     private final IAppointmentService appointmentService;
 
     @GetMapping
-    public List<AppointmentResponse> getAppointments() {
+    public List<AppointmentDto> getAppointments() {
         return appointmentService.getAllAppointments();
     }
 
     @GetMapping("/{id}")
-    public AppointmentResponse getAppointmentById(@PathVariable int id) {
+    public AppointmentDto getAppointmentById(@PathVariable int id) {
         return appointmentService.getAppointmentById(id);
     }
 
     @PostMapping
-    public AppointmentResponse createAppointment(@RequestBody AppointmentRequest request) {
+    public AppointmentDto createAppointment(@RequestBody AppointmentRequest request) {
         return appointmentService.createAppointment(request);
     }
 
     @PutMapping("/{id}")
-    public AppointmentResponse updateAppointment(@PathVariable int id, @RequestBody AppointmentRequest request) {
+    public AppointmentDto updateAppointment(@PathVariable int id, @RequestBody AppointmentRequest request) {
         return appointmentService.updateAppointment(id, request);
     }
 
