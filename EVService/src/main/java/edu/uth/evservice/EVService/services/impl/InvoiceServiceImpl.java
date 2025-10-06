@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @AllArgsConstructor
-public class InvoiceService implements IInvoiceService {
+public class InvoiceServiceImpl implements IInvoiceService {
     IInvoiceRepository invoiceRepository;
 
     @Override
