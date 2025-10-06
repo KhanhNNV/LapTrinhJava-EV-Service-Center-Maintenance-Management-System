@@ -2,7 +2,6 @@ package edu.uth.evservice.EVService.services.impl;
 
 import edu.uth.evservice.EVService.dto.VehicleDto;
 import edu.uth.evservice.EVService.requests.VehicleRequest;
-import edu.uth.evservice.EVService.mapper.VehicleMapper;
 import edu.uth.evservice.EVService.model.Customer;
 import edu.uth.evservice.EVService.model.ServiceCenter;
 import edu.uth.evservice.EVService.model.Vehicle;
@@ -25,6 +24,40 @@ public class VehicleServiceImpl implements VehicleService {
     private final CustomerRepository customerRepository;
     private final ServiceCenterRepository serviceCenterRepository;
 
+    // --- Helper function: Convert Entity → DTO ---
+    private VehicleDto toDto(Vehicle vehicle) {
+        VehicleDto dto = new VehicleDto();
+        dto.setVehicleId(vehicle.getVehicleId());
+        dto.setModel(vehicle.getModel());
+        dto.setBrand(vehicle.getBrand());
+        dto.setLicensePlate(vehicle.getLicensePlate());
+        dto.setRecentMaintenanceDate(vehicle.getRecentMaintenanceDate());
+
+        if (vehicle.getCustomer() != null) {
+            dto.setCustomerId(vehicle.getCustomer().getCustomerId());
+            dto.setCustomerName(vehicle.getCustomer().getFullName());
+        }
+
+        if (vehicle.getServiceCenter() != null) {
+            dto.setServiceCenterId(vehicle.getServiceCenter().getCenterId());
+            dto.setServiceCenterName(vehicle.getServiceCenter().getCenterName());
+        }
+
+        return dto;
+    }
+
+    // --- Helper function: Convert Request → Entity ---
+    private Vehicle toEntity(VehicleRequest request, Customer customer, ServiceCenter center) {
+        Vehicle vehicle = new Vehicle();
+        vehicle.setModel(request.getModel());
+        vehicle.setBrand(request.getBrand());
+        vehicle.setLicensePlate(request.getLicensePlate());
+        vehicle.setRecentMaintenanceDate(request.getRecentMaintenanceDate());
+        vehicle.setCustomer(customer);
+        vehicle.setServiceCenter(center);
+        return vehicle;
+    }
+
     @Override
     public VehicleDto createVehicle(VehicleRequest request) {
         Customer customer = customerRepository.findById(request.getCustomerId())
@@ -32,21 +65,22 @@ public class VehicleServiceImpl implements VehicleService {
         ServiceCenter center = serviceCenterRepository.findById(request.getServiceCenterId())
                 .orElseThrow(() -> new RuntimeException("Service center not found"));
 
-        Vehicle vehicle = VehicleMapper.toEntity(request, customer, center);
-        return VehicleMapper.toDto(vehicleRepository.save(vehicle));
+        Vehicle vehicle = toEntity(request, customer, center);
+        vehicleRepository.save(vehicle);
+
+        return toDto(vehicle);
     }
 
     @Override
     public Optional<VehicleDto> getVehicleById(Integer id) {
-        return vehicleRepository.findById(id)
-                .map(VehicleMapper::toDto);
+        return vehicleRepository.findById(id).map(this::toDto);
     }
 
     @Override
     public List<VehicleDto> getVehiclesByCustomer(Integer customerId) {
         return vehicleRepository.findByCustomer_CustomerId(customerId)
                 .stream()
-                .map(VehicleMapper::toDto)
+                .map(this::toDto)
                 .collect(Collectors.toList());
     }
 
@@ -54,7 +88,7 @@ public class VehicleServiceImpl implements VehicleService {
     public List<VehicleDto> getVehiclesByServiceCenter(Integer centerId) {
         return vehicleRepository.findByServiceCenter_CenterId(centerId)
                 .stream()
-                .map(VehicleMapper::toDto)
+                .map(this::toDto)
                 .collect(Collectors.toList());
     }
 
@@ -75,7 +109,8 @@ public class VehicleServiceImpl implements VehicleService {
         vehicle.setCustomer(customer);
         vehicle.setServiceCenter(center);
 
-        return VehicleMapper.toDto(vehicleRepository.save(vehicle));
+        vehicleRepository.save(vehicle);
+        return toDto(vehicle);
     }
 
     @Override
