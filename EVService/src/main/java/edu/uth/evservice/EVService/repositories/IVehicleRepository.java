@@ -6,7 +6,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface VehicleRepository extends JpaRepository<Vehicle, Integer> {
+public interface IVehicleRepository extends JpaRepository<Vehicle, Integer> {
 
     // Lấy danh sách xe của 1 khách hàng
     List<Vehicle> findByCustomer_CustomerId(Integer customerId);

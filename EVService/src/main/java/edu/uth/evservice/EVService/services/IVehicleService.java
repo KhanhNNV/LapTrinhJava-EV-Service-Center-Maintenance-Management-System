@@ -6,7 +6,7 @@ import edu.uth.evservice.EVService.requests.VehicleRequest;
 import java.util.List;
 import java.util.Optional;
 
-public interface VehicleService {
+public interface IVehicleService {
 
     VehicleDto createVehicle(VehicleRequest request);
 

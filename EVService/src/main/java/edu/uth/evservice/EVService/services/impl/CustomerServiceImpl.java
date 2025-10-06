@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE,makeFinal = true)
 @AllArgsConstructor
-public class CustomerService implements ICustomerService {
+public class CustomerServiceImpl implements ICustomerService {
     ICustomerRepository customerRepository;
     PasswordEncoder passwordEncoder;
 

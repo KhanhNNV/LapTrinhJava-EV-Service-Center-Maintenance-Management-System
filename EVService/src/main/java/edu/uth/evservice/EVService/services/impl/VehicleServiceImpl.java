@@ -6,10 +6,10 @@ import edu.uth.evservice.EVService.mapper.VehicleMapper;
 import edu.uth.evservice.EVService.model.Customer;
 import edu.uth.evservice.EVService.model.ServiceCenter;
 import edu.uth.evservice.EVService.model.Vehicle;
-import edu.uth.evservice.EVService.repositories.CustomerRepository;
-import edu.uth.evservice.EVService.repositories.ServiceCenterRepository;
-import edu.uth.evservice.EVService.repositories.VehicleRepository;
-import edu.uth.evservice.EVService.services.VehicleService;
+import edu.uth.evservice.EVService.repositories.ICustomerRepository;
+import edu.uth.evservice.EVService.repositories.IServiceCenterRepository;
+import edu.uth.evservice.EVService.repositories.IVehicleRepository;
+import edu.uth.evservice.EVService.services.IVehicleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -19,11 +19,11 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class VehicleServiceImpl implements VehicleService {
+public class VehicleServiceImpl implements IVehicleService {
 
-    private final VehicleRepository vehicleRepository;
-    private final CustomerRepository customerRepository;
-    private final ServiceCenterRepository serviceCenterRepository;
+    private final IVehicleRepository vehicleRepository;
+    private final ICustomerRepository customerRepository;
+    private final IServiceCenterRepository serviceCenterRepository;
 
     @Override
     public VehicleDto createVehicle(VehicleRequest request) {

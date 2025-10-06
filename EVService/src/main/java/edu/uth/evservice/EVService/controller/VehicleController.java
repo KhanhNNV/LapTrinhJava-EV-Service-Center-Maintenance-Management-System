@@ -2,7 +2,7 @@ package edu.uth.evservice.EVService.controller;
 
 import edu.uth.evservice.EVService.dto.VehicleDto;
 import edu.uth.evservice.EVService.requests.VehicleRequest;
-import edu.uth.evservice.EVService.services.VehicleService;
+import edu.uth.evservice.EVService.services.IVehicleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,7 +14,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class VehicleController {
 
-    private final VehicleService vehicleService;
+    private final IVehicleService vehicleService;
 
     @PostMapping
     public ResponseEntity<VehicleDto> createVehicle(@RequestBody VehicleRequest request) {
