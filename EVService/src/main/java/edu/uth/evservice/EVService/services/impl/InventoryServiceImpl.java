@@ -4,7 +4,6 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import edu.uth.evservice.EVService.dto.InventoryDto;
@@ -20,8 +19,7 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @AllArgsConstructor
 public class InventoryServiceImpl implements IInventoryService {
-    @Autowired
-    private IInventoryRepository inventoryRepository;
+    IInventoryRepository inventoryRepository;
 
     @Override
     public List<InventoryDto> getAllInventories() {
