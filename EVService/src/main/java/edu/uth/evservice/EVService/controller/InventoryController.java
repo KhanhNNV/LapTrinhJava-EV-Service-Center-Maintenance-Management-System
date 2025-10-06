@@ -2,6 +2,7 @@ package edu.uth.evservice.EVService.controller;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,7 +26,8 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @CrossOrigin(origins = "http://localhost:3000")
 public class InventoryController {
-    IInventoryService inventoryService;
+    @Autowired
+    private IInventoryService inventoryService;
 
     @GetMapping
     public List<InventoryDto> getInventories() {

@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import edu.uth.evservice.EVService.dto.InventoryDto;
@@ -19,7 +20,8 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @AllArgsConstructor
 public class InventoryServiceImpl implements IInventoryService {
-    IInventoryRepository inventoryRepository;
+    @Autowired
+    private IInventoryRepository inventoryRepository;
 
     @Override
     public List<InventoryDto> getAllInventories() {
@@ -78,5 +80,15 @@ public class InventoryServiceImpl implements IInventoryService {
         if (inventoryRepository.existsById(id)) {
             inventoryRepository.deleteById(id);
         }
+    }
+
+    @Override
+    public List<Inventory> getInventoriesByPartId(Integer partId) {
+        return inventoryRepository.findByPartId(partId);
+    }
+
+    @Override
+    public List<Inventory> getInventoriesByCenterId(Integer centerId) {
+        return inventoryRepository.findByCenterId(centerId);
     }
 }

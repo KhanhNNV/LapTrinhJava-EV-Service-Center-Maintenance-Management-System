@@ -11,4 +11,6 @@ import lombok.experimental.FieldDefaults;
 public class InventoryRequest {
     long quantity;
     long min_quantity;
+    Integer part_id;
+    Integer center_id;
 }
