@@ -1,7 +1,8 @@
 package edu.uth.evservice.EVService.controller;
 
-import edu.uth.evservice.EVService.model.ServicePackage;
-import edu.uth.evservice.EVService.services.ServicePackageService;
+import edu.uth.evservice.EVService.dto.ServicePackageDto;
+import edu.uth.evservice.EVService.requests.ServicePackageRequest;
+import edu.uth.evservice.EVService.services.IServicePackageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,27 +14,30 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ServicePackageController {
 
-    private final ServicePackageService servicePackageService;
+    private final IServicePackageService servicePackageService;
 
     @GetMapping
-    public ResponseEntity<List<ServicePackage>> getAllPackages() {
+    public ResponseEntity<List<ServicePackageDto>> getAllPackages() {
         return ResponseEntity.ok(servicePackageService.getAllPackages());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ServicePackage> getPackageById(@PathVariable Long id) {
-        ServicePackage pkg = servicePackageService.getPackageById(id);
+    public ResponseEntity<ServicePackageDto> getPackageById(@PathVariable Long id) {
+        ServicePackageDto pkg = servicePackageService.getPackageById(id);
         return pkg != null ? ResponseEntity.ok(pkg) : ResponseEntity.notFound().build();
     }
 
     @PostMapping
-    public ResponseEntity<ServicePackage> createPackage(@RequestBody ServicePackage servicePackage) {
-        return ResponseEntity.ok(servicePackageService.createPackage(servicePackage));
+    public ResponseEntity<ServicePackageDto> createPackage(@RequestBody ServicePackageRequest request) {
+        return ResponseEntity.ok(servicePackageService.createPackage(request));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ServicePackage> updatePackage(@PathVariable Long id, @RequestBody ServicePackage servicePackage) {
-        ServicePackage updated = servicePackageService.updatePackage(id, servicePackage);
+    public ResponseEntity<ServicePackageDto> updatePackage(
+            @PathVariable Long id,
+            @RequestBody ServicePackageRequest request) {
+
+        ServicePackageDto updated = servicePackageService.updatePackage(id, request);
         return updated != null ? ResponseEntity.ok(updated) : ResponseEntity.notFound().build();
     }
 
