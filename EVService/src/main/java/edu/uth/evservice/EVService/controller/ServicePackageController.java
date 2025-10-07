@@ -1,7 +1,7 @@
 package edu.uth.evservice.EVService.controller;
 
 import edu.uth.evservice.EVService.model.ServicePackage;
-import edu.uth.evservice.EVService.services.IServicePackageService;
+import edu.uth.evservice.EVService.services.ServicePackageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,7 +13,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ServicePackageController {
 
-    private final IServicePackageService servicePackageService;
+    private final ServicePackageService servicePackageService;
 
     @GetMapping
     public ResponseEntity<List<ServicePackage>> getAllPackages() {

@@ -9,7 +9,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class IServicePackageService {
+public class ServicePackageService {
 
     private final IServicePackageRepository servicePackageRepository;
 
