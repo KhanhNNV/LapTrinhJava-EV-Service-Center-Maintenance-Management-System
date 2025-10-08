@@ -79,4 +79,14 @@ public class InventoryServiceImpl implements IInventoryService {
             inventoryRepository.deleteById(id);
         }
     }
+
+    @Override
+    public List<Inventory> getInventoriesByPartId(Integer partId) {
+        return inventoryRepository.findByPartId(partId);
+    }
+
+    @Override
+    public List<Inventory> getInventoriesByCenterId(Integer centerId) {
+        return inventoryRepository.findByCenterId(centerId);
+    }
 }
