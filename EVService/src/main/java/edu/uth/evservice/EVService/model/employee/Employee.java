@@ -1,7 +1,6 @@
-package edu.uth.evservice.EVService.model;
+package edu.uth.evservice.EVService.model.employee;
 
 import jakarta.persistence.*;
-import jakarta.persistence.criteria.CriteriaBuilder;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.Nationalized;
@@ -14,12 +13,14 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@Table(name = "customers")
-public class Customer {
+@Table(name = "employees")
+public abstract class Employee {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer customerId;
+    private Integer employeeId;
 
+    private String role;
+    private Integer centerId;
     private String username;
     @Nationalized
     private String fullName;
@@ -31,4 +32,6 @@ public class Customer {
 
     LocalDate createAt;
     LocalDate updateAt;
+
+
 }

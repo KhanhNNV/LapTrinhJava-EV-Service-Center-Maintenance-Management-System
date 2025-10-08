@@ -39,6 +39,7 @@ public class CustomerServiceImpl implements ICustomerService {
     @Override
     public CustomerDto createCustomer(CreateCustomerRequest request) {
         Customer customer = new Customer();
+        customer.setUsername(request.getUsername());
         customer.setFullName(request.getFullName());
         customer.setEmail(request.getEmail());
         customer.setPhoneNumber(request.getPhoneNumber());
@@ -54,6 +55,7 @@ public class CustomerServiceImpl implements ICustomerService {
         return customerRepository.findById(id.intValue())
                 .map(existing -> {
                     existing.setFullName(request.getFullName());
+                    existing.setUsername(request.getUsername());
                     existing.setEmail(request.getEmail());
                     existing.setPhoneNumber(request.getPhoneNumber());
                     existing.setAddress(request.getAddress());
