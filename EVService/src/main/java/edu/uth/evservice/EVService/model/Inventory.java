@@ -9,6 +9,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.servlet.http.Part;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -26,19 +27,19 @@ import lombok.experimental.FieldDefaults;
 public class Inventory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Integer inventory_id;
+    private Integer inventoryId;
 
-    long quantity;
-    long min_quantity;
+    private long quantity;
+    private long minQuantity;
 
     LocalDate createdAt;
     LocalDate updatedAt;
 
     @ManyToOne
-    @JoinColumn(name = "part_id")
-    private Integer part_id;
+    @JoinColumn(name = "partId", referencedColumnName = "partId", nullable = false)
+    private Part part;
 
     @ManyToOne
-    @JoinColumn(name = "center_id")
-    private Integer center_id;
+    @JoinColumn(name = "centerId", referencedColumnName = "centerId", nullable = false)
+    private ServiceCenter serviceCenter;
 }

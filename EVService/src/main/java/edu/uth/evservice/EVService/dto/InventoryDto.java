@@ -13,7 +13,12 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class InventoryDto {
-    Integer inventory_id;
-    long quantity;
-    long min_quantity;
+    private Integer inventoryId;
+    private long quantity;
+    private long minQuantity;
+
+    private Integer partId;
+    private String partName;
+    private Integer centerId;
+    private String centerName;
 }
