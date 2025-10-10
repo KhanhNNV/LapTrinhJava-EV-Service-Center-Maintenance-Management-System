@@ -13,7 +13,6 @@ import edu.uth.evservice.EVService.requests.ServiceCenterRequest;
 import edu.uth.evservice.EVService.services.IServiceCenterService;
 
 @Service
-// Updated to implement IServiceCenterService
 public class ServiceCenterServiceImpl implements IServiceCenterService {
 
     @Autowired

@@ -22,7 +22,7 @@ public class ServicePackageController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ServicePackageDto> getPackageById(@PathVariable Long id) {
+    public ResponseEntity<ServicePackageDto> getPackageById(@PathVariable Integer id) {
         ServicePackageDto pkg = servicePackageService.getPackageById(id);
         return pkg != null ? ResponseEntity.ok(pkg) : ResponseEntity.notFound().build();
     }
@@ -34,7 +34,7 @@ public class ServicePackageController {
 
     @PutMapping("/{id}")
     public ResponseEntity<ServicePackageDto> updatePackage(
-            @PathVariable Long id,
+            @PathVariable Integer id,
             @RequestBody ServicePackageRequest request) {
 
         ServicePackageDto updated = servicePackageService.updatePackage(id, request);
@@ -42,7 +42,7 @@ public class ServicePackageController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletePackage(@PathVariable Long id) {
+    public ResponseEntity<Void> deletePackage(@PathVariable Integer id) {
         servicePackageService.deletePackage(id);
         return ResponseEntity.noContent().build();
     }

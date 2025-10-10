@@ -9,11 +9,11 @@ public interface IServicePackageService {
 
     List<ServicePackageDto> getAllPackages();
 
-    ServicePackageDto getPackageById(Long id);
+    ServicePackageDto getPackageById(Integer id);
 
     ServicePackageDto createPackage(ServicePackageRequest request);
 
-    ServicePackageDto updatePackage(Long id, ServicePackageRequest request);
+    ServicePackageDto updatePackage(Integer id, ServicePackageRequest request);
 
-    void deletePackage(Long id);
+    void deletePackage(Integer id);
 }
