@@ -2,6 +2,7 @@ package edu.uth.evservice.EVService.model;
 
 import java.time.LocalDate;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -10,7 +11,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.servlet.http.Part;
-import lombok.AccessLevel;
+import lombok.AccessLevel; //thay bang class part
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -29,11 +30,17 @@ public class Inventory {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer inventoryId;
 
+    @Column(nullable = false)
     private long quantity;
+
+    @Column(nullable = false)
     private long minQuantity;
 
-    LocalDate createdAt;
-    LocalDate updatedAt;
+    @Column(nullable = true)
+    private LocalDate createdAt;
+
+    @Column(nullable = true)
+    private LocalDate updatedAt;
 
     @ManyToOne
     @JoinColumn(name = "partId", referencedColumnName = "partId", nullable = false)

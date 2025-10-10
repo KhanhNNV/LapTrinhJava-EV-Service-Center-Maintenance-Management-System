@@ -3,7 +3,6 @@ package edu.uth.evservice.EVService.services;
 import java.util.List;
 
 import edu.uth.evservice.EVService.dto.InventoryDto;
-import edu.uth.evservice.EVService.model.Inventory;
 import edu.uth.evservice.EVService.requests.InventoryRequest;
 
 public interface IInventoryService {
@@ -17,7 +16,7 @@ public interface IInventoryService {
 
     void deleteInventory(Integer id);
 
-    List<Inventory> getInventoriesByPartId(Integer partId);
+    List<InventoryDto> getInventoriesByPartId(Integer partId);
 
-    List<Inventory> getInventoriesByCenterId(Integer centerId);
+    List<InventoryDto> getInventoriesByCenterId(Integer centerId);
 }

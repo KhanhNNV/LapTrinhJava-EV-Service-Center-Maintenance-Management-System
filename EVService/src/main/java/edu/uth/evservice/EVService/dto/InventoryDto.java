@@ -1,5 +1,7 @@
 package edu.uth.evservice.EVService.dto;
 
+import java.time.LocalDate;
+
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -16,6 +18,8 @@ public class InventoryDto {
     private Integer inventoryId;
     private long quantity;
     private long minQuantity;
+    private LocalDate createdAt;
+    private LocalDate updatedAt;
 
     private Integer partId;
     private String partName;
