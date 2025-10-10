@@ -24,7 +24,9 @@ public class CustomerPackageContract {
     @JoinColumn(name = "customer_id", referencedColumnName = "customerId", nullable = false)
     Customer customer;
 
-    // Thêm ServicePackage này có chủ đích (Mốt sửa)
+    @ManyToOne
+    @JoinColumn(name = "package_id", referencedColumnName = "packageId", nullable = false)
+    ServicePackage servicePackage;
 
     @Column(name = "start_date", nullable = false)
     LocalDate startDate;

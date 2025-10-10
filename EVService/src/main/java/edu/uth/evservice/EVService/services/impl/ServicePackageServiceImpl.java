@@ -46,7 +46,7 @@ public class ServicePackageServiceImpl implements IServicePackageService {
     }
 
     @Override
-    public ServicePackageDto getPackageById(Long id) {
+    public ServicePackageDto getPackageById(Integer id) {
         return servicePackageRepository.findById(id)
                 .map(this::toDto)
                 .orElse(null);
@@ -59,7 +59,7 @@ public class ServicePackageServiceImpl implements IServicePackageService {
     }
 
     @Override
-    public ServicePackageDto updatePackage(Long id, ServicePackageRequest request) {
+    public ServicePackageDto updatePackage(Integer id, ServicePackageRequest request) {
         return servicePackageRepository.findById(id)
                 .map(pkg -> {
                     pkg.setPackageName(request.getPackageName());
@@ -71,7 +71,7 @@ public class ServicePackageServiceImpl implements IServicePackageService {
     }
 
     @Override
-    public void deletePackage(Long id) {
+    public void deletePackage(Integer id) {
         servicePackageRepository.deleteById(id);
     }
 }

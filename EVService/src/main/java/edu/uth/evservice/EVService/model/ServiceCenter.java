@@ -1,9 +1,14 @@
 package edu.uth.evservice.EVService.model;
 
+import java.util.List;
+
+import edu.uth.evservice.EVService.model.employee.Employee;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,8 +25,8 @@ public class ServiceCenter {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int centerId;
-
+    private Integer centerId;
+    
     private String centerName;
 
     private String address;
@@ -29,4 +34,10 @@ public class ServiceCenter {
     private String phoneNumber;
 
     private String email;
+
+    @OneToMany(mappedBy = "serviceCenter", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Employee> employees;
+
+    @OneToMany(mappedBy = "serviceCenter", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Vehicle> vehicles;
 }
