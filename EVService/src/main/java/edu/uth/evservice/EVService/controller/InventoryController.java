@@ -2,6 +2,7 @@ package edu.uth.evservice.EVService.controller;
 
 import java.util.List;
 
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,29 +26,39 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @CrossOrigin(origins = "http://localhost:3000")
 public class InventoryController {
-    IInventoryService inventoryService;
+    private final IInventoryService inventoryService;
 
     @GetMapping
     public List<InventoryDto> getInventories() {
         return inventoryService.getAllInventories();
     }
 
-    @GetMapping("{id}")
+    @GetMapping("/{id}")
     public InventoryDto getInventoryById(@PathVariable Integer id) {
         return inventoryService.getInventoryById(id);
     }
 
+    @GetMapping("/part/{partId}")
+    public List<InventoryDto> getByPart(@PathVariable Integer partId) {
+        return inventoryService.getInventoriesByPartId(partId);
+    }
+
+    @GetMapping("/service_centers/{centerId}")
+    public List<InventoryDto> getByCenter(@PathVariable Integer centerId) {
+        return inventoryService.getInventoriesByCenterId(centerId);
+    }
+
     @PostMapping
-    public InventoryDto createInventory(@RequestBody InventoryRequest request) {
+    public InventoryDto createInventory(@Validated @RequestBody InventoryRequest request) {
         return inventoryService.createInventory(request);
     }
 
-    @PutMapping("{id}")
-    public InventoryDto updateInventory(@PathVariable Integer id, @RequestBody InventoryRequest inventory) {
+    @PutMapping("/{id}")
+    public InventoryDto updateInventory(@PathVariable Integer id, @Validated @RequestBody InventoryRequest inventory) {
         return inventoryService.updateInventory(id, inventory);
     }
 
-    @DeleteMapping("{id}")
+    @DeleteMapping("/{id}")
     public void deleteInventory(@PathVariable Integer id) {
         inventoryService.deleteInventory(id);
     }
