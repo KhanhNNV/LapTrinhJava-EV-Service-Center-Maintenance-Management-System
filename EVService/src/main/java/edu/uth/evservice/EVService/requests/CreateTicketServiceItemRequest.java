@@ -1,18 +1,16 @@
-package edu.uth.evservice.EVService.model;
+package edu.uth.evservice.EVService.requests;
 
-import jakarta.persistence.Embeddable;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.io.Serializable;
-
-@Embeddable
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class TicketServiceItemId implements Serializable {
+public class CreateTicketServiceItemRequest {
     Integer ticketId;
     Integer itemId;
+    Integer quantity;
+    Double unitPriceAtTimeOfService;
 }
