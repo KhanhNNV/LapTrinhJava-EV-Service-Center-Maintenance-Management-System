@@ -2,6 +2,7 @@ package edu.uth.evservice.EVService.requests;
 
 import java.time.LocalDateTime;
 
+import edu.uth.evservice.EVService.model.Message.SenderType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,7 +16,7 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE)
 public class CreateMessageRequest {
     private Integer senderId;
-    private String senderType;
+    private SenderType senderType;
     private String content;
     private Integer conversationId;
     private LocalDateTime timestamp;

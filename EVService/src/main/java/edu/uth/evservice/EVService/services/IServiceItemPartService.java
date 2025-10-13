@@ -5,7 +5,7 @@ import edu.uth.evservice.EVService.requests.ServiceItemPartRequest;
 import java.util.List;
 
 public interface IServiceItemPartService {
-    List<ServiceItemPartDto> getByServiceItem(Long serviceItemId);
+    List<ServiceItemPartDto> getByServiceItem(Integer serviceItemId);
     ServiceItemPartDto add(ServiceItemPartRequest request);
-    void delete(Long id);
+    void delete(Integer id);
 }

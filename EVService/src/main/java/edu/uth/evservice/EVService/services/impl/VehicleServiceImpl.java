@@ -38,7 +38,10 @@ public class VehicleServiceImpl implements IVehicleService {
             dto.setCustomerName(vehicle.getCustomer().getFullName());
         }
 
-
+        if (vehicle.getServiceCenter() != null) {
+            dto.setServiceCenterId(vehicle.getServiceCenter().getCenterId());
+            dto.setServiceCenterName(vehicle.getServiceCenter().getCenterName());
+        }
         return dto;
     }
 
@@ -50,6 +53,7 @@ public class VehicleServiceImpl implements IVehicleService {
         vehicle.setLicensePlate(request.getLicensePlate());
         vehicle.setRecentMaintenanceDate(request.getRecentMaintenanceDate());
         vehicle.setCustomer(customer);
+        vehicle.setServiceCenter(center);
         return vehicle;
     }
 
@@ -62,7 +66,7 @@ public class VehicleServiceImpl implements IVehicleService {
 
         Vehicle vehicle = toEntity(request, customer, center);
         vehicleRepository.save(vehicle);
-
+        
         return toDto(vehicle);
     }
 
@@ -102,7 +106,7 @@ public class VehicleServiceImpl implements IVehicleService {
         vehicle.setLicensePlate(request.getLicensePlate());
         vehicle.setRecentMaintenanceDate(request.getRecentMaintenanceDate());
         vehicle.setCustomer(customer);
-
+        vehicle.setServiceCenter(center);
         vehicleRepository.save(vehicle);
         return toDto(vehicle);
     }

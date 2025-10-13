@@ -3,7 +3,6 @@ package edu.uth.evservice.EVService.model;
 import java.time.LocalDateTime;
 
 import edu.uth.evservice.EVService.model.employee.Employee;
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;

@@ -5,8 +5,8 @@ import edu.uth.evservice.EVService.model.Part;
 import edu.uth.evservice.EVService.model.ServiceItem;
 import edu.uth.evservice.EVService.model.ServiceItemPart;
 import edu.uth.evservice.EVService.repositories.IServiceItemRepository;
-import edu.uth.evservice.EVService.repositories.PartRepository;
-import edu.uth.evservice.EVService.repositories.ServiceItemPartRepository;
+import edu.uth.evservice.EVService.repositories.IPartRepository;
+import edu.uth.evservice.EVService.repositories.IServiceItemPartRepository;
 import edu.uth.evservice.EVService.requests.ServiceItemPartRequest;
 import edu.uth.evservice.EVService.services.IServiceItemPartService;
 import lombok.RequiredArgsConstructor;
@@ -18,12 +18,12 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ServiceItemPartServiceImpl implements IServiceItemPartService {
 
-    private final ServiceItemPartRepository repository;
+    private final IServiceItemPartRepository repository;
     private final IServiceItemRepository serviceItemRepository;
-    private final PartRepository partRepository;
+    private final IPartRepository partRepository;
 
     @Override
-    public List<ServiceItemPartDto> getByServiceItem(Long serviceItemId) {
+    public List<ServiceItemPartDto> getByServiceItem(Integer serviceItemId) {
         return repository.findByServiceItem_ItemId(serviceItemId)
                 .stream()
                 .map(this::mapToDTO)
@@ -48,7 +48,7 @@ public class ServiceItemPartServiceImpl implements IServiceItemPartService {
     }
 
     @Override
-    public void delete(Long id) {
+    public void delete(Integer id) {
         repository.deleteById(id);
     }
 

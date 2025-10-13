@@ -10,6 +10,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TicketPartId implements Serializable {
-    private Integer ticket_id;
-    private Integer part_id;
+    private Integer ticket; 
+    private Integer part;  
 }

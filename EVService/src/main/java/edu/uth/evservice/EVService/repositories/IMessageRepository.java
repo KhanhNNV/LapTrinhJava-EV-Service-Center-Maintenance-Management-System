@@ -9,5 +9,5 @@ import edu.uth.evservice.EVService.model.Message;
 
 @Repository
 public interface IMessageRepository extends JpaRepository<Message, Integer> {
-    List<Message> findByConversationId(Integer conversationId);
+    List<Message>  findByConversation_ConversationId(Integer conversationId);
 }

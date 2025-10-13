@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class ServiceItemPartRequest {
-    private Long serviceItemId;
-    private Long partId;
+    private Integer serviceItemId;
+    private Integer partId;
     private Integer quantity;
 }

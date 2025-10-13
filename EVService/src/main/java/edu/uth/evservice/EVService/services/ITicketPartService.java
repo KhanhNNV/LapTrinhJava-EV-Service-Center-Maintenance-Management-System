@@ -3,7 +3,6 @@ package edu.uth.evservice.EVService.services;
 import java.util.List;
 
 import edu.uth.evservice.EVService.dto.TicketPartDto;
-import edu.uth.evservice.EVService.model.TicketPart;
 import edu.uth.evservice.EVService.requests.TicketPartRequest;
 
 public interface ITicketPartService {

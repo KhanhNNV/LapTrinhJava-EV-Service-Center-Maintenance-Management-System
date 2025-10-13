@@ -2,7 +2,7 @@ package edu.uth.evservice.EVService.services.impl;
 
 import edu.uth.evservice.EVService.dto.PartDto;
 import edu.uth.evservice.EVService.model.Part;
-import edu.uth.evservice.EVService.repositories.PartRepository;
+import edu.uth.evservice.EVService.repositories.IPartRepository;
 import edu.uth.evservice.EVService.requests.PartRequest;
 import edu.uth.evservice.EVService.services.IPartService;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +13,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PartServiceImpl implements IPartService {
 
-    private final PartRepository partRepository;
+    private final IPartRepository partRepository;
 
     @Override
     public List<PartDto> getAllParts() {
@@ -24,7 +24,7 @@ public class PartServiceImpl implements IPartService {
     }
 
     @Override
-    public PartDto getPartById(Long id) {
+    public PartDto getPartById(Integer id) {
         Part part = partRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Part not found with ID: " + id));
         return mapToDTO(part);
@@ -41,7 +41,7 @@ public class PartServiceImpl implements IPartService {
     }
 
     @Override
-    public PartDto updatePart(Long id, PartRequest request) {
+    public PartDto updatePart(Integer id, PartRequest request) {
         Part existing = partRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Part not found with ID: " + id));
         existing.setPartName(request.getPartName());
@@ -51,7 +51,7 @@ public class PartServiceImpl implements IPartService {
     }
 
     @Override
-    public void deletePart(Long id) {
+    public void deletePart(Integer id) {
         partRepository.deleteById(id);
     }
 
