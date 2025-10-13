@@ -2,7 +2,6 @@ package edu.uth.evservice.EVService.model;
 
 import java.util.List;
 
-import edu.uth.evservice.EVService.model.employee.Employee;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -36,8 +35,11 @@ public class ServiceCenter {
     private String email;
 
     @OneToMany(mappedBy = "serviceCenter", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Employee> employees;
+    private List<User> users;
 
     @OneToMany(mappedBy = "serviceCenter", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Vehicle> vehicles;
+
+    @OneToMany(mappedBy = "center", cascade = CascadeType.ALL)
+    List<Appointment> appointments;
 }

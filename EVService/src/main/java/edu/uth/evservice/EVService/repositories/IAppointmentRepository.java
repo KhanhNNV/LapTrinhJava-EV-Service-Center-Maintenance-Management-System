@@ -8,7 +8,6 @@ import java.util.List;
 
 @Repository
 public interface IAppointmentRepository extends JpaRepository<Appointment, Integer> {
-    List<Appointment> findByCustomerId(int customerId);
-    List<Appointment> findByCenterId(int centerId);
-    List<Appointment> findByStatus(String status);
+    List<Appointment> findByCustomer_UserId(Integer userId);
+    List<Appointment> findByCreatedBy_UserId(Integer userId);
 }

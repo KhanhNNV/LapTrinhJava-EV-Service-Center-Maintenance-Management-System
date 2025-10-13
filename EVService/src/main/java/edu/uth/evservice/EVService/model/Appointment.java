@@ -2,39 +2,69 @@ package edu.uth.evservice.EVService.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.Nationalized;
+
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Entity
-@Table(name = "appointment")
+@Table(name = "appointments")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Appointment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int appointmentId;
+    Integer appointmentId;
 
-    private int customerId;
-    private int centerId;
-    private int employeeId;
+    @Column(nullable = false)
+    LocalDate appointmentDate;
 
-    private LocalDateTime appointmentDate;
+    @Column(nullable = false)
+    LocalTime appointmentTime;
 
-    private String serviceType;
+    @Nationalized
+    String serviceType;
 
-    private String status; // pending, confirmed, canceled, completed
 
-    private String note;
+    @Column(name = "status")
+    private String status;
 
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    @Nationalized
+    String note;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "customer_id", nullable = false)
+    private User customer; // người đặt lịch / chủ xe
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by_id", nullable = false)
+    private User createdBy; // nhân viên tạo lịch
+
+
+    @ManyToOne
+    @JoinColumn(name = "vehicle_id", nullable = false)
+    Vehicle vehicle;
+
+    @ManyToOne
+    @JoinColumn(name = "center_id", nullable = false)
+    ServiceCenter center;
+
+    LocalDateTime createdAt;
+    LocalDateTime updatedAt;
 
     @PrePersist
     public void onCreate() {
         createdAt = LocalDateTime.now();
+        if (status == null) {
+            status = "pending"; // mặc định là chờ xác nhận
+        }
     }
 
     @PreUpdate

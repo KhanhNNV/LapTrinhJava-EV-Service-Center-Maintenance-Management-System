@@ -6,6 +6,7 @@ import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.Nationalized;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -41,19 +42,40 @@ public class User {
     @Enumerated(EnumType.STRING)
     Role role;
 
-    LocalDate createAt;
-    LocalDate updateAt;
 
-    // Ví dụ quan hệ với ServiceCenter (nếu user là nhân viên)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "center_id")
-    ServiceCenter center;
+    ServiceCenter serviceCenter;
 
-    @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     List<Vehicle> vehicles;
 
-    @OneToMany(mappedBy = "receiver", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     List<Notification> notifications;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    List<CustomerPackageContract>  customerPackageContracts;
+
+    //customer đặt lịch
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Appointment> customerAppointments;
+
+    //staff đặt lịch
+    @OneToMany(mappedBy = "createdBy", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Appointment> createdAppointments;
+
+    LocalDateTime createdAt;
+    LocalDateTime updatedAt;
+
+    @PrePersist
+    public void onCreate() {
+        createdAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    public void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
 }
 
 

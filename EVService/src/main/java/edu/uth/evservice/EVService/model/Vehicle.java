@@ -36,10 +36,10 @@ public class Vehicle {
     @Column(name = "recent_maintenance_date")
     LocalDate recentMaintenanceDate;  // Ngày bảo trì gần nhất
 
-    // Khóa ngoại: liên kết đến Customer (nếu có bảng Customer)
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "customer_id", referencedColumnName = "customer_id")
-    Customer customer;
+    @JoinColumn(name = "user_id", referencedColumnName = "user_id")
+    User user;
     
 
     @ManyToOne(fetch = FetchType.LAZY)
