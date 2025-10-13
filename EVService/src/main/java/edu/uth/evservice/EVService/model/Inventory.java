@@ -10,7 +10,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import jakarta.servlet.http.Part;
 import lombok.AccessLevel; //thay bang class part
 import lombok.AllArgsConstructor;
 import lombok.Getter;

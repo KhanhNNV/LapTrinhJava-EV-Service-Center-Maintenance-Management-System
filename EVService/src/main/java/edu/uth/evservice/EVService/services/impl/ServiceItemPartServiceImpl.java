@@ -4,9 +4,9 @@ import edu.uth.evservice.EVService.dto.ServiceItemPartDto;
 import edu.uth.evservice.EVService.model.Part;
 import edu.uth.evservice.EVService.model.ServiceItem;
 import edu.uth.evservice.EVService.model.ServiceItemPart;
+import edu.uth.evservice.EVService.repositories.IServiceItemRepository;
 import edu.uth.evservice.EVService.repositories.PartRepository;
 import edu.uth.evservice.EVService.repositories.ServiceItemPartRepository;
-import edu.uth.evservice.EVService.repositories.ServiceItemRepository;
 import edu.uth.evservice.EVService.requests.ServiceItemPartRequest;
 import edu.uth.evservice.EVService.services.IServiceItemPartService;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +19,7 @@ import java.util.List;
 public class ServiceItemPartServiceImpl implements IServiceItemPartService {
 
     private final ServiceItemPartRepository repository;
-    private final ServiceItemRepository serviceItemRepository;
+    private final IServiceItemRepository serviceItemRepository;
     private final PartRepository partRepository;
 
     @Override
