@@ -5,7 +5,7 @@ import edu.uth.evservice.EVService.model.Customer;
 import edu.uth.evservice.EVService.model.CustomerPackageContract;
 import edu.uth.evservice.EVService.model.ServicePackage;
 import edu.uth.evservice.EVService.repositories.ICustomerPackageContractRepository;
-import edu.uth.evservice.EVService.repositories.ICustomerRepository;
+import edu.uth.evservice.EVService.repositories.IUserRepository;
 import edu.uth.evservice.EVService.repositories.IServicePackageRepository;
 import edu.uth.evservice.EVService.requests.CustomerPackageContractRequest;
 import edu.uth.evservice.EVService.services.ICustomerPackageContractService;
@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 public class CustomerPackageContractServiceImpl implements ICustomerPackageContractService {
 
     private final ICustomerPackageContractRepository contractRepository;
-    private final ICustomerRepository customerRepository;
+    private final IUserRepository customerRepository;
     private final IServicePackageRepository packageRepository;
 
     private CustomerPackageContractDto toDto(CustomerPackageContract contract) {
