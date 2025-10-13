@@ -122,7 +122,7 @@ public class TicketPartServiceImpl implements ITicketPartService {
             return null;
         }
         return new TicketPartDto(
-                ticketPart.getTicket() != null ? ticketPart.getTicket().getTicket_id() : null,
+                ticketPart.getTicket() != null ? ticketPart.getTicket().getTicketId() : null,
                 ticketPart.getPart() != null ? ticketPart.getPart().getPartId() : null,
                 ticketPart.getQuantity(),
                 ticketPart.getUnitPriceAtTimeOfService());

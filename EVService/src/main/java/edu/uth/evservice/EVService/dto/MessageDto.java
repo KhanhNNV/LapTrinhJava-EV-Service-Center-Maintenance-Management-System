@@ -2,6 +2,7 @@ package edu.uth.evservice.EVService.dto;
 
 import java.time.LocalDateTime;
 
+import edu.uth.evservice.EVService.model.Message.SenderType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,7 +17,7 @@ import lombok.experimental.FieldDefaults;
 public class MessageDto {
     private Integer id;
     private Integer senderId;
-    private String senderType;
+    private SenderType senderType;
     private String content;
     private LocalDateTime timestamp;
     private Integer conversationId;

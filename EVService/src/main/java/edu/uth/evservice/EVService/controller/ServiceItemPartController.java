@@ -15,7 +15,7 @@ public class ServiceItemPartController {
     private final IServiceItemPartService service;
 
     @GetMapping("/{serviceItemId}")
-    public List<ServiceItemPartDto> getByServiceItem(@PathVariable Long serviceItemId) {
+    public List<ServiceItemPartDto> getByServiceItem(@PathVariable Integer serviceItemId) {
         return service.getByServiceItem(serviceItemId);
     }
 
@@ -25,7 +25,7 @@ public class ServiceItemPartController {
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id) {
+    public void delete(@PathVariable Integer id) {
         service.delete(id);
     }
 }

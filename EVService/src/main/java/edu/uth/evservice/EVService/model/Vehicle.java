@@ -37,7 +37,13 @@ public class Vehicle {
     LocalDate recentMaintenanceDate;  // Ngày bảo trì gần nhất
 
     // Khóa ngoại: liên kết đến Customer (nếu có bảng Customer)
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id", referencedColumnName = "customer_id")
     Customer customer;
+    
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "center_id")
+    private ServiceCenter serviceCenter;
+
 }

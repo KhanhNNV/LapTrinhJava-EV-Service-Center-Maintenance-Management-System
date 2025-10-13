@@ -3,7 +3,7 @@ package edu.uth.evservice.EVService.model;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -20,7 +20,7 @@ import lombok.experimental.FieldDefaults;
 public class TicketPart {
     @Id
     @ManyToOne
-    @JoinColumn(name = "ticketId", referencedColumnName = "ticketId", nullable = false)
+    @JoinColumn(name = "ticketId", referencedColumnName = "ticket_id", nullable = false)
     private ServiceTicket ticket;
 
     @Id

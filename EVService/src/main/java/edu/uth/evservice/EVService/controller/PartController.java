@@ -20,7 +20,7 @@ public class PartController {
     }
 
     @GetMapping("/{id}")
-    public PartDto getById(@PathVariable Long id) {
+    public PartDto getById(@PathVariable Integer id) {
         return partService.getPartById(id);
     }
 
@@ -30,12 +30,12 @@ public class PartController {
     }
 
     @PutMapping("/{id}")
-    public PartDto update(@PathVariable Long id, @RequestBody PartRequest request) {
+    public PartDto update(@PathVariable Integer id, @RequestBody PartRequest request) {
         return partService.updatePart(id, request);
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id) {
+    public void delete(@PathVariable Integer id) {
         partService.deletePart(id);
     }
 }

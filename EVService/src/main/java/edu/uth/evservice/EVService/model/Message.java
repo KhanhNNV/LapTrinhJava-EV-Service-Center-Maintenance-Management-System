@@ -1,8 +1,6 @@
 package edu.uth.evservice.EVService.model;
 
 import java.time.LocalDateTime;
-
-import org.antlr.v4.runtime.misc.NotNull;
 import org.hibernate.annotations.Nationalized;
 
 import jakarta.persistence.Column;
@@ -39,7 +37,7 @@ public class Message {
 
     @Column(length = 20)
     @Enumerated(EnumType.STRING)
-    private String senderType;
+    private SenderType senderType;
 
     @Nationalized
     @Column(nullable = false, length = 1000)
@@ -49,7 +47,7 @@ public class Message {
     private LocalDateTime timestamp;
 
     @ManyToOne
-    @JoinColumn(nullable = false)
+    @JoinColumn(name = "conversation_id", nullable = false)
     private Conversation conversation;
 
     public enum SenderType {

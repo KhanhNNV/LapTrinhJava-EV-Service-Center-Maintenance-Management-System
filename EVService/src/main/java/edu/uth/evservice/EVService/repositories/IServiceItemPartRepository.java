@@ -6,6 +6,6 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface ServiceItemPartRepository extends JpaRepository<ServiceItemPart, Long> {
-    List<ServiceItemPart> findByServiceItem_ItemId(Long itemId);
+public interface IServiceItemPartRepository extends JpaRepository<ServiceItemPart, Integer> {
+    List<ServiceItemPart> findByServiceItem_ItemId(Integer itemId);
 }
