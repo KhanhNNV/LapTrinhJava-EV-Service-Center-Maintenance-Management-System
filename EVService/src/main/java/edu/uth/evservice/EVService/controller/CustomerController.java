@@ -1,8 +1,8 @@
 package edu.uth.evservice.EVService.controller;
 
 import edu.uth.evservice.EVService.dto.CustomerDto;
-import edu.uth.evservice.EVService.requests.CreateCustomerRequest;
-import edu.uth.evservice.EVService.services.ICustomerService;
+import edu.uth.evservice.EVService.requests.CreateUserRequest;
+import edu.uth.evservice.EVService.services.IUserService;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -15,7 +15,7 @@ import java.util.List;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE,makeFinal = true)
 public class CustomerController {
-    ICustomerService customerService;
+    IUserService customerService;
 
     @GetMapping
     public List<CustomerDto> getCustomers(){
@@ -28,12 +28,12 @@ public class CustomerController {
     }
 
     @PostMapping
-    public CustomerDto createCustomer(@RequestBody CreateCustomerRequest request) {
+    public CustomerDto createCustomer(@RequestBody CreateUserRequest request) {
         return customerService.createCustomer(request);
     }
 
     @PutMapping("/{id}")
-    public CustomerDto updateCustomer(@PathVariable Integer id, @RequestBody CreateCustomerRequest request) {
+    public CustomerDto updateCustomer(@PathVariable Integer id, @RequestBody CreateUserRequest request) {
         return customerService.updateCustomer(id, request);
     }
 

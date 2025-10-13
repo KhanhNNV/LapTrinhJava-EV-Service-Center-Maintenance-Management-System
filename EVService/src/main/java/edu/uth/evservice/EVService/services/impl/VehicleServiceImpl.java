@@ -5,7 +5,7 @@ import edu.uth.evservice.EVService.requests.VehicleRequest;
 import edu.uth.evservice.EVService.model.Customer;
 import edu.uth.evservice.EVService.model.ServiceCenter;
 import edu.uth.evservice.EVService.model.Vehicle;
-import edu.uth.evservice.EVService.repositories.ICustomerRepository;
+import edu.uth.evservice.EVService.repositories.IUserRepository;
 import edu.uth.evservice.EVService.repositories.IServiceCenterRepository;
 import edu.uth.evservice.EVService.repositories.IVehicleRepository;
 import edu.uth.evservice.EVService.services.IVehicleService;
@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 public class VehicleServiceImpl implements IVehicleService {
 
     private final IVehicleRepository vehicleRepository;
-    private final ICustomerRepository customerRepository;
+    private final IUserRepository customerRepository;
     private final IServiceCenterRepository serviceCenterRepository;
 
     // --- Helper function: Convert Entity → DTO ---

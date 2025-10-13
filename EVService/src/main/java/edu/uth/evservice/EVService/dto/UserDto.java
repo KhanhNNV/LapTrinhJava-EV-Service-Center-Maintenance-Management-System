@@ -1,5 +1,6 @@
 package edu.uth.evservice.EVService.dto;
 
+import edu.uth.evservice.EVService.model.Role;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,12 +12,12 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE)
-public class EmployeeDto {
-    private Integer id;
-    private String username;
-    private String fullName;
-    private String email;
-    private String phoneNumber;
-    private String address;
-    private String role;
+public class UserDto {
+    Integer id;
+    String username;
+    String fullName;
+    String email;
+    String phoneNumber;
+    String address;
+    Role role;
 }

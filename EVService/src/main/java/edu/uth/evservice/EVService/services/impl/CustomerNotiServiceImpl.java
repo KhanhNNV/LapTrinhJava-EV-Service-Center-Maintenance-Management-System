@@ -1,8 +1,8 @@
 package edu.uth.evservice.EVService.services.impl;
 
 import edu.uth.evservice.EVService.dto.CustomerNotiDTO;
-import edu.uth.evservice.EVService.model.CustomerNoti;
-import edu.uth.evservice.EVService.repositories.ICustomerNotiRepository;
+import edu.uth.evservice.EVService.model.Notification;
+import edu.uth.evservice.EVService.repositories.INotificationRepository;
 import edu.uth.evservice.EVService.requests.CustomerNotiRequest;
 import edu.uth.evservice.EVService.services.ICustomerNotiService;
 
@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 public class CustomerNotiServiceImpl implements ICustomerNotiService {
 
 
-    private final ICustomerNotiRepository customerNotiRepository;
+    private final INotificationRepository customerNotiRepository;
 
     @Override
     public List<CustomerNotiDTO> getAllNotifications() {
@@ -44,7 +44,7 @@ public class CustomerNotiServiceImpl implements ICustomerNotiService {
 
     @Override
     public CustomerNotiDTO createNotification(CustomerNotiRequest request) {
-        CustomerNoti noti = CustomerNoti.builder()
+        Notification noti = Notification.builder()
                 .customerId(request.getCustomerId())
                 .title(request.getTitle())
                 .message(request.getMessage())
@@ -56,7 +56,7 @@ public class CustomerNotiServiceImpl implements ICustomerNotiService {
 
     @Override
     public CustomerNotiDTO markAsRead(int id) {
-        CustomerNoti noti = customerNotiRepository.findById(id)
+        Notification noti = customerNotiRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Notification not found"));
 
         noti.setReadStatus(true);
@@ -68,7 +68,7 @@ public class CustomerNotiServiceImpl implements ICustomerNotiService {
         customerNotiRepository.deleteById(id);
     }
 
-    private CustomerNotiDTO toDTO(CustomerNoti noti) {
+    private CustomerNotiDTO toDTO(Notification noti) {
         return CustomerNotiDTO.builder()
                 .notiId(noti.getNotiId())
                 .customerId(noti.getCustomerId())
