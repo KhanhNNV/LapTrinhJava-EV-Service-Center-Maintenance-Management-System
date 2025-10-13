@@ -11,6 +11,7 @@ import edu.uth.evservice.EVService.model.Message;
 import edu.uth.evservice.EVService.repositories.IMessageRepository;
 import edu.uth.evservice.EVService.requests.CreateMessageRequest;
 import edu.uth.evservice.EVService.services.IMessageService;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -33,13 +34,15 @@ public class MessageServiceImpl implements IMessageService {
     public MessageDto getMessageById(Integer id) {
         return messageRepository.findById(id)
                 .map(this::toDto)
-                .orElse(null);
+                .orElseThrow(() -> new EntityNotFoundException("Message not found with id: " + id));
     }
 
     @Override
     public List<MessageDto> getMessagesByConversation(Integer conversationId) {
-        return messageRepository.findByConversationId(conversationId)
-                .stream()
+        if (conversationId == null) {
+            throw new IllegalArgumentException("ConversationId cannot be null");
+        }
+        return messageRepository.findByConversationId(conversationId).stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());
     }

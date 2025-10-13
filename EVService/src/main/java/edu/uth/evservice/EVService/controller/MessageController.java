@@ -2,6 +2,7 @@ package edu.uth.evservice.EVService.controller;
 
 import java.util.List;
 
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -23,14 +24,14 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class MessageController {
-    IMessageService messageService;
+    private final IMessageService messageService;
 
     @GetMapping
     public List<MessageDto> getMessages() {
         return messageService.getAllMessages();
     }
 
-    @GetMapping("/conversation/{conversation_id}")
+    @GetMapping("/conversation/{conversationId}")
     public List<MessageDto> getByConversation(@PathVariable Integer conversationId) {
         return messageService.getMessagesByConversation(conversationId);
     }
@@ -41,12 +42,12 @@ public class MessageController {
     }
 
     @PostMapping
-    public MessageDto createMessage(@RequestBody CreateMessageRequest request) {
+    public MessageDto createMessage(@Validated @RequestBody CreateMessageRequest request) {
         return messageService.createMessage(request);
     }
 
     @PutMapping("/{id}")
-    public MessageDto updateMessage(@PathVariable Integer id, @RequestBody CreateMessageRequest request) {
+    public MessageDto updateMessage(@PathVariable Integer id, @Validated @RequestBody CreateMessageRequest request) {
         return messageService.updateMessage(id, request);
     }
 

@@ -2,13 +2,18 @@ package edu.uth.evservice.EVService.model;
 
 import java.time.LocalDateTime;
 
+import org.antlr.v4.runtime.misc.NotNull;
 import org.hibernate.annotations.Nationalized;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -29,22 +34,27 @@ import lombok.experimental.FieldDefaults;
 public class Message {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "message_id")
-    Integer messageId;
+    private Integer messageId;
+    private Integer senderId;
 
-    @Column(name = "sender_id")
-    Integer senderId;
-
-    @Column(name = "sender_type")
-    String senderType; // e.g. CUSTOMER, STAFF, SYSTEM
+    @Column(length = 20)
+    @Enumerated(EnumType.STRING)
+    private String senderType;
 
     @Nationalized
-    @Column(name = "content", columnDefinition = "TEXT")
-    String content;
+    @Column(nullable = false, length = 1000)
+    private String content;
 
-    @Column(name = "timestamp")
-    LocalDateTime timestamp;
+    @Column(nullable = false)
+    private LocalDateTime timestamp;
 
-    @Column(name = "conversation_id")
-    Integer conversationId; // FK to conversation table (if exists)
+    @ManyToOne
+    @JoinColumn(nullable = false)
+    private Conversation conversation;
+
+    public enum SenderType {
+        USER,
+        ADMIN,
+        STAFF
+    }
 }

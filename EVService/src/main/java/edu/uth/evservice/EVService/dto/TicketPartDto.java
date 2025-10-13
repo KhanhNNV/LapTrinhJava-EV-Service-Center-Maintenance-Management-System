@@ -1,7 +1,5 @@
 package edu.uth.evservice.EVService.dto;
 
-import java.time.LocalDate;
-
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -14,15 +12,9 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class InventoryDto {
-    private Integer inventoryId;
-    private long quantity;
-    private long minQuantity;
-    private LocalDate createdAt;
-    private LocalDate updatedAt;
-
+public class TicketPartDto {
+    private Integer ticketId;
     private Integer partId;
-    private String partName;
-    private Integer centerId;
-    private String centerName;
+    private Integer quantity;
+    private Double unitPriceAtTimeOfService;
 }

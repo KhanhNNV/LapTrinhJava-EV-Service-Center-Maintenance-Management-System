@@ -1,16 +1,20 @@
 package edu.uth.evservice.EVService.requests;
 
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 
 @Setter
 @Getter
+@AllArgsConstructor
+@NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class InventoryRequest {
-    private long quantity;
-    private long minQuantity;
+public class TicketPartRequest {
+    private Integer ticketId;
     private Integer partId;
-    private Integer centerId;
+    private Integer quantity;
+    private Double unitPriceAtTimeOfService;
 }
