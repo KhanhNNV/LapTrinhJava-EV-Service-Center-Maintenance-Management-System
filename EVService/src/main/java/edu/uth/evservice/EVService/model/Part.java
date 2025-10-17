@@ -5,7 +5,7 @@ import lombok.*;
 import java.util.Set;
 
 @Entity
-@Table(name = "Part")
+@Table(name = "parts")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -28,4 +28,7 @@ public class Part {
     // Quan hệ N:M với ServiceItem thông qua bảng trung gian
     @OneToMany(mappedBy = "part", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<ServiceItemPart> serviceItemParts;
+
+    @OneToMany(mappedBy = "part", cascade = CascadeType.ALL,orphanRemoval = true)
+    private Set<TicketPart> ticketParts;
 }

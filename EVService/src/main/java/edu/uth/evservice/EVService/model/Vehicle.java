@@ -6,9 +6,11 @@ import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.Nationalized;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
-@Table(name = "vehicle")
+@Table(name = "vehicles")
 @Getter
 @Setter
 @AllArgsConstructor
@@ -36,14 +38,17 @@ public class Vehicle {
     @Column(name = "recent_maintenance_date")
     LocalDate recentMaintenanceDate;  // Ngày bảo trì gần nhất
 
-    // Khóa ngoại: liên kết đến Customer (nếu có bảng Customer)
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "customer_id", referencedColumnName = "customer_id")
-    Customer customer;
+    @JoinColumn(name = "user_id", referencedColumnName = "user_id")
+    User user;
     
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "center_id")
     private ServiceCenter serviceCenter;
+
+    @OneToMany(mappedBy = "vehicle",cascade = CascadeType.ALL)
+    List<Appointment> appointments = new ArrayList<>();
 
 }

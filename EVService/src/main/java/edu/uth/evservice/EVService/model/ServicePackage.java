@@ -3,8 +3,11 @@ package edu.uth.evservice.EVService.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
-@Table(name = "service_package")
+@Table(name = "servicePackages")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -24,5 +27,9 @@ public class ServicePackage {
 
     private Integer duration; // số ngày/tháng/năm của gói
 
+    @Column(length = 1000)
     private String description; // mô tả chi tiết gói dịch vụ
+
+    @OneToMany(mappedBy = "servicePackage", cascade = CascadeType.ALL)
+    private List<CustomerPackageContract> customerPackageContracts =  new ArrayList<>();
 }

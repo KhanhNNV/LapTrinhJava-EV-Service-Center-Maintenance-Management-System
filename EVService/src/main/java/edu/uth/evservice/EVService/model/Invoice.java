@@ -12,17 +12,44 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@Table(name = "invoice")
+@Table(name = "invoices")
 public class Invoice {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer invoiceId;
 
+    @Column(nullable = false)
     private LocalDate invoiceDate;
-    private Double totalAmount;
-    private String paymentStatus;
-    private String paymentMethod;
 
-    private Integer ticketId;   // FK tham chiếu Ticket
-    private Integer customerId; // FK tham chiếu Customer
+    @Column(nullable = false)
+    private Double totalAmount;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private PaymentStatus paymentStatus;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private PaymentMethod paymentMethod;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ticket_id", nullable = false, unique = true)
+    private ServiceTicket serviceTicket;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "customer_id", nullable = false)
+    private User customer;
+
+
+    public enum PaymentStatus {
+        PENDING,    // chưa thanh toán
+        PAID,       // đã thanh toán
+        CANCELLED   // hủy
+    }
+
+    public enum PaymentMethod {
+        CASH,
+        CREDIT_CARD,
+        BANK_TRANSFER
+    }
 }

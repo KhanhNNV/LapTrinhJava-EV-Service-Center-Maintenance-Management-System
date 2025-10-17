@@ -3,15 +3,14 @@ package edu.uth.evservice.EVService.model;
 import jakarta.persistence.*;
 import lombok.*;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import edu.uth.evservice.EVService.model.employee.Employee;
-import java.time.LocalDateTime;
 
-/**
- * Entity ServiceTicket
- * Sao chép theo ERD của bạn: chỉ chứa appointment và technician (employee)
- */
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+
 @Entity
-@Table(name = "service_ticket")
+@Table(name = "serviceTickets")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -42,8 +41,18 @@ public class ServiceTicket {
     @JoinColumn(name = "appointment_id", nullable = false)
     private Appointment appointment;
 
-    // technician là 1 Employee; nhiều ticket có thể thuộc 1 technician
+    // technician là 1 User; nhiều ticket có thể thuộc 1 technician
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "technician_id", nullable = false)
-    private Employee technician;
+    private User technician;
+
+    @OneToOne(mappedBy = "serviceTicket", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Invoice invoice;
+
+    @OneToMany(mappedBy = "serviceTicket", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<TicketServiceItem> ticketServiceItems = new ArrayList<>();
+
+    @OneToMany(mappedBy = "ticket", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<TicketPart>  ticketParts = new ArrayList<>();
+
 }

@@ -8,8 +8,11 @@ import java.util.List;
 
 public interface IAppointmentService {
     List<AppointmentDto> getAllAppointments();
-    AppointmentDto getAppointmentById(int id);
+    AppointmentDto getAppointmentById(Integer id);
     AppointmentDto createAppointment(AppointmentRequest request);
-    AppointmentDto updateAppointment(int id, AppointmentRequest request);
-    void deleteAppointment(int id);
+    AppointmentDto updateAppointment(Integer id, AppointmentRequest request);
+    void deleteAppointment(Integer id);
+    AppointmentDto updateStatus(Integer appointmentId, String status);
+    List<AppointmentDto> getByCustomer(Integer customerId);
+    List<AppointmentDto> getByStaff(Integer staffId);
 }

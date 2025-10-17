@@ -1,6 +1,6 @@
 package edu.uth.evservice.EVService.services.impl;
 
-import edu.uth.evservice.EVService.dto.CustomerNotiDTO;
+import edu.uth.evservice.EVService.dto.NotificationDto;
 import edu.uth.evservice.EVService.model.Notification;
 import edu.uth.evservice.EVService.repositories.INotificationRepository;
 import edu.uth.evservice.EVService.requests.CustomerNotiRequest;
@@ -20,7 +20,7 @@ public class CustomerNotiServiceImpl implements ICustomerNotiService {
     private final INotificationRepository customerNotiRepository;
 
     @Override
-    public List<CustomerNotiDTO> getAllNotifications() {
+    public List<NotificationDto> getAllNotifications() {
         return customerNotiRepository.findAll()
                 .stream()
                 .map(this::toDTO)
@@ -28,7 +28,7 @@ public class CustomerNotiServiceImpl implements ICustomerNotiService {
     }
 
     @Override
-    public List<CustomerNotiDTO> getNotificationsByCustomer(int customerId) {
+    public List<NotificationDto> getNotificationsByCustomer(int customerId) {
         return customerNotiRepository.findByCustomerId(customerId)
                 .stream()
                 .map(this::toDTO)
@@ -36,14 +36,14 @@ public class CustomerNotiServiceImpl implements ICustomerNotiService {
     }
 
     @Override
-    public CustomerNotiDTO getNotificationById(int id) {
+    public NotificationDto getNotificationById(int id) {
         return customerNotiRepository.findById(id)
                 .map(this::toDTO)
                 .orElseThrow(() -> new RuntimeException("Notification not found"));
     }
 
     @Override
-    public CustomerNotiDTO createNotification(CustomerNotiRequest request) {
+    public NotificationDto createNotification(CustomerNotiRequest request) {
         Notification noti = Notification.builder()
                 .customerId(request.getCustomerId())
                 .title(request.getTitle())
@@ -55,7 +55,7 @@ public class CustomerNotiServiceImpl implements ICustomerNotiService {
     }
 
     @Override
-    public CustomerNotiDTO markAsRead(int id) {
+    public NotificationDto markAsRead(int id) {
         Notification noti = customerNotiRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Notification not found"));
 
@@ -68,8 +68,8 @@ public class CustomerNotiServiceImpl implements ICustomerNotiService {
         customerNotiRepository.deleteById(id);
     }
 
-    private CustomerNotiDTO toDTO(Notification noti) {
-        return CustomerNotiDTO.builder()
+    private NotificationDto toDTO(Notification noti) {
+        return NotificationDto.builder()
                 .notiId(noti.getNotiId())
                 .customerId(noti.getCustomerId())
                 .title(noti.getTitle())

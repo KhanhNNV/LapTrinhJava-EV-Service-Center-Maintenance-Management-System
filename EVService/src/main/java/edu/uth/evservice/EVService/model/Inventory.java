@@ -22,7 +22,7 @@ import lombok.experimental.FieldDefaults;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "inventory")
+@Table(name = "inventories")
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Inventory {
     @Id

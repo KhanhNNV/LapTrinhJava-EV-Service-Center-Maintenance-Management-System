@@ -6,7 +6,7 @@ import lombok.experimental.FieldDefaults;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "customer_package_contract")
+@Table(name = "customerPackageContracts")
 @Getter
 @Setter
 @AllArgsConstructor
@@ -21,8 +21,8 @@ public class CustomerPackageContract {
     Integer contractId;
 
     @ManyToOne
-    @JoinColumn(name = "customer_id", referencedColumnName = "customerId", nullable = false)
-    Customer customer;
+    @JoinColumn(name = "user_id", referencedColumnName = "userId", nullable = false)
+    User user;
 
     @ManyToOne
     @JoinColumn(name = "package_id", referencedColumnName = "packageId", nullable = false)
@@ -34,6 +34,13 @@ public class CustomerPackageContract {
     @Column(name = "end_date", nullable = false)
     LocalDate endDate;
 
-    @Column(name = "status", nullable = false)
-    String status;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    ContractStatus status;
+
+    public enum ContractStatus {
+        ACTIVE,
+        EXPIRED,
+        CANCELLED
+    }
 }

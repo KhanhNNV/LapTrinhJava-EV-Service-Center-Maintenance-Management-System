@@ -1,10 +1,10 @@
 package edu.uth.evservice.EVService.model;
 
-import java.io.Serializable;
-
 import jakarta.persistence.Embeddable;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+
+import java.io.Serializable;
 
 @Embeddable
 @Getter
@@ -12,9 +12,7 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class TicketPartId implements Serializable {
-    private Integer ticketId;
-    private Integer itemId;
+public class TechnicianCertificateId implements Serializable {
+    Integer technicianId;
+    Integer certificateId;
 }
-
-
