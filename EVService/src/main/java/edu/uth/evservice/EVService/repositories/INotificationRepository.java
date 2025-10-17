@@ -9,5 +9,6 @@ import java.util.List;
 
 @Repository
 public interface INotificationRepository extends JpaRepository<Notification, Integer> {
+    //Lấy danh sách thông báo theo người nhận
     List<Notification> findByReceiver(User receiver);
 }

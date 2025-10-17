@@ -3,7 +3,7 @@ package edu.uth.evservice.EVService.model;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import org.antlr.v4.runtime.misc.NotNull;
+// import org.antlr.v4.runtime.misc.NotNull;
 import org.hibernate.annotations.Nationalized;
 
 import java.time.LocalDateTime;
