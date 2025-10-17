@@ -11,7 +11,6 @@ import lombok.experimental.FieldDefaults;
 
 @Entity
 @Table(name = "ticketParts")
-@IdClass(TicketPartId.class)
 @Setter
 @Getter
 @AllArgsConstructor

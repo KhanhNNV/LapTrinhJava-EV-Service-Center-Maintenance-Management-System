@@ -81,6 +81,9 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ServicePackage> servicePackages = new ArrayList<>();
 
+    @OneToMany(mappedBy = "technician", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<TechnicianCertificate> technicianCertificates = new ArrayList<>();
+
     LocalDateTime createdAt;
     LocalDateTime updatedAt;
 
