@@ -5,7 +5,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 @Entity
-@Table(name = "ticket_service_item")
+@Table(name = "ticketServiceItems")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -26,6 +26,9 @@ public class TicketServiceItem {
     @JoinColumn(name = "item_id")
     ServiceItem serviceItem;
 
+    @Column(nullable=false)
     Integer quantity;
+
+    @Column(nullable=false)
     Double unitPriceAtTimeOfService;
 }

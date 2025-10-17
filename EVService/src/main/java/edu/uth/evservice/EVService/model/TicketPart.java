@@ -10,7 +10,7 @@ import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 
 @Entity
-@Table(name = "ticket_parts")
+@Table(name = "ticketParts")
 @IdClass(TicketPartId.class)
 @Setter
 @Getter
@@ -18,12 +18,14 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class TicketPart {
-    @Id
+
+    @EmbeddedId
+    TicketPartId id;
+
     @ManyToOne
     @JoinColumn(name = "ticketId", referencedColumnName = "ticket_id", nullable = false)
     private ServiceTicket ticket;
 
-    @Id
     @ManyToOne
     @JoinColumn(name = "partId", referencedColumnName = "partId", nullable = false)
     private Part part;
@@ -34,3 +36,4 @@ public class TicketPart {
     @Column(nullable = false)
     private Double unitPriceAtTimeOfService;
 }
+

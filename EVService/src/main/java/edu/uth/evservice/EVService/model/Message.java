@@ -22,7 +22,7 @@ import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 
 @Entity
-@Table(name = "message")
+@Table(name = "messages")
 @Getter
 @Setter
 @AllArgsConstructor

@@ -8,6 +8,8 @@ import org.hibernate.annotations.Nationalized;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "appointments")
@@ -54,6 +56,9 @@ public class Appointment {
     @ManyToOne
     @JoinColumn(name = "center_id", nullable = false)
     ServiceCenter center;
+
+    @OneToOne(mappedBy = "appointment", cascade = CascadeType.ALL)
+    ServiceTicket serviceTickets;
 
     LocalDateTime createdAt;
     LocalDateTime updatedAt;

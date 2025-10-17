@@ -6,9 +6,11 @@ import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.Nationalized;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
-@Table(name = "vehicle")
+@Table(name = "vehicles")
 @Getter
 @Setter
 @AllArgsConstructor
@@ -45,5 +47,8 @@ public class Vehicle {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "center_id")
     private ServiceCenter serviceCenter;
+
+    @OneToMany(mappedBy = "vehicle",cascade = CascadeType.ALL)
+    List<Appointment> appointments = new ArrayList<>();
 
 }

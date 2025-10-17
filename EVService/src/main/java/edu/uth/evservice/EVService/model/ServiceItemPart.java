@@ -3,10 +3,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(
-        name = "ServiceItemPart",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"item_id", "part_id"})
-)
+@Table(name = "serviceItemParts")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -14,18 +11,22 @@ import lombok.*;
 @Builder
 public class ServiceItemPart {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    @EmbeddedId
+    TicketServiceItemId id; // Khóa chính kép
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "item_id", nullable = false)
-    private ServiceItem serviceItem;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "part_id", nullable = false)
+    @ManyToOne
+    @MapsId("partId")
+    @JoinColumn(name = "part_id")
     private Part part;
 
-    @Column(nullable = false)
+    @ManyToOne
+    @MapsId("itemId")
+    @JoinColumn(name = "item_id")
+    private ServiceItem serviceItem;
+
+    @Column(nullable=false)
     private Integer quantity;
+
+    @Column(nullable=false)
+    private Double unitPriceAtTimeOfService;
 }

@@ -8,7 +8,7 @@ import org.hibernate.annotations.Nationalized;
 import java.util.List;
 
 @Entity
-@Table(name = "service_item")
+@Table(name = "serviceItems")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -21,14 +21,21 @@ public class ServiceItem {
     Integer itemId;
 
     @Nationalized
+    @Column(nullable = false, length = 30)
     String itemName;
 
     @Nationalized
+    @Column(nullable=false,length=1000)
     String description;
 
+    @Column(nullable=false)
     Double price;
 
     // Quan hệ 1-n với TicketServiceItem
     @OneToMany(mappedBy = "serviceItem", cascade = CascadeType.ALL)
     List<TicketServiceItem> ticketServiceItems;
+
+
+
+
 }

@@ -14,7 +14,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@Table(name = "conversation")
+@Table(name = "conversations")
 public class Conversation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

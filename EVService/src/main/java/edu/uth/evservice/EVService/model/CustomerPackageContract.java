@@ -6,7 +6,7 @@ import lombok.experimental.FieldDefaults;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "customer_package_contract")
+@Table(name = "customerPackageContracts")
 @Getter
 @Setter
 @AllArgsConstructor

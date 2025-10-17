@@ -1,20 +1,17 @@
 package edu.uth.evservice.EVService.model;
 
-import java.io.Serializable;
-
-import jakarta.persistence.Embeddable;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-@Embeddable
+@Entity
+@Table(name = "certificates")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class TicketPartId implements Serializable {
-    private Integer ticketId;
-    private Integer itemId;
+public class Certificate {
 }
-
-
