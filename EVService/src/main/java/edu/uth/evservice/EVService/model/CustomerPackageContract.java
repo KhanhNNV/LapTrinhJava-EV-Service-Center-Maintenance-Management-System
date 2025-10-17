@@ -34,6 +34,13 @@ public class CustomerPackageContract {
     @Column(name = "end_date", nullable = false)
     LocalDate endDate;
 
-    @Column(name = "status", nullable = false)
-    String status;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    ContractStatus status;
+
+    public enum ContractStatus {
+        ACTIVE,
+        EXPIRED,
+        CANCELLED
+    }
 }

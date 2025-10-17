@@ -3,6 +3,8 @@ package edu.uth.evservice.EVService.model;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.antlr.v4.runtime.misc.NotNull;
+import org.hibernate.annotations.Nationalized;
 
 import java.time.LocalDateTime;
 
@@ -18,21 +20,30 @@ public class Notification {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    Integer id;
 
-    private String title;         // tiêu đề
-    private String message;       // Nội dung chi tiết
-    private Boolean isRead = false;
+    @Column(length = 50)
+    @Nationalized
+    String title;         // tiêu đề
+
+    @Column(length = 255)
+    @Nationalized
+    String message;       // Nội dung chi tiết
+
+    @Column(nullable = false)
+    Boolean isRead = false;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
-    private User user; // Chủ xe nhận thông báo
+    private User user;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
     @PrePersist
     public void prePersist() {
-        this.createdAt = LocalDateTime.now();
+        if (createdAt == null) {
+            this.createdAt = LocalDateTime.now();
+        }
     }
 }

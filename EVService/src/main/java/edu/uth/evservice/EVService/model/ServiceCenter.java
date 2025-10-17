@@ -1,5 +1,6 @@
 package edu.uth.evservice.EVService.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.persistence.CascadeType;
@@ -25,7 +26,8 @@ public class ServiceCenter {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer centerId;
-    
+
+
     private String centerName;
 
     private String address;
@@ -35,11 +37,15 @@ public class ServiceCenter {
     private String email;
 
     @OneToMany(mappedBy = "serviceCenter", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<User> users;
+    private List<User> users = new ArrayList<>();;
 
     @OneToMany(mappedBy = "serviceCenter", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Vehicle> vehicles;
+    private List<Vehicle> vehicles = new ArrayList<>();;
 
     @OneToMany(mappedBy = "center", cascade = CascadeType.ALL)
-    List<Appointment> appointments;
+    private List<Appointment> appointments = new ArrayList<>();;
+
+    @OneToMany(mappedBy = "serviceCenter", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Inventory> inventories = new ArrayList<>();;
+
 }

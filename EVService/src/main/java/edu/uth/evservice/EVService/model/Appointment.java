@@ -29,22 +29,21 @@ public class Appointment {
     @Column(nullable = false)
     LocalTime appointmentTime;
 
+    @Column(nullable = false)
     @Nationalized
     String serviceType;
 
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    AppointmentStatus status;
 
-    @Column(name = "status")
-    private String status;
-
-    @Nationalized
-    String note;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id", nullable = false)
     private User customer; // người đặt lịch / chủ xe
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "created_by_id", nullable = false)
+    @JoinColumn(name = "createdBy_id", nullable = false)
     private User createdBy; // nhân viên tạo lịch
 
 
@@ -63,7 +62,7 @@ public class Appointment {
     public void onCreate() {
         createdAt = LocalDateTime.now();
         if (status == null) {
-            status = "pending"; // mặc định là chờ xác nhận
+            status = AppointmentStatus.PENDING; // mặc định là chờ xác nhận
         }
     }
 
@@ -71,4 +70,12 @@ public class Appointment {
     public void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
+
+    public enum AppointmentStatus {
+        PENDING,
+        CONFIRMED,
+        CANCELED,
+        COMPLETED
+    }
+
 }

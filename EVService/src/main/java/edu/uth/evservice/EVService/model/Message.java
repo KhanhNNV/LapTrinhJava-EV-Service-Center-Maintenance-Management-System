@@ -33,11 +33,9 @@ public class Message {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer messageId;
-    private Integer senderId;
 
-    @Column(length = 20)
-    @Enumerated(EnumType.STRING)
-    private SenderType senderType;
+    @Column(nullable = false)
+    Boolean isRead = false;
 
     @Nationalized
     @Column(nullable = false, length = 1000)
@@ -50,9 +48,8 @@ public class Message {
     @JoinColumn(name = "conversation_id", nullable = false)
     private Conversation conversation;
 
-    public enum SenderType {
-        USER,
-        ADMIN,
-        STAFF
-    }
+    @ManyToOne
+    @JoinColumn(name = "sender_id", nullable = false)
+    private User user;
+
 }
