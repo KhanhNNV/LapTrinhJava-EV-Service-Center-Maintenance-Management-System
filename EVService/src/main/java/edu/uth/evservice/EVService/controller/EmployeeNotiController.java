@@ -1,7 +1,7 @@
 package edu.uth.evservice.EVService.controller;
 
 import edu.uth.evservice.EVService.dto.EmployeeNotiDto;
-import edu.uth.evservice.EVService.requests.EmployeeNotiRequest;
+import edu.uth.evservice.EVService.requests.NotificationRequest;
 import edu.uth.evservice.EVService.services.IEmployeeNotiService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -32,7 +32,7 @@ public class EmployeeNotiController {
     }
 
     @PostMapping
-    public EmployeeNotiDto create(@RequestBody EmployeeNotiRequest request) {
+    public EmployeeNotiDto create(@RequestBody NotificationRequest request) {
         return employeeNotiService.createNotification(request);
     }
 

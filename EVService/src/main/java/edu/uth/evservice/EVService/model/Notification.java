@@ -20,7 +20,7 @@ public class Notification {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Integer id;
+    Integer notificationId;
 
     @Column(length = 50)
     @Nationalized

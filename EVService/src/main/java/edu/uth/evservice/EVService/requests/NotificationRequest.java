@@ -5,12 +5,15 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class EmployeeNotiRequest {
-    private int employeeId;
+public class NotificationRequest {
+    private Integer userId;
     private String title;
     private String message;
+
 }

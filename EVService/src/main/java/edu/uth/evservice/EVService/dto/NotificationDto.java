@@ -8,11 +8,11 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CustomerNotiDTO {
-    private int notiId;
-    private int customerId;
+public class NotificationDto {
+    private Integer notificationId;
+    private Integer userId;
     private String title;
     private String message;
-    private boolean readStatus;
+    private boolean isRead;
     private LocalDateTime createdAt;
 }

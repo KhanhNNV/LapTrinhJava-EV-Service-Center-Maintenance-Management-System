@@ -10,7 +10,7 @@ import edu.uth.evservice.EVService.model.EmployeeNoti;
 import edu.uth.evservice.EVService.model.employee.Employee;
 import edu.uth.evservice.EVService.repositories.IEmployeeNotiRepository;
 import edu.uth.evservice.EVService.repositories.IEmployeeRepository;
-import edu.uth.evservice.EVService.requests.EmployeeNotiRequest;
+import edu.uth.evservice.EVService.requests.NotificationRequest;
 import edu.uth.evservice.EVService.services.IEmployeeNotiService;
 import lombok.RequiredArgsConstructor;
 
@@ -60,7 +60,7 @@ public class EmployeeNotiServiceImpl implements IEmployeeNotiService{
     }
 
     @Override
-    public EmployeeNotiDto createNotification(EmployeeNotiRequest request) {
+    public EmployeeNotiDto createNotification(NotificationRequest request) {
         Employee employee = employeeRepository.findById(request.getEmployeeId())
                 .orElseThrow(() -> new RuntimeException("Employee not found with id: " + request.getEmployeeId()));
 
