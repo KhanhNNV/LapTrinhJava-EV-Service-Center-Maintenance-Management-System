@@ -9,8 +9,10 @@ import org.springframework.stereotype.Service;
 import edu.uth.evservice.EVService.dto.MessageDto;
 import edu.uth.evservice.EVService.model.Conversation;
 import edu.uth.evservice.EVService.model.Message;
+import edu.uth.evservice.EVService.model.User;
 import edu.uth.evservice.EVService.repositories.IConversationRepository;
 import edu.uth.evservice.EVService.repositories.IMessageRepository;
+import edu.uth.evservice.EVService.repositories.IUserRepository;
 import edu.uth.evservice.EVService.requests.CreateMessageRequest;
 import edu.uth.evservice.EVService.services.IMessageService;
 import jakarta.persistence.EntityNotFoundException;
@@ -24,6 +26,8 @@ import lombok.experimental.FieldDefaults;
 public class MessageServiceImpl implements IMessageService {
     IMessageRepository messageRepository;
     IConversationRepository conversationRepository;
+    IUserRepository userRepository;
+
     @Override
     public List<MessageDto> getAllMessages() {
         return messageRepository.findAll()
@@ -52,14 +56,20 @@ public class MessageServiceImpl implements IMessageService {
     @Override
     public MessageDto createMessage(CreateMessageRequest request) {
         Conversation conversation = conversationRepository.findById(request.getConversationId())
-                .orElseThrow(() -> new EntityNotFoundException("Conversation not found with id: " + request.getConversationId()));
-
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Conversation not found with id: " + request.getConversationId()));
         Message m = new Message();
-        m.setSenderId(request.getSenderId());
-        m.setSenderType(request.getSenderType());
+        // resolve sender user
+        if (request.getSenderId() == null) {
+            throw new IllegalArgumentException("senderId is required");
+        }
+        User sender = userRepository.findById(request.getSenderId())
+                .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + request.getSenderId()));
+        m.setUser(sender);
+        m.setIsRead(request.getIsRead() != null ? request.getIsRead() : Boolean.FALSE);
         m.setContent(request.getContent());
         m.setConversation(conversation);
-        m.setTimestamp(LocalDateTime.now());
+        m.setTimestamp(request.getTimestamp() != null ? request.getTimestamp() : LocalDateTime.now());
 
         Message saved = messageRepository.save(m);
         return toDto(saved);
@@ -69,19 +79,27 @@ public class MessageServiceImpl implements IMessageService {
     public MessageDto updateMessage(Integer id, CreateMessageRequest request) {
         return messageRepository.findById(id)
                 .map(existing -> {
-                    if (request.getSenderId() != null)
-                        existing.setSenderId(request.getSenderId());
-                    if (request.getSenderType() != null)
-                        existing.setSenderType(request.getSenderType());
-                    if (request.getContent() != null)
+                    if (request.getSenderId() != null) {
+                        User sender = userRepository.findById(request.getSenderId())
+                                .orElseThrow(() -> new EntityNotFoundException(
+                                        "User not found with id: " + request.getSenderId()));
+                        existing.setUser(sender);
+                    }
+                    if (request.getIsRead() != null) {
+                        existing.setIsRead(request.getIsRead());
+                    }
+                    if (request.getContent() != null) {
                         existing.setContent(request.getContent());
+                    }
                     if (request.getConversationId() != null) {
                         Conversation conversation = conversationRepository.findById(request.getConversationId())
-                           .orElseThrow(() -> new EntityNotFoundException("Conversation not found with id: " + request.getConversationId()));
+                                .orElseThrow(() -> new EntityNotFoundException(
+                                        "Conversation not found with id: " + request.getConversationId()));
                         existing.setConversation(conversation);
                     }
-                    // update timestamp to now to reflect edit time
-                    existing.setTimestamp(LocalDateTime.now());
+                    // update timestamp to now to reflect edit time (or use provided timestamp)
+                    existing.setTimestamp(
+                            request.getTimestamp() != null ? request.getTimestamp() : LocalDateTime.now());
                     Message updated = messageRepository.save(existing);
                     return toDto(updated);
                 })
@@ -95,12 +113,15 @@ public class MessageServiceImpl implements IMessageService {
 
     private MessageDto toDto(Message m) {
         MessageDto dto = new MessageDto();
-        dto.setId(m.getMessageId());
-        dto.setSenderId(m.getSenderId());
-        dto.setSenderType(m.getSenderType());
+        dto.setMessageId(m.getMessageId());
+        dto.setIsRead(m.getIsRead());
         dto.setContent(m.getContent());
         dto.setTimestamp(m.getTimestamp());
         dto.setConversationId(m.getConversation() != null ? m.getConversation().getConversationId() : null);
+        if (m.getUser() != null) {
+            dto.setSenderId(m.getUser().getUserId());
+            dto.setSenderName(m.getUser().getFullName());
+        }
         return dto;
     }
 }

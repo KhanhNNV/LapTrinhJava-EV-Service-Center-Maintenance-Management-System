@@ -42,10 +42,10 @@ public class Inventory {
     private LocalDate updatedAt;
 
     @ManyToOne
-    @JoinColumn(name = "partId", referencedColumnName = "partId", nullable = false)
+    @JoinColumn(name = "part_id", nullable = false)
     private Part part;
 
     @ManyToOne
-    @JoinColumn(name = "centerId", referencedColumnName = "centerId", nullable = false)
+    @JoinColumn(name = "center_id", nullable = false)
     private ServiceCenter serviceCenter;
 }
