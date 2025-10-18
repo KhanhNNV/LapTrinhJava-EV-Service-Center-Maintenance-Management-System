@@ -1,19 +1,20 @@
 package edu.uth.evservice.EVService.dto;
 
-import lombok.Data;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 import java.time.LocalDate;
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class VehicleDto {
-    private Integer vehicleId;
-    private String model;
-    private String brand;
-    private String licensePlate;
-    private LocalDate recentMaintenanceDate;
-
-    private Integer customerId;
-    private String customerName;
-
-    private Integer serviceCenterId;
-    private String serviceCenterName;
+    Integer vehicleId;
+    String model;
+    String brand;
+    String licensePlate;
+    LocalDate recentMaintenanceDate;
+    Integer userId;
+    Integer centerId;
 }

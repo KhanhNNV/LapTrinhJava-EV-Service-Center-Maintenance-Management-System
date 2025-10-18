@@ -12,7 +12,7 @@ import lombok.*;
 public class ServiceItemPart {
 
     @EmbeddedId
-    TicketServiceItemId id; // Khóa chính kép
+    ServiceItemPartId id; // Khóa chính kép
 
     @ManyToOne
     @MapsId("partId")
