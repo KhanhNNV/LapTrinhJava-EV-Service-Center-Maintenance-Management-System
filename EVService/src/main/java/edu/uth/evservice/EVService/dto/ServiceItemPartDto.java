@@ -7,7 +7,6 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ServiceItemPartDto{
-    private Integer id;
     private Integer serviceItemId;
     private Integer partId;
     private Integer quantity;

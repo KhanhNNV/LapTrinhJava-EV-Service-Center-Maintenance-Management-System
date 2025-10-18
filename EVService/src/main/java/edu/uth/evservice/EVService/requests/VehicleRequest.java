@@ -1,14 +1,19 @@
 package edu.uth.evservice.EVService.requests;
 
-import lombok.Data;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 import java.time.LocalDate;
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class VehicleRequest {
-    private String model;
-    private String brand;
-    private String licensePlate;
-    private LocalDate recentMaintenanceDate;
-    private Integer customerId;       // ID khách hàng
-    private Integer serviceCenterId;  // ID trung tâm dịch vụ
+    String model;
+    String brand;
+    String licensePlate;
+    LocalDate recentMaintenanceDate;
+    Integer userId;
+    Integer centerId;
 }
