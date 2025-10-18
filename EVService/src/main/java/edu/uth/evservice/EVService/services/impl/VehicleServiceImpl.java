@@ -2,7 +2,7 @@ package edu.uth.evservice.EVService.services.impl;
 
 import edu.uth.evservice.EVService.dto.VehicleDto;
 import edu.uth.evservice.EVService.requests.VehicleRequest;
-import edu.uth.evservice.EVService.model.Customer;
+import edu.uth.evservice.EVService.model.User;
 import edu.uth.evservice.EVService.model.ServiceCenter;
 import edu.uth.evservice.EVService.model.Vehicle;
 import edu.uth.evservice.EVService.repositories.IUserRepository;
@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 public class VehicleServiceImpl implements IVehicleService {
 
     private final IVehicleRepository vehicleRepository;
-    private final IUserRepository customerRepository;
+    private final IUserRepository userRepository;
     private final IServiceCenterRepository serviceCenterRepository;
 
     // --- Helper function: Convert Entity → DTO ---
@@ -33,40 +33,43 @@ public class VehicleServiceImpl implements IVehicleService {
         dto.setLicensePlate(vehicle.getLicensePlate());
         dto.setRecentMaintenanceDate(vehicle.getRecentMaintenanceDate());
 
-        if (vehicle.getCustomer() != null) {
-            dto.setCustomerId(vehicle.getCustomer().getCustomerId());
-            dto.setCustomerName(vehicle.getCustomer().getFullName());
+        // Lấy thông tin chủ sở hữu (User)
+        if (vehicle.getUser() != null) {
+            dto.setCustomerId(vehicle.getUser().getUserId());
+            dto.setCustomerName(vehicle.getUser().getFullName());
         }
 
+        // Lấy thông tin trung tâm dịch vụ
         if (vehicle.getServiceCenter() != null) {
             dto.setServiceCenterId(vehicle.getServiceCenter().getCenterId());
             dto.setServiceCenterName(vehicle.getServiceCenter().getCenterName());
         }
+
         return dto;
     }
 
     // --- Helper function: Convert Request → Entity ---
-    private Vehicle toEntity(VehicleRequest request, Customer customer, ServiceCenter center) {
+    private Vehicle toEntity(VehicleRequest request, User user, ServiceCenter center) {
         Vehicle vehicle = new Vehicle();
         vehicle.setModel(request.getModel());
         vehicle.setBrand(request.getBrand());
         vehicle.setLicensePlate(request.getLicensePlate());
         vehicle.setRecentMaintenanceDate(request.getRecentMaintenanceDate());
-        vehicle.setCustomer(customer);
+        vehicle.setUser(user);
         vehicle.setServiceCenter(center);
         return vehicle;
     }
 
     @Override
     public VehicleDto createVehicle(VehicleRequest request) {
-        Customer customer = customerRepository.findById(request.getCustomerId())
-                .orElseThrow(() -> new RuntimeException("Customer not found"));
+        User user = userRepository.findById(request.getCustomerId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
         ServiceCenter center = serviceCenterRepository.findById(request.getServiceCenterId())
                 .orElseThrow(() -> new RuntimeException("Service center not found"));
 
-        Vehicle vehicle = toEntity(request, customer, center);
+        Vehicle vehicle = toEntity(request, user, center);
         vehicleRepository.save(vehicle);
-        
+
         return toDto(vehicle);
     }
 
@@ -76,8 +79,8 @@ public class VehicleServiceImpl implements IVehicleService {
     }
 
     @Override
-    public List<VehicleDto> getVehiclesByCustomer(Integer customerId) {
-        return vehicleRepository.findByCustomer_CustomerId(customerId)
+    public List<VehicleDto> getVehiclesByCustomer(Integer userId) {
+        return vehicleRepository.findByUser_UserId(userId)
                 .stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());
@@ -96,8 +99,8 @@ public class VehicleServiceImpl implements IVehicleService {
         Vehicle vehicle = vehicleRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Vehicle not found"));
 
-        Customer customer = customerRepository.findById(request.getCustomerId())
-                .orElseThrow(() -> new RuntimeException("Customer not found"));
+        User user = userRepository.findById(request.getCustomerId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
         ServiceCenter center = serviceCenterRepository.findById(request.getServiceCenterId())
                 .orElseThrow(() -> new RuntimeException("Service center not found"));
 
@@ -105,8 +108,9 @@ public class VehicleServiceImpl implements IVehicleService {
         vehicle.setBrand(request.getBrand());
         vehicle.setLicensePlate(request.getLicensePlate());
         vehicle.setRecentMaintenanceDate(request.getRecentMaintenanceDate());
-        vehicle.setCustomer(customer);
+        vehicle.setUser(user);
         vehicle.setServiceCenter(center);
+
         vehicleRepository.save(vehicle);
         return toDto(vehicle);
     }

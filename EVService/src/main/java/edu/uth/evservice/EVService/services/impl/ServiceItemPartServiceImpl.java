@@ -54,10 +54,11 @@ public class ServiceItemPartServiceImpl implements IServiceItemPartService {
 
     private ServiceItemPartDto mapToDTO(ServiceItemPart sip) {
         return ServiceItemPartDto.builder()
-                .id(sip.getId())
-                .serviceItemId(sip.getServiceItem().getItemId())
+                .ticketId(sip.getId().getTicketId())
+                .itemId(sip.getId().getItemId())
                 .partId(sip.getPart().getPartId())
                 .quantity(sip.getQuantity())
+                .unitPriceAtTimeOfService(sip.getUnitPriceAtTimeOfService())
                 .build();
     }
 }
