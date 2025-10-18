@@ -26,8 +26,8 @@ public class CustomerPackageContractController {
         return contractService.getContractById(id);
     }
 
-    @GetMapping("/customer/{customerId}")
-    public List<CustomerPackageContractDto> getByCustomer(@PathVariable int customerId) {
+    @GetMapping("/customer/{userId}")
+    public List<CustomerPackageContractDto> getByCustomer(@PathVariable("userId") int customerId) {
         return contractService.getContractsByCustomerId(customerId);
     }
 

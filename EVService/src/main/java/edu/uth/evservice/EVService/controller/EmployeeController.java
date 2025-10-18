@@ -1,8 +1,5 @@
 package edu.uth.evservice.EVService.controller;
 
-import edu.uth.evservice.EVService.dto.EmployeeDto;
-import edu.uth.evservice.EVService.requests.EmployeeRequest;
-import edu.uth.evservice.EVService.services.IEmployeeService;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;

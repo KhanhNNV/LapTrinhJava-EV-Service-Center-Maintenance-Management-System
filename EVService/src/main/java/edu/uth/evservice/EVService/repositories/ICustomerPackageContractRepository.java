@@ -8,5 +8,5 @@ import java.util.List;
 
 @Repository
 public interface ICustomerPackageContractRepository extends JpaRepository<CustomerPackageContract, Integer> {
-    List<CustomerPackageContract> findByCustomerCustomerId(Integer customerId);
+    List<CustomerPackageContract> findByUser_UserId(Integer userId);
 }

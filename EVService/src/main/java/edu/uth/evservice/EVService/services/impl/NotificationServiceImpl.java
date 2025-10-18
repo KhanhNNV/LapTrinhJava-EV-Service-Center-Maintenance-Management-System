@@ -4,6 +4,7 @@ import edu.uth.evservice.EVService.dto.NotificationDto;
 import edu.uth.evservice.EVService.model.Notification;
 import edu.uth.evservice.EVService.model.User;
 import edu.uth.evservice.EVService.repositories.INotificationRepository;
+import edu.uth.evservice.EVService.repositories.IUserRepository;
 import edu.uth.evservice.EVService.requests.NotificationRequest;
 import edu.uth.evservice.EVService.services.INotificationService;
 import jakarta.persistence.EntityManager;
@@ -14,11 +15,6 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * NotificationServiceImpl
- * 👉 Thực hiện các nghiệp vụ liên quan đến thông báo (Notification)
- * Hợp nhất cả EmployeeNoti và CustomerNoti vào 1 service duy nhất
- */
 @Service
 @RequiredArgsConstructor
 public class NotificationServiceImpl implements INotificationService {
@@ -26,9 +22,7 @@ public class NotificationServiceImpl implements INotificationService {
     // Repository để thao tác với bảng "notifications"
     private final INotificationRepository notificationRepository;
 
-    // EntityManager: cho phép lấy reference của User mà không cần query thật
-    @PersistenceContext
-    private final EntityManager em;
+    private final IUserRepository userRepository;
 
     // Lấy tất cả thông báo trong hệ thống
     @Override
@@ -42,8 +36,9 @@ public class NotificationServiceImpl implements INotificationService {
     // Lấy danh sách thông báo của 1 user (customer, employee, admin)
     @Override
     public List<NotificationDto> getNotificationsByUser(int userId) {
-        User userRef = em.getReference(User.class, userId);
-        return notificationRepository.findByReceiver(userRef)
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Khong tim thay ID_user" + userId));
+        return notificationRepository.findByReceiver(user)
                 .stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());
@@ -61,11 +56,12 @@ public class NotificationServiceImpl implements INotificationService {
     @Override
     public NotificationDto createNotification(NotificationRequest request) {
         // Lấy reference tới User theo userId
-        User receiver = em.getReference(User.class, request.getUserId());
+        User user = userRepository.findById(request.getUserId())
+                .orElseThrow(() -> new RuntimeException("Khong tim thay ID_user" +request.getUserId()));
 
         // Tạo object Notification (chưa lưu)
         Notification noti = new Notification();
-        noti.setUser(receiver); // Gán người nhận thông báo
+        noti.setUser(user); // Gán người nhận thông báo
         noti.setTitle(request.getTitle()); // Gán tiêu đề
         noti.setMessage(request.getMessage());// Gán nội dung
         noti.setIsRead(false); // Mặc định là chưa đọc

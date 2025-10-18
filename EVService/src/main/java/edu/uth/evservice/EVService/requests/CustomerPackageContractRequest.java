@@ -10,7 +10,7 @@ import java.time.LocalDate;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class CustomerPackageContractRequest {
-    private Integer customerId;
+    private Integer userId;
     private Integer packageId;
     private LocalDate startDate;
     private String status;

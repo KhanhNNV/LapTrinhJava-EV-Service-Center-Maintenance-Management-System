@@ -63,6 +63,8 @@ public class Appointment {
     LocalDateTime createdAt;
     LocalDateTime updatedAt;
 
+    //Thiếu note ở phần Service nên Thông thêm vào
+    private String note;
     @PrePersist
     public void onCreate() {
         createdAt = LocalDateTime.now();
