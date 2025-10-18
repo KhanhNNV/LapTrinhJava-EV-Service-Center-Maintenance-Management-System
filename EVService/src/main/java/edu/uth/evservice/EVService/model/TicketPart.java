@@ -1,9 +1,13 @@
 package edu.uth.evservice.EVService.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.EmbeddedId;
+import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -22,11 +26,11 @@ public class TicketPart {
     TicketPartId id;
 
     @ManyToOne
-    @JoinColumn(name = "ticketId", referencedColumnName = "ticket_id", nullable = false)
+    @JoinColumn(name = "ticket_id", nullable = false)
     private ServiceTicket ticket;
 
     @ManyToOne
-    @JoinColumn(name = "partId", referencedColumnName = "partId", nullable = false)
+    @JoinColumn(name = "part_id", nullable = false)
     private Part part;
 
     @Column(nullable = false)
@@ -35,4 +39,3 @@ public class TicketPart {
     @Column(nullable = false)
     private Double unitPriceAtTimeOfService;
 }
-
