@@ -39,8 +39,8 @@ public class ConversationService implements IConversationService {
         conversation.setStatus(request.getStatus());
         conversation.setTopic(request.getTopic());
         conversation.setStartTime(request.getStartTime());
-        conversation.setCustomerId(request.getCustomerId());
-        conversation.setEmployeeId(request.getEmployeeId());
+        conversation.setUserId(request.getUserId());
+        conversation.setUserId(request.getUserId());
 
         Conversation saved = conversationRepository.save(conversation);
         return toDto(saved);
@@ -53,8 +53,8 @@ public class ConversationService implements IConversationService {
                     existing.setStatus(request.getStatus());
                     existing.setTopic(request.getTopic());
                     existing.setStartTime(request.getStartTime());
-                    existing.setCustomerId(request.getCustomerId());
-                    existing.setEmployeeId(request.getEmployeeId());
+                    existing.setUserId(request.getUserId());
+                    existing.setUserId(request.getUserId());
                     Conversation updated = conversationRepository.save(existing);
                     return toDto(updated);
                 })
@@ -72,8 +72,8 @@ public class ConversationService implements IConversationService {
         dto.setStatus(conversation.getStatus());
         dto.setTopic(conversation.getTopic());
         dto.setStartTime(conversation.getStartTime());
-        dto.setCustomerId(conversation.getCustomerId());
-        dto.setEmployeeId(conversation.getEmployeeId());
+        dto.setUserId(conversation.getUserId());
+        dto.setUserId(conversation.getUserId());
         return dto;
     }
 }

@@ -43,7 +43,7 @@ public class InvoiceServiceImpl implements IInvoiceService {
         invoice.setPaymentStatus(request.getPaymentStatus());
         invoice.setPaymentMethod(request.getPaymentMethod());
         //invoice.setServiceTicket(new ServiceTicket(request.getTicketId()));
-        //invoice.setCustomer(new User(request.getCustomerId()));
+        //invoice.setUser(new User(request.getUserId()));
 
 
         Invoice saved = invoiceRepository.save(invoice);
@@ -59,7 +59,7 @@ public class InvoiceServiceImpl implements IInvoiceService {
                     existing.setPaymentStatus(request.getPaymentStatus());
                     existing.setPaymentMethod(request.getPaymentMethod());
                     //existing.setTicketId(request.getTicketId());
-                    //existing.setCustomerId(request.getCustomerId());
+                    //existing.setUserId(request.getUserId());
 
                     Invoice updated = invoiceRepository.save(existing);
                     return toDto(updated);
@@ -80,7 +80,7 @@ public class InvoiceServiceImpl implements IInvoiceService {
         dto.setPaymentStatus(invoice.getPaymentStatus());
         dto.setPaymentMethod(invoice.getPaymentMethod());
         //dto.setTicketId(invoice.getTicketId());
-        //dto.setCustomerId(invoice.getCustomerId());
+        //dto.setUserId(invoice.getUserId());
         return dto;
     }
 }
