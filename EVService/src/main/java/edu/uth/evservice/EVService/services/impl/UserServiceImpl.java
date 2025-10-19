@@ -1,9 +1,8 @@
 package edu.uth.evservice.EVService.services.impl;
 
-import edu.uth.evservice.EVService.dto.CustomerDto;
 import edu.uth.evservice.EVService.dto.UserDto;
-import edu.uth.evservice.EVService.model.Customer;
 import edu.uth.evservice.EVService.model.User;
+import edu.uth.evservice.EVService.model.enums.Role;
 import edu.uth.evservice.EVService.repositories.IUserRepository;
 import edu.uth.evservice.EVService.requests.CreateUserRequest;
 import edu.uth.evservice.EVService.services.IUserService;
@@ -21,68 +20,83 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class UserServiceImpl implements IUserService {
     IUserRepository userRepository;
-    PasswordEncoder passwordEncoder;
 
     @Override
-    public List<UserDto> getAllUsers() {
-        return userRepository.findAll()
-                .stream()
-                .map(this::toDto)
-                .collect(Collectors.toList());
+    public UserDto createUser(CreateUserRequest request) {
+        Role role;
+        try {
+            role = Role.valueOf(request.getRole().toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Role không hợp lệ: " + request.getRole());
+        }
+
+        if (userRepository.existsByUsername(request.getUsername()))
+            throw new RuntimeException("Username đã tồn tại");
+        if (userRepository.existsByEmail(request.getEmail()))
+            throw new RuntimeException("Email đã tồn tại");
+
+        User user = User.builder()
+                .username(request.getUsername())
+                .fullName(request.getFullName())
+                .email(request.getEmail())
+                .password(request.getPassword())
+                .phoneNumber(request.getPhoneNumber())
+                .address(request.getAddress())
+                .role(role)
+                .build();
+
+        userRepository.save(user);
+        return mapToDto(user);
     }
 
     @Override
     public UserDto getUserById(Integer id) {
-        return userRepository.findById(id.intValue())
-                .map(this::toDto)
-                .orElse(null);
+        return userRepository.findById(id)
+                .map(this::mapToDto)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
     }
 
     @Override
-    public UserDto createUser(CreateUserRequest request) {
-        User user = new User();
-        user.setUsername(request.getUsername());
-        user.setFullName(request.getFullName());
-        user.setEmail(request.getEmail());
-        user.setPhoneNumber(request.getPhoneNumber());
-        user.setAddress(request.getAddress());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-
-        User saved = userRepository.save(user);
-        return toDto(saved);
+    public List<UserDto> getAllUsers() {
+        return userRepository.findAll()
+                .stream().map(this::mapToDto)
+                .collect(Collectors.toList());
     }
 
     @Override
     public UserDto updateUser(Integer id, CreateUserRequest request) {
-        return userRepository.findById(id.intValue())
-                .map(existing -> {
-                    existing.setFullName(request.getFullName());
-                    existing.setUsername(request.getUsername());
-                    existing.setEmail(request.getEmail());
-                    existing.setPhoneNumber(request.getPhoneNumber());
-                    existing.setAddress(request.getAddress());
-                    if (request.getPassword() != null && !request.getPassword().isBlank()) {
-                        existing.setPassword(passwordEncoder.encode(request.getPassword()));
-                    }
-                    User updated = userRepository.save(existing);
-                    return toDto(updated);
-                })
-                .orElse(null);
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
+
+        if (request.getRole() != null) {
+            try {
+                user.setRole(Role.valueOf(request.getRole().toUpperCase()));
+            } catch (IllegalArgumentException e) {
+                throw new RuntimeException("Role không hợp lệ: " + request.getRole());
+            }
+        }
+
+        user.setFullName(request.getFullName());
+        user.setPhoneNumber(request.getPhoneNumber());
+        user.setAddress(request.getAddress());
+
+        return mapToDto(userRepository.save(user));
     }
 
     @Override
     public void deleteUser(Integer id) {
-        userRepository.deleteById(id.intValue());
+        userRepository.deleteById(id);
     }
 
-    private UserDto toDto(User user) {
-        UserDto dto = new UserDto();
-        dto.setId(user.getUserId().intValue());
-        dto.setFullName(user.getFullName());
-        dto.setEmail(user.getEmail());
-        dto.setPhoneNumber(user.getPhoneNumber());
-        dto.setAddress(user.getAddress());
-        dto.setRole(user.getRole());
-        return dto;
+    private UserDto mapToDto(User user) {
+        return UserDto.builder()
+                .userId(user.getUserId())
+                .username(user.getUsername())
+                .fullName(user.getFullName())
+                .email(user.getEmail())
+                .phoneNumber(user.getPhoneNumber())
+                .address(user.getAddress())
+                .role(user.getRole())
+                .build();
     }
 }

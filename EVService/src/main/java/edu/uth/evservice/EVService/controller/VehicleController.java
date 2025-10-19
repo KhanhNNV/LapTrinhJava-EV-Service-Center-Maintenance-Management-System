@@ -3,6 +3,7 @@ package edu.uth.evservice.EVService.controller;
 import edu.uth.evservice.EVService.dto.VehicleDto;
 import edu.uth.evservice.EVService.requests.VehicleRequest;
 import edu.uth.evservice.EVService.services.IVehicleService;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,12 +26,13 @@ public class VehicleController {
     public ResponseEntity<VehicleDto> getVehicleById(@PathVariable Integer id) {
         return vehicleService.getVehicleById(id)
                 .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+                .orElseThrow(() -> new EntityNotFoundException("Vehicle not found with id: " + id));
+    
     }
 
     @GetMapping("/customer/{customerId}")
     public ResponseEntity<List<VehicleDto>> getVehiclesByCustomer(@PathVariable Integer customerId) {
-        return ResponseEntity.ok(vehicleService.getVehiclesByCustomer(customerId));
+        return ResponseEntity.ok(vehicleService.getVehicleById(customerId));
     }
 
     @GetMapping("/center/{centerId}")

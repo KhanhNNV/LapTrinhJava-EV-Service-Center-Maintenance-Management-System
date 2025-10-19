@@ -1,10 +1,11 @@
 package edu.uth.evservice.EVService.services.impl;
 
 import edu.uth.evservice.EVService.dto.CustomerPackageContractDto;
-import edu.uth.evservice.EVService.model.Appointment;
+
 import edu.uth.evservice.EVService.model.CustomerPackageContract;
 import edu.uth.evservice.EVService.model.ServicePackage;
 import edu.uth.evservice.EVService.model.User;
+import edu.uth.evservice.EVService.model.enums.ContractStatus;
 import edu.uth.evservice.EVService.repositories.ICustomerPackageContractRepository;
 import edu.uth.evservice.EVService.repositories.IUserRepository;
 import edu.uth.evservice.EVService.repositories.IServicePackageRepository;
@@ -12,7 +13,7 @@ import edu.uth.evservice.EVService.requests.CustomerPackageContractRequest;
 import edu.uth.evservice.EVService.services.ICustomerPackageContractService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
+
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,18 +25,6 @@ public class CustomerPackageContractServiceImpl implements ICustomerPackageContr
     private final ICustomerPackageContractRepository contractRepository;
     private final IUserRepository  userRepository;
     private final IServicePackageRepository packageRepository;
-
-     //Hàm này giải quyết vấn đề chuyển String thành Enum
-    private CustomerPackageContract.ContractStatus convertStatusStringToEnum(String statusString) {
-        if (!StringUtils.hasText(statusString)) {
-            throw new IllegalArgumentException("Contract status cannot be empty.");
-        }
-        try {
-            return CustomerPackageContract.ContractStatus.valueOf(statusString.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            throw new RuntimeException("Invalid status value for contract: " + statusString);
-        }
-    }
 
     private CustomerPackageContractDto toDto(CustomerPackageContract contract) {
         return CustomerPackageContractDto.builder()
@@ -79,13 +68,14 @@ public class CustomerPackageContractServiceImpl implements ICustomerPackageContr
         ServicePackage servicePackage = packageRepository.findById(request.getPackageId())
                 .orElseThrow(() -> new RuntimeException("ServicePackage not found with id: " + request.getPackageId()));
 
-        CustomerPackageContract.ContractStatus statusEnum = convertStatusStringToEnum(request.getStatus());
-        CustomerPackageContract contract = new CustomerPackageContract();
-        contract.setUser(customer);
-        contract.setServicePackage(servicePackage);
-        contract.setStartDate(request.getStartDate());
-        contract.setEndDate(request.getStartDate().plusDays(servicePackage.getDuration()));
-        contract.setStatus(statusEnum);
+
+        CustomerPackageContract contract = CustomerPackageContract.builder()
+                .user(customer)
+                .servicePackage(servicePackage)
+                .startDate(request.getStartDate())
+                .endDate(request.getStartDate().plusDays(servicePackage.getDuration()))
+                .status(ContractStatus.valueOf(request.getStatus().toUpperCase()))
+                .build();
 
 
         CustomerPackageContract savedContract = contractRepository.save(contract);
@@ -109,8 +99,7 @@ public class CustomerPackageContractServiceImpl implements ICustomerPackageContr
         existingContract.setServicePackage(servicePackage);
         existingContract.setStartDate(request.getStartDate());
         existingContract.setEndDate(request.getStartDate().plusDays(servicePackage.getDuration()));
-        CustomerPackageContract.ContractStatus statusEnum = convertStatusStringToEnum(request.getStatus());
-        existingContract.setStatus(statusEnum);
+        existingContract.setStatus((ContractStatus.valueOf(request.getStatus().toUpperCase())));
 
         // Lưu thay đổi và trả về DTO
         CustomerPackageContract updatedContract = contractRepository.save(existingContract);

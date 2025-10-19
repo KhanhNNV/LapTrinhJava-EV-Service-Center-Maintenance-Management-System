@@ -1,4 +1,4 @@
-package edu.uth.evservice.EVService.model;
+package edu.uth.evservice.EVService.model.enums;
 
 public enum Role {
     CUSTOMER,
@@ -6,4 +6,3 @@ public enum Role {
     TECHNICIAN,
     ADMIN
 }
-

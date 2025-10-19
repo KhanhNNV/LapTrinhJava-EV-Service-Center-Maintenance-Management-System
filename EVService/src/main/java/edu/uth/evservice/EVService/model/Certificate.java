@@ -33,6 +33,7 @@ public class Certificate {
     @Column(nullable = false)
     Integer validityPeriod; // thời hạn (ví dụ 5 năm là 1825)
 
+    @Builder.Default
     @OneToMany(mappedBy = "certificate", cascade = CascadeType.ALL,orphanRemoval = true)
     List<TechnicianCertificate> technicianCertificates = new ArrayList<>();
 }

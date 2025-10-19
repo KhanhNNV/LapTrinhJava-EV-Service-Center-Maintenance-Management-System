@@ -48,6 +48,7 @@ public class Vehicle {
     @JoinColumn(name = "center_id")
     private ServiceCenter serviceCenter;
 
+    @Builder.Default
     @OneToMany(mappedBy = "vehicle",cascade = CascadeType.ALL)
     List<Appointment> appointments = new ArrayList<>();
 
