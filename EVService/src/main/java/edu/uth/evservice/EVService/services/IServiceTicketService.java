@@ -10,8 +10,8 @@ import java.util.List;
  */
 public interface IServiceTicketService {
     List<ServiceTicketDto> getAllTickets();
-    ServiceTicketDto getTicketById(int id);
+    ServiceTicketDto getTicketById(Integer id);
     ServiceTicketDto createTicket(ServiceTicketRequest request);
-    ServiceTicketDto updateTicket(int id, ServiceTicketRequest request);
-    void deleteTicket(int id);
+    ServiceTicketDto updateTicket(Integer id, ServiceTicketRequest request);
+    void deleteTicket(Integer id);
 }

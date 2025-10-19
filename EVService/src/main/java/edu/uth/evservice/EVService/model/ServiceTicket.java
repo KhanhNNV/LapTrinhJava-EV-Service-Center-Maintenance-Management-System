@@ -22,7 +22,7 @@ public class ServiceTicket {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ticket_id")
-    private int ticketId;
+    private Integer ticketId;
 
     @Column(name = "start_time")
     private LocalDateTime startTime;

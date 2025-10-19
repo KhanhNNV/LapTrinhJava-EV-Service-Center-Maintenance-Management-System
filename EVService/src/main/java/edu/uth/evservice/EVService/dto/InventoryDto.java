@@ -16,8 +16,8 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class InventoryDto {
     private Integer inventoryId;
-    private long quantity;
-    private long minQuantity;
+    private Long quantity;
+    private Long minQuantity;
     private LocalDate createdAt;
     private LocalDate updatedAt;
 

@@ -15,8 +15,8 @@ public interface IServiceTicketRepository extends JpaRepository<ServiceTicket, I
     List<ServiceTicket> findByStatus(String status);
 
     // Nếu Employee có field employeeId, Spring Data sẽ parse được method này
-    List<ServiceTicket> findByTechnicianEmployeeId(int technicianId);
+    List<ServiceTicket> findByTechnicianEmployeeId(Integer technicianId);
 
     // Tìm theo appointment id
-    List<ServiceTicket> findByAppointmentAppointmentId(int appointmentId);
+    List<ServiceTicket> findByAppointmentAppointmentId(Integer appointmentId);
 }

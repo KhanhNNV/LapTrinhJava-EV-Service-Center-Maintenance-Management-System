@@ -9,8 +9,8 @@ import lombok.experimental.FieldDefaults;
 @Getter
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class InventoryRequest {
-    private long quantity;
-    private long minQuantity;
+    private Long quantity;
+    private Long minQuantity;
     private Integer partId;
     private Integer centerId;
 }

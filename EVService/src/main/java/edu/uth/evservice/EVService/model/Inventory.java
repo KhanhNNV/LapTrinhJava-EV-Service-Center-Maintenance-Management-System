@@ -30,10 +30,10 @@ public class Inventory {
     private Integer inventoryId;
 
     @Column(nullable = false)
-    private long quantity;
+    private Long quantity;
 
     @Column(nullable = false)
-    private long minQuantity;
+    private Long minQuantity;
 
     @Column(nullable = true)
     private LocalDate createdAt;
