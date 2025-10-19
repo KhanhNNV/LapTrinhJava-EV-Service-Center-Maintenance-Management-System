@@ -30,6 +30,7 @@ public class Notification {
     @Nationalized
     String message;       // Nội dung chi tiết
 
+    @Builder.Default
     @Column(nullable = false)
     Boolean isRead = false;
 

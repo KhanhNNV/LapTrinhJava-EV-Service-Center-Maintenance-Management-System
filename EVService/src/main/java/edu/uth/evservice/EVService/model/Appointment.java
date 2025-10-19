@@ -5,11 +5,12 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.Nationalized;
 
+import edu.uth.evservice.EVService.model.enums.AppointmentStatus;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.List;
+
 
 @Entity
 @Table(name = "appointments")
@@ -76,13 +77,6 @@ public class Appointment {
     @PreUpdate
     public void onUpdate() {
         updatedAt = LocalDateTime.now();
-    }
-
-    public enum AppointmentStatus {
-        PENDING,
-        CONFIRMED,
-        CANCELED,
-        COMPLETED
     }
 
 }

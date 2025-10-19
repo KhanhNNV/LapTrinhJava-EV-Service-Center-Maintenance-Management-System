@@ -6,11 +6,15 @@ import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
 
+import edu.uth.evservice.EVService.model.enums.PaymentMethod;
+import edu.uth.evservice.EVService.model.enums.PaymentStatus;
+
 @Entity
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Table(name = "invoices")
 public class Invoice {
@@ -37,19 +41,7 @@ public class Invoice {
     private ServiceTicket serviceTicket;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "customer_id", nullable = false)
-    private User customer;
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
-
-    public enum PaymentStatus {
-        PENDING,    // chưa thanh toán
-        PAID,       // đã thanh toán
-        CANCELLED   // hủy
-    }
-
-    public enum PaymentMethod {
-        CASH,
-        CREDIT_CARD,
-        BANK_TRANSFER
-    }
 }

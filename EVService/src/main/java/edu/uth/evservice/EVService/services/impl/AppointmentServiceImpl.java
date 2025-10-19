@@ -5,6 +5,7 @@ import edu.uth.evservice.EVService.model.Appointment;
 import edu.uth.evservice.EVService.model.ServiceCenter;
 import edu.uth.evservice.EVService.model.User;
 import edu.uth.evservice.EVService.model.Vehicle;
+import edu.uth.evservice.EVService.model.enums.AppointmentStatus;
 import edu.uth.evservice.EVService.repositories.IAppointmentRepository;
 import edu.uth.evservice.EVService.repositories.IServiceCenterRepository;
 import edu.uth.evservice.EVService.repositories.IUserRepository;
@@ -26,17 +27,6 @@ public class AppointmentServiceImpl implements IAppointmentService {
     private final IVehicleRepository vehicleRepository;
     private final IServiceCenterRepository centerRepository;
 
-    //Hàm này giải quyết vấn đề chuyển String thành Enum
-    private Appointment.AppointmentStatus convertStatusStringToEnum(String statusString) {
-        if (!StringUtils.hasText(statusString)) {
-            throw new IllegalArgumentException("Contract status cannot be empty.");
-        }
-        try {
-            return Appointment.AppointmentStatus.valueOf(statusString.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            throw new RuntimeException("Invalid status value: " + statusString);
-        }
-    }
     @Override
     public List<AppointmentDto> getAllAppointments() {
         return appointmentRepository.findAll().stream()
@@ -63,11 +53,10 @@ public class AppointmentServiceImpl implements IAppointmentService {
         ServiceCenter center = centerRepository.findById(request.getCenterId())
                 .orElseThrow(() -> new RuntimeException("Center not found"));
 
-        Appointment.AppointmentStatus statusEnum = convertStatusStringToEnum(request.getStatus());
         Appointment appointment = Appointment.builder()
                 .appointmentDate(request.getAppointmentDate())
                 .appointmentTime(request.getAppointmentTime())
-                .status(statusEnum)
+                .status(AppointmentStatus.valueOf(request.getStatus().toUpperCase()))
                 .serviceType(request.getServiceType())
                 .note(request.getNote())
                 .customer(customer)
@@ -84,7 +73,7 @@ public class AppointmentServiceImpl implements IAppointmentService {
     public AppointmentDto updateAppointment(Integer id, AppointmentRequest request) {
         Appointment appointment = appointmentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Appointment not found"));
-
+        
         if (request.getAppointmentDate() != null)
             appointment.setAppointmentDate(request.getAppointmentDate());
         if (request.getAppointmentTime() != null)
@@ -92,7 +81,7 @@ public class AppointmentServiceImpl implements IAppointmentService {
         if (request.getServiceType() != null)
             appointment.setServiceType(request.getServiceType());
         if (request.getStatus() != null)
-           appointment.setStatus(convertStatusStringToEnum(request.getStatus()));
+           appointment.setStatus(AppointmentStatus.valueOf(request.getStatus().toUpperCase()));
 
         if (request.getNote() != null)
             appointment.setNote(request.getNote());
@@ -129,7 +118,7 @@ public class AppointmentServiceImpl implements IAppointmentService {
     public AppointmentDto updateStatus(Integer appointmentId, String status) {
         Appointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new RuntimeException("Appointment not found"));
-        appointment.setStatus(convertStatusStringToEnum(status));
+        appointment.setStatus(AppointmentStatus.valueOf(status.toUpperCase()));
         appointmentRepository.save(appointment);
         return toDto(appointment);
     }

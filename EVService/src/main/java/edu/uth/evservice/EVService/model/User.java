@@ -4,8 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.Nationalized;
-
-import java.time.LocalDate;
+import edu.uth.evservice.EVService.model.enums.Role;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;

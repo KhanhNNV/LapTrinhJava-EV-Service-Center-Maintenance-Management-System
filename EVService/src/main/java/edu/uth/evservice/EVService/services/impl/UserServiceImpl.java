@@ -82,7 +82,7 @@ public class UserServiceImpl implements IUserService {
         dto.setEmail(user.getEmail());
         dto.setPhoneNumber(user.getPhoneNumber());
         dto.setAddress(user.getAddress());
-        dto.setRole(user.getRole());
+        dto.setRole();
         return dto;
     }
 }

@@ -8,11 +8,14 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import edu.uth.evservice.EVService.model.enums.ConversationStatus;
+
 @Entity
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Table(name = "conversations")
 public class Conversation {
@@ -38,13 +41,8 @@ public class Conversation {
     @JoinColumn(name = "staff_id")
     private User staffConversation; // FK -> User
 
+    @Builder.Default
     @OneToMany(mappedBy = "conversation", cascade = CascadeType.ALL,orphanRemoval = true)
     private List<Message> messages =  new ArrayList<>();
 
-
-    public enum ConversationStatus {
-        NEW,
-        IN_PROGRESS,
-        CLOSED
-    }
 }

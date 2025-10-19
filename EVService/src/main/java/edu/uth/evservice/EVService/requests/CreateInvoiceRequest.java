@@ -14,5 +14,5 @@ public class CreateInvoiceRequest {
     private String paymentStatus;
     private String paymentMethod;
     private Integer ticketId;
-    private Integer customerId;
+    private Integer userId;
 }

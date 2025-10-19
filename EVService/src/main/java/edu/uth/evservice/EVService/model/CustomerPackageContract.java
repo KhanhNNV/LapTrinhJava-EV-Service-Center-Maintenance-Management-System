@@ -5,6 +5,8 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import java.time.LocalDate;
 
+import edu.uth.evservice.EVService.model.enums.ContractStatus;
+
 @Entity
 @Table(name = "customerPackageContracts")
 @Getter
@@ -38,9 +40,4 @@ public class CustomerPackageContract {
     @Column(nullable = false)
     ContractStatus status;
 
-    public enum ContractStatus {
-        ACTIVE,
-        EXPIRED,
-        CANCELLED
-    }
 }
