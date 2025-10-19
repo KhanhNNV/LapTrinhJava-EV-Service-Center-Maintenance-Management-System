@@ -6,9 +6,9 @@ import edu.uth.evservice.EVService.requests.CreateUserRequest;
 import java.util.List;
 
 public interface IUserService {
-    List<UserDto> getAllUsers();
-    UserDto getUserById(Integer id);
     UserDto createUser(CreateUserRequest request);
+    UserDto getUserById(Integer id);
+    List<UserDto> getAllUsers();
     UserDto updateUser(Integer id, CreateUserRequest request);
     void deleteUser(Integer id);
 }

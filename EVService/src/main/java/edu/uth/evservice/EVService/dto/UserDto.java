@@ -1,10 +1,7 @@
 package edu.uth.evservice.EVService.dto;
 
-import edu.uth.evservice.EVService.model.Role;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import edu.uth.evservice.EVService.model.enums.Role;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 @Setter
@@ -12,8 +9,9 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE)
+@Builder
 public class UserDto {
-    Integer id;
+    Integer userId;
     String username;
     String fullName;
     String email;
