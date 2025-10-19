@@ -1,8 +1,6 @@
 package edu.uth.evservice.EVService.services.impl;
 
-import edu.uth.evservice.EVService.dto.CustomerDto;
 import edu.uth.evservice.EVService.dto.UserDto;
-import edu.uth.evservice.EVService.model.Customer;
 import edu.uth.evservice.EVService.model.User;
 import edu.uth.evservice.EVService.repositories.IUserRepository;
 import edu.uth.evservice.EVService.requests.CreateUserRequest;

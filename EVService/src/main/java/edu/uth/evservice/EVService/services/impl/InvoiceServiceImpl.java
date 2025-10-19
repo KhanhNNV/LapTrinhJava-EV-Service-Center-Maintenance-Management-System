@@ -2,6 +2,8 @@ package edu.uth.evservice.EVService.services.impl;
 
 import edu.uth.evservice.EVService.dto.InvoiceDto;
 import edu.uth.evservice.EVService.model.Invoice;
+import edu.uth.evservice.EVService.model.ServiceTicket;
+import edu.uth.evservice.EVService.model.User;
 import edu.uth.evservice.EVService.repositories.IInvoiceRepository;
 import edu.uth.evservice.EVService.requests.CreateInvoiceRequest;
 import edu.uth.evservice.EVService.services.IInvoiceService;
@@ -40,8 +42,9 @@ public class InvoiceServiceImpl implements IInvoiceService {
         invoice.setTotalAmount(request.getTotalAmount());
         invoice.setPaymentStatus(request.getPaymentStatus());
         invoice.setPaymentMethod(request.getPaymentMethod());
-        invoice.setTicketId(request.getTicketId());
-        invoice.setCustomerId(request.getCustomerId());
+        //invoice.setServiceTicket(new ServiceTicket(request.getTicketId()));
+        //invoice.setCustomer(new User(request.getCustomerId()));
+
 
         Invoice saved = invoiceRepository.save(invoice);
         return toDto(saved);
@@ -55,8 +58,8 @@ public class InvoiceServiceImpl implements IInvoiceService {
                     existing.setTotalAmount(request.getTotalAmount());
                     existing.setPaymentStatus(request.getPaymentStatus());
                     existing.setPaymentMethod(request.getPaymentMethod());
-                    existing.setTicketId(request.getTicketId());
-                    existing.setCustomerId(request.getCustomerId());
+                    //existing.setTicketId(request.getTicketId());
+                    //existing.setCustomerId(request.getCustomerId());
 
                     Invoice updated = invoiceRepository.save(existing);
                     return toDto(updated);
@@ -76,8 +79,8 @@ public class InvoiceServiceImpl implements IInvoiceService {
         dto.setTotalAmount(invoice.getTotalAmount());
         dto.setPaymentStatus(invoice.getPaymentStatus());
         dto.setPaymentMethod(invoice.getPaymentMethod());
-        dto.setTicketId(invoice.getTicketId());
-        dto.setCustomerId(invoice.getCustomerId());
+        //dto.setTicketId(invoice.getTicketId());
+        //dto.setCustomerId(invoice.getCustomerId());
         return dto;
     }
 }

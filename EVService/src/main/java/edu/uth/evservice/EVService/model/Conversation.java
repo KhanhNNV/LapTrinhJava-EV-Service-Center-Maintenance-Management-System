@@ -20,9 +20,8 @@ public class Conversation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Integer conversationId;
 
-    @Column(nullable = false)
-    @Enumerated(EnumType.STRING)
-    ConversationStatus status;
+    @Column(nullable = false, length = 30)
+    private String status;
 
     @Column(nullable = false, length = 30)
     private String topic;
@@ -30,21 +29,15 @@ public class Conversation {
     @Column(nullable = false)
     private LocalDate startTime;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "customer_id",nullable = false)
     private User customerConversation; // FK -> User
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "staff_id")
     private User staffConversation; // FK -> User
 
     @OneToMany(mappedBy = "conversation", cascade = CascadeType.ALL,orphanRemoval = true)
     private List<Message> messages =  new ArrayList<>();
 
-
-    public enum ConversationStatus {
-        NEW,
-        IN_PROGRESS,
-        CLOSED
-    }
 }
