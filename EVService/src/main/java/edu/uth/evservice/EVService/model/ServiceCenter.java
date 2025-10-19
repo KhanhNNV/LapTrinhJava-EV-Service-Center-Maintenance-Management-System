@@ -28,6 +28,7 @@ public class ServiceCenter {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "center_id")
     private Integer centerId;
 
     @Column(name = "center_name")

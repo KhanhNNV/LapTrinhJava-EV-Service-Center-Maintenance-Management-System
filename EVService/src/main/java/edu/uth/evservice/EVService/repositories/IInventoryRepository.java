@@ -7,7 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import edu.uth.evservice.EVService.model.Inventory;
 
 public interface IInventoryRepository extends JpaRepository<Inventory, Integer> {
-    List<Inventory> findByPartId(Integer partId);
+    List<Inventory> findByPart_PartId(Integer partId);
 
-    List<Inventory> findByCenterId(Integer centerId);
+    List<Inventory> findByServiceCenter_CenterId(Integer centerId);
+
 }

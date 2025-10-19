@@ -23,11 +23,11 @@ public class CustomerPackageContract {
     Integer contractId;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", referencedColumnName = "userId", nullable = false)
+    @JoinColumn(name = "user_id", referencedColumnName = "user_id", nullable = false)
     User user;
 
     @ManyToOne
-    @JoinColumn(name = "package_id", referencedColumnName = "packageId", nullable = false)
+    @JoinColumn(name = "package_id", referencedColumnName = "package_id", nullable = false)
     ServicePackage servicePackage;
 
     @Column(name = "start_date", nullable = false)

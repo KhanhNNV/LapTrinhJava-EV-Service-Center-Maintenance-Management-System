@@ -38,7 +38,7 @@ public class NotificationServiceImpl implements INotificationService {
     public List<NotificationDto> getNotificationsByUser(int userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Khong tim thay ID_user" + userId));
-        return notificationRepository.findByReceiver(user)
+        return notificationRepository.findByUser(user)
                 .stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());

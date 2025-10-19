@@ -1,7 +1,7 @@
 package edu.uth.evservice.EVService.model;
+
 import jakarta.persistence.*;
 import lombok.*;
-
 import java.util.Set;
 
 @Entity
@@ -12,23 +12,25 @@ import java.util.Set;
 @AllArgsConstructor
 @Builder
 public class Part {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "part_id")
     private Integer partId;
 
-    @Column(nullable = false, length = 100)
+    @Column(name = "part_name", nullable = false, length = 100)
     private String partName;
 
-    @Column(nullable = false)
+    @Column(name = "unit_price", nullable = false)
     private Double unitPrice;
 
-    @Column(nullable = false)
+    @Column(name = "cost_price", nullable = false)
     private Double costPrice;
 
     // Quan hệ N:M với ServiceItem thông qua bảng trung gian
     @OneToMany(mappedBy = "part", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<ServiceItemPart> serviceItemParts;
 
-    @OneToMany(mappedBy = "part", cascade = CascadeType.ALL,orphanRemoval = true)
+    @OneToMany(mappedBy = "part", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<TicketPart> ticketParts;
 }

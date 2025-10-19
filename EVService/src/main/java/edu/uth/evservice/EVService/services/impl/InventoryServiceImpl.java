@@ -130,7 +130,7 @@ public class InventoryServiceImpl implements IInventoryService {
         if (partId == null) {
             throw new IllegalArgumentException("PartId cannot be null");
         }
-        return inventoryRepository.findByPartId(partId).stream()
+        return inventoryRepository.findByPart_PartId(partId).stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());
     }
@@ -140,7 +140,7 @@ public class InventoryServiceImpl implements IInventoryService {
         if (centerId == null) {
             throw new IllegalArgumentException("CenterId cannot be null");
         }
-        return inventoryRepository.findByCenterId(centerId).stream()
+        return inventoryRepository.findByServiceCenter_CenterId(centerId).stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());
     }

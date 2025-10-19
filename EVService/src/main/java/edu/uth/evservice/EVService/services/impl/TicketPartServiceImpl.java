@@ -102,7 +102,7 @@ public class TicketPartServiceImpl implements ITicketPartService {
         if (ticketId == null) {
             throw new IllegalArgumentException("Ticket ID cannot be null");
         }
-        return ticketPartRepository.findByTicketId(ticketId).stream()
+        return ticketPartRepository.findByTicket_TicketId(ticketId).stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());
     }
@@ -112,7 +112,7 @@ public class TicketPartServiceImpl implements ITicketPartService {
         if (partId == null) {
             throw new IllegalArgumentException("Part ID cannot be null");
         }
-        return ticketPartRepository.findByPartId(partId).stream()
+        return ticketPartRepository.findByPart_PartId(partId).stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());
     }

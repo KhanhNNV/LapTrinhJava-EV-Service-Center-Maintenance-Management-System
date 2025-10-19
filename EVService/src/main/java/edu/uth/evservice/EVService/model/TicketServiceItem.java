@@ -10,25 +10,27 @@ import lombok.experimental.FieldDefaults;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class TicketServiceItem {
 
     @EmbeddedId
-    TicketServiceItemId id; // Khóa chính kép
+    @Column(name = "id")
+    TicketServiceItemId id;
 
     @ManyToOne
     @MapsId("ticketId")
-    @JoinColumn(name = "ticket_id")
+    @JoinColumn(name = "ticket_id", nullable = false)
     ServiceTicket serviceTicket;
 
     @ManyToOne
     @MapsId("itemId")
-    @JoinColumn(name = "item_id")
+    @JoinColumn(name = "item_id", nullable = false)
     ServiceItem serviceItem;
 
-    @Column(nullable=false)
+    @Column(name = "quantity", nullable = false)
     Integer quantity;
 
-    @Column(nullable=false)
+    @Column(name = "unit_price_at_time_of_service", nullable = false)
     Double unitPriceAtTimeOfService;
 }

@@ -3,9 +3,7 @@ package edu.uth.evservice.EVService.model;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-// import org.antlr.v4.runtime.misc.NotNull;
 import org.hibernate.annotations.Nationalized;
-
 import java.time.LocalDateTime;
 
 @Entity
@@ -20,21 +18,22 @@ public class Notification {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "notification_id")
     Integer notificationId;
 
-    @Column(length = 50)
+    @Column(name = "title", length = 50)
     @Nationalized
-    String title;         // tiêu đề
+    String title; // tiêu đề
 
-    @Column(length = 255)
+    @Column(name = "message", length = 1000)
     @Nationalized
-    String message;       // Nội dung chi tiết
+    String message; // nội dung chi tiết
 
     @Builder.Default
-    @Column(nullable = false)
+    @Column(name = "is_read", nullable = false)
     Boolean isRead = false;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 

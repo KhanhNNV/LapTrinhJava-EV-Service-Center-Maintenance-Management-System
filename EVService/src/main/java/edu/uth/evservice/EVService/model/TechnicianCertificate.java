@@ -1,10 +1,8 @@
 package edu.uth.evservice.EVService.model;
 
 import jakarta.persistence.*;
-
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-
 import java.time.LocalDate;
 
 @Entity
@@ -13,29 +11,32 @@ import java.time.LocalDate;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class TechnicianCertificate {
+
     @EmbeddedId
     TechnicianCertificateId id;
 
     @ManyToOne
-    @JoinColumn(name = "technician_id",nullable = false)
+    @MapsId("technicianId")
+    @JoinColumn(name = "technician_id", referencedColumnName = "user_id", nullable = false)
     User technician;
 
     @ManyToOne
+    @MapsId("certificateId")
     @JoinColumn(name = "certificate_id", nullable = false)
     Certificate certificate;
 
-    @Column(nullable = false)
+    @Column(name = "issue_date", nullable = false)
     LocalDate issueDate;
-    @Column(nullable = false)
+
+    @Column(name = "expiry_date", nullable = false)
     LocalDate expiryDate;
 
-    @Column(unique = true,length = 50, nullable = false)
-    String credentialId; // mã chứng thực (tương t mã định danh)
+    @Column(name = "credential_id", unique = true, length = 50, nullable = false)
+    String credentialId;
 
-    @Column(nullable = false,length = 100)
+    @Column(name = "notes", nullable = false, length = 100)
     String notes;
-
-
 }

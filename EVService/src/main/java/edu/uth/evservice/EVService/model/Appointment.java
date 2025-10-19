@@ -4,13 +4,11 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.Nationalized;
-
 import edu.uth.evservice.EVService.model.enums.AppointmentStatus;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-
 
 @Entity
 @Table(name = "appointments")
@@ -24,31 +22,30 @@ public class Appointment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "appointment_id")
     Integer appointmentId;
 
-    @Column(nullable = false)
+    @Column(name = "appointment_date", nullable = false)
     LocalDate appointmentDate;
 
-    @Column(nullable = false)
+    @Column(name = "appointment_time", nullable = false)
     LocalTime appointmentTime;
 
-    @Column(nullable = false)
+    @Column(name = "service_type", nullable = false)
     @Nationalized
     String serviceType;
 
-    @Column(nullable = false)
+    @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
     AppointmentStatus status;
 
-
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "customer_id", nullable = false)
+    @JoinColumn(name = "customer_id", referencedColumnName = "user_id", nullable = false)
     private User customer; // người đặt lịch / chủ xe
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "createdBy_id", nullable = false)
+    @JoinColumn(name = "created_by_id",referencedColumnName = "user_id", nullable = false)
     private User createdBy; // nhân viên tạo lịch
-
 
     @ManyToOne
     @JoinColumn(name = "vehicle_id", nullable = false)
@@ -61,11 +58,15 @@ public class Appointment {
     @OneToOne(mappedBy = "appointment", cascade = CascadeType.ALL)
     ServiceTicket serviceTickets;
 
+    @Column(name = "created_at")
     LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
     LocalDateTime updatedAt;
 
-    //Thiếu note ở phần Service nên Thông thêm vào
+    @Column(name = "note")
     private String note;
+
     @PrePersist
     public void onCreate() {
         createdAt = LocalDateTime.now();
@@ -78,5 +79,4 @@ public class Appointment {
     public void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
-
 }

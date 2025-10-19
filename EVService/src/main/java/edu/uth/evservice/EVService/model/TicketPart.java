@@ -1,16 +1,7 @@
 package edu.uth.evservice.EVService.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.EmbeddedId;
-import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import jakarta.persistence.*;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 @Entity
@@ -19,6 +10,7 @@ import lombok.experimental.FieldDefaults;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class TicketPart {
 
@@ -26,16 +18,18 @@ public class TicketPart {
     TicketPartId id;
 
     @ManyToOne
+    @MapsId("ticketId")
     @JoinColumn(name = "ticket_id", nullable = false)
-    private ServiceTicket ticket;
+    ServiceTicket ticket;
 
     @ManyToOne
+    @MapsId("partId")
     @JoinColumn(name = "part_id", nullable = false)
-    private Part part;
+    Part part;
 
-    @Column(nullable = false)
-    private Integer quantity;
+    @Column(name = "quantity", nullable = false)
+    Integer quantity;
 
-    @Column(nullable = false)
-    private Double unitPriceAtTimeOfService;
+    @Column(name = "unit_price_at_time_of_service", nullable = false)
+    Double unitPriceAtTimeOfService;
 }

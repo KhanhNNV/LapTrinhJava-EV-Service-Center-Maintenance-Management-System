@@ -2,21 +2,8 @@ package edu.uth.evservice.EVService.model;
 
 import java.time.LocalDateTime;
 import org.hibernate.annotations.Nationalized;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import jakarta.persistence.*;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 @Entity
@@ -28,27 +15,28 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Message {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "message_id")
     private Integer messageId;
 
     @Builder.Default
-    @Column(nullable = false)
+    @Column(name = "is_read", nullable = false)
     Boolean isRead = false;
 
     @Nationalized
-    @Column(nullable = false, length = 1000)
+    @Column(name = "content", nullable = false, length = 1000)
     private String content;
 
-    @Column(nullable = false)
+    @Column(name = "timestamp", nullable = false)
     private LocalDateTime timestamp;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "conversation_id", nullable = false)
     private Conversation conversation;
 
-    @ManyToOne
-    @JoinColumn(name = "sender_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "sender_id",referencedColumnName = "user_id", nullable = false)
     private User user;
-
 }

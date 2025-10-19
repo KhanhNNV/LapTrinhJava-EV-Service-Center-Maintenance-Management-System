@@ -2,12 +2,11 @@ package edu.uth.evservice.EVService.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "servicePackages")
+@Table(name = "service_packages")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -17,19 +16,21 @@ public class ServicePackage {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "package_id")
     private Integer packageId;
 
-    @Column(nullable = false)
+    @Column(name = "package_name", nullable = false)
     private String packageName;
 
-    @Column(nullable = false)
+    @Column(name = "price", nullable = false)
     private Double price;
 
-    private Integer duration; // số ngày/tháng/năm của gói
+    @Column(name = "duration")
+    private Integer duration;
 
-    @Column(length = 1000)
-    private String description; // mô tả chi tiết gói dịch vụ
+    @Column(name = "description", length = 1000)
+    private String description;
 
-    @OneToMany(mappedBy = "servicePackage", cascade = CascadeType.ALL)
-    private List<CustomerPackageContract> customerPackageContracts =  new ArrayList<>();
+    @OneToMany(mappedBy = "servicePackage", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CustomerPackageContract> customerPackageContracts = new ArrayList<>();
 }

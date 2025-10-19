@@ -9,11 +9,9 @@ import edu.uth.evservice.EVService.model.TicketPartId;
 
 public interface ITicketPartRepository extends JpaRepository<TicketPart, TicketPartId> {
     // Tìm tất cả các TicketPart theo ticket_id
-    List<TicketPart> findByTicketId(Integer ticketId);
+    List<TicketPart> findByTicket_TicketId(Integer ticketId);
 
     // Tìm tất cả các TicketPart theo part_id
-    List<TicketPart> findByPartId(Integer partId);
+    List<TicketPart> findByPart_PartId(Integer partId);
 
-    // Tìm các TicketPart theo ticket_id và part_id
-    List<TicketPart> findByTicketIdAndPartId(Integer ticketId, Integer partId);
 }

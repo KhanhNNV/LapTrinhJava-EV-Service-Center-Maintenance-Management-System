@@ -14,7 +14,7 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class TicketPartId implements Serializable {
     private Integer ticketId;
-    private Integer itemId;
+    private Integer partId;
 }
 
 

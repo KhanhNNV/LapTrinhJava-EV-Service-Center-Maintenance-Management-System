@@ -13,6 +13,6 @@ import java.io.Serializable;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ServiceItemPartId implements Serializable {
-    Integer item_id;
-    Integer part_id;
+    Integer partId;
+    Integer itemId;
 }

@@ -3,9 +3,7 @@ package edu.uth.evservice.EVService.model;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-
 import java.time.LocalDate;
-
 import edu.uth.evservice.EVService.model.enums.PaymentMethod;
 import edu.uth.evservice.EVService.model.enums.PaymentStatus;
 
@@ -18,22 +16,24 @@ import edu.uth.evservice.EVService.model.enums.PaymentStatus;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Table(name = "invoices")
 public class Invoice {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "invoice_id")
     private Integer invoiceId;
 
-    @Column(nullable = false)
+    @Column(name = "invoice_date", nullable = false)
     private LocalDate invoiceDate;
 
-    @Column(nullable = false)
+    @Column(name = "total_amount", nullable = false)
     private Double totalAmount;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "payment_status", nullable = false)
     private PaymentStatus paymentStatus;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "payment_method", nullable = false)
     private PaymentMethod paymentMethod;
 
     @OneToOne(fetch = FetchType.LAZY)
@@ -43,5 +43,4 @@ public class Invoice {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
-
 }
