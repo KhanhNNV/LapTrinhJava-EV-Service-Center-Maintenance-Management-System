@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class UserServiceImpl implements IUserService {
     IUserRepository userRepository;
-
+    PasswordEncoder passwordEncoder; 
     @Override
     public UserDto createUser(CreateUserRequest request) {
         Role role;
@@ -39,7 +39,8 @@ public class UserServiceImpl implements IUserService {
                 .username(request.getUsername())
                 .fullName(request.getFullName())
                 .email(request.getEmail())
-                .password(request.getPassword())
+                //.Mã hóa mật khẩu trước khi lưu vào database
+                .password(passwordEncoder.encode(request.getPassword()))
                 .phoneNumber(request.getPhoneNumber())
                 .address(request.getAddress())
                 .role(role)
@@ -75,7 +76,7 @@ public class UserServiceImpl implements IUserService {
                 throw new RuntimeException("Role không hợp lệ: " + request.getRole());
             }
         }
-
+        //. Việc đổi mật khẩu sẽ nằm ở file **** (Mốt tính)
         user.setFullName(request.getFullName());
         user.setPhoneNumber(request.getPhoneNumber());
         user.setAddress(request.getAddress());

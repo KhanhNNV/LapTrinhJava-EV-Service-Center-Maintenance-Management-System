@@ -4,9 +4,15 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.Nationalized;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
 import edu.uth.evservice.EVService.model.enums.Role;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 @Entity
@@ -17,7 +23,7 @@ import java.util.List;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Table(name = "users")
-public class User {
+public class User implements UserDetails{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -95,4 +101,41 @@ public class User {
     public void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
+
+
+    // ===========================================================
+    //- CÁC HÀM CỦA UserDails MÀ SPRING SECURITY CẦN 
+    // ===========================================================
+    
+    //. Trả về quyền được cấp cho người dùng
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        GrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + this.role.name());
+        return Collections.singleton(authority);
+    }
+
+    //. Trả về tài khoản của người dùng đã hết hạn hay chưa
+    @Override
+    public boolean isAccountNonExpired() {
+        return UserDetails.super.isAccountNonExpired();
+    }
+
+    //. Trả về tài khoản người dùng đang bị khóa hay mở khóa
+    @Override
+    public boolean isAccountNonLocked() {
+        return UserDetails.super.isAccountNonLocked();
+    }
+
+    //.Trả về thông tin đăng nhập (mật khẩu) của người dùng đã hết hạng hay chưa
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return UserDetails.super.isCredentialsNonExpired();
+    }
+
+    //. Trả về tài khoản được kích hoạt hay chưa
+    @Override
+    public boolean isEnabled() {
+        return UserDetails.super.isEnabled();
+    }
+
 }
