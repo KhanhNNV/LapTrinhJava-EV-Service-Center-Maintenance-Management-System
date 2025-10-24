@@ -1,4 +1,4 @@
-# LapTrinhJava
+# EV Service Center Maintenance Management System
 
 ## Cấu trúc dự án
 
