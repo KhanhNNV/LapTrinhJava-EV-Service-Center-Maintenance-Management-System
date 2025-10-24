@@ -3,6 +3,7 @@ package edu.uth.evservice.EVService.services;
 import edu.uth.evservice.EVService.dto.ServiceTicketDto;
 import edu.uth.evservice.EVService.requests.ServiceTicketRequest;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -14,4 +15,7 @@ public interface IServiceTicketService {
     ServiceTicketDto createTicket(ServiceTicketRequest request);
     ServiceTicketDto updateTicket(Integer id, ServiceTicketRequest request);
     void deleteTicket(Integer id);
+    List<ServiceTicketDto> getTicketsByStatus(String status);
+    BigDecimal calculateTotalAmount(Integer ticketId);//phương thức này hứa sẽ trả về một con số tiền tệ chính xác
+
 }

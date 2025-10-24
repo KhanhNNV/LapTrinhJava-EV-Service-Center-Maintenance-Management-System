@@ -12,5 +12,6 @@ import java.util.List;
  */
 @Repository
 public interface IServiceTicketRepository extends JpaRepository<ServiceTicket, Integer> {
-
+    //Quản lý Hàng chờ
+    List<ServiceTicket> findByStatus(String status);
 }

@@ -7,6 +7,7 @@ import edu.uth.evservice.EVService.model.Vehicle;
 import edu.uth.evservice.EVService.repositories.IVehicleRepository;
 import edu.uth.evservice.EVService.repositories.IUserRepository;
 import edu.uth.evservice.EVService.repositories.IServiceCenterRepository;
+import edu.uth.evservice.EVService.requests.UpdateVehicleRequest;
 import edu.uth.evservice.EVService.requests.VehicleRequest;
 import edu.uth.evservice.EVService.services.IVehicleService;
 import lombok.RequiredArgsConstructor;
@@ -64,18 +65,32 @@ public class VehicleServiceImpl implements IVehicleService {
         return toDTO(vehicleRepository.save(vehicle));
     }
 
-    @Override
-    public VehicleDto updateVehicle(Integer id, VehicleRequest request) {
-        Vehicle vehicle = vehicleRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Vehicle not found"));
+//    @Override
+//    public VehicleDto updateVehicle(Integer id, VehicleRequest request) {
+//        Vehicle vehicle = vehicleRepository.findById(id)
+//                .orElseThrow(() -> new RuntimeException("Vehicle not found"));
+//
+//        vehicle.setModel(request.getModel());
+//        vehicle.setBrand(request.getBrand());
+//        vehicle.setLicensePlate(request.getLicensePlate());
+//        vehicle.setRecentMaintenanceDate(request.getRecentMaintenanceDate());
+//
+//        return toDTO(vehicleRepository.save(vehicle));
+//    }
+@Override
+public VehicleDto updateVehicle(Integer id, UpdateVehicleRequest request) {
+    Vehicle vehicle = vehicleRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Vehicle not found"));
 
-        vehicle.setModel(request.getModel());
-        vehicle.setBrand(request.getBrand());
-        vehicle.setLicensePlate(request.getLicensePlate());
-        vehicle.setRecentMaintenanceDate(request.getRecentMaintenanceDate());
+    // Cập nhật các trường được phép
+    vehicle.setModel(request.getModel());
+    vehicle.setBrand(request.getBrand());
+    vehicle.setLicensePlate(request.getLicensePlate());
 
-        return toDTO(vehicleRepository.save(vehicle));
-    }
+    // Chúng ta không cập nhật recentMaintenanceDate ở đây nữa vì nó không có trong UpdateVehicleRequest
+
+    return toDTO(vehicleRepository.save(vehicle));
+}
 
     @Override
     public void deleteVehicle(Integer id) {

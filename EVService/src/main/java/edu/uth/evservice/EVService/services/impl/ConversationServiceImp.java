@@ -13,6 +13,8 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -53,7 +55,8 @@ public class ConversationServiceImp  implements IConversationService {
         Conversation conversation = Conversation.builder()
                 .status(ConversationStatus.valueOf(request.getStatus().toUpperCase()))
                 .topic(request.getTopic())
-                .startTime(request.getStartTime())
+//                .startTime(request.getStartTime())
+                .startTime(LocalDate.now()) // Tự động gán ngày hiện tại
                 .customerConversation(customer)
                 .staffConversation(staff)
                 .build();

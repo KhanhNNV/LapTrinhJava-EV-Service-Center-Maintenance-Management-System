@@ -43,7 +43,7 @@ public class ServiceTicket {
 
     // technician là 1 User; nhiều ticket có thể thuộc 1 technician
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "technician_id",referencedColumnName = "user_id", nullable = false)
+    @JoinColumn(name = "technician_id",referencedColumnName = "user_id")//nullable = false
     private User technician;
 
     @OneToOne(mappedBy = "serviceTicket", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
