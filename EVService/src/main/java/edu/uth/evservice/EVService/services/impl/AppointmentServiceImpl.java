@@ -1,5 +1,11 @@
 package edu.uth.evservice.EVService.services.impl;
 
+import java.time.LocalDate;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+
 import edu.uth.evservice.EVService.dto.AppointmentDto;
 import edu.uth.evservice.EVService.model.Appointment;
 import edu.uth.evservice.EVService.model.ServiceCenter;
@@ -13,10 +19,6 @@ import edu.uth.evservice.EVService.repositories.IVehicleRepository;
 import edu.uth.evservice.EVService.requests.AppointmentRequest;
 import edu.uth.evservice.EVService.services.IAppointmentService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -40,7 +42,6 @@ public class AppointmentServiceImpl implements IAppointmentService {
                 .map(this::toDto)
                 .orElseThrow(() -> new RuntimeException("Appointment not found"));
     }
-
 
     @Override
     public AppointmentDto createAppointment(AppointmentRequest request) {
@@ -73,7 +74,7 @@ public class AppointmentServiceImpl implements IAppointmentService {
     public AppointmentDto updateAppointment(Integer id, AppointmentRequest request) {
         Appointment appointment = appointmentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Appointment not found"));
-        
+
         if (request.getAppointmentDate() != null)
             appointment.setAppointmentDate(request.getAppointmentDate());
         if (request.getAppointmentTime() != null)
@@ -81,7 +82,7 @@ public class AppointmentServiceImpl implements IAppointmentService {
         if (request.getServiceType() != null)
             appointment.setServiceType(request.getServiceType());
         if (request.getStatus() != null)
-           appointment.setStatus(AppointmentStatus.valueOf(request.getStatus().toUpperCase()));
+            appointment.setStatus(AppointmentStatus.valueOf(request.getStatus().toUpperCase()));
 
         if (request.getNote() != null)
             appointment.setNote(request.getNote());
@@ -107,7 +108,6 @@ public class AppointmentServiceImpl implements IAppointmentService {
         appointmentRepository.save(appointment);
         return toDto(appointment);
     }
-
 
     @Override
     public void deleteAppointment(Integer id) {
@@ -135,6 +135,15 @@ public class AppointmentServiceImpl implements IAppointmentService {
                 .stream().map(this::toDto).collect(Collectors.toList());
     }
 
+    @Override
+    public List<AppointmentDto> getSchedulesForTechnician(Integer technicianId, LocalDate startDate,
+            LocalDate endDate) {
+        return appointmentRepository.findSchedulesByTechnicianIdAndDateRange(technicianId, startDate, endDate)
+                .stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
+    }
+
     private AppointmentDto toDto(Appointment a) {
         return AppointmentDto.builder()
                 .appointmentId(a.getAppointmentId())
@@ -153,4 +162,5 @@ public class AppointmentServiceImpl implements IAppointmentService {
                 .updatedAt(a.getUpdatedAt())
                 .build();
     }
+
 }
