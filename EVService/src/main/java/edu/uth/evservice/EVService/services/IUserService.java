@@ -1,5 +1,6 @@
 package edu.uth.evservice.EVService.services;
 
+import edu.uth.evservice.EVService.dto.EmployeePerformanceDto;
 import edu.uth.evservice.EVService.dto.UserDto;
 import edu.uth.evservice.EVService.requests.CreateUserRequest;
 
@@ -11,4 +12,6 @@ public interface IUserService {
     List<UserDto> getAllUsers();
     UserDto updateUser(Integer id, CreateUserRequest request);
     void deleteUser(Integer id);
+    List<EmployeePerformanceDto> getEmployeePerformanceReport();
+
 }
