@@ -136,6 +136,11 @@ public class AppointmentServiceImpl implements IAppointmentService {
     }
 
     private AppointmentDto toDto(Appointment a) {
+        String progress = null;
+        if (a.getServiceTickets() != null) {
+            progress = a.getServiceTickets().getStatus(); // 👈 Lấy trạng thái từ ServiceTicket
+        }
+
         return AppointmentDto.builder()
                 .appointmentId(a.getAppointmentId())
                 .appointmentDate(a.getAppointmentDate())
@@ -143,6 +148,7 @@ public class AppointmentServiceImpl implements IAppointmentService {
                 .serviceType(a.getServiceType())
                 .status(a.getStatus().name())
                 .note(a.getNote())
+                .serviceProgress(progress)
                 .customerId(a.getCustomer().getUserId())
                 .customerName(a.getCustomer().getFullName())
                 .createdById(a.getCreatedBy().getUserId())
@@ -153,4 +159,5 @@ public class AppointmentServiceImpl implements IAppointmentService {
                 .updatedAt(a.getUpdatedAt())
                 .build();
     }
+
 }

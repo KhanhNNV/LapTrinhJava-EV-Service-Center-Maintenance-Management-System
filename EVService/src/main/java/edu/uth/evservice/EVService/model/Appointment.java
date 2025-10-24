@@ -55,8 +55,8 @@ public class Appointment {
     @JoinColumn(name = "center_id", nullable = false)
     ServiceCenter center;
 
-    @OneToOne(mappedBy = "appointment", cascade = CascadeType.ALL)
-    ServiceTicket serviceTickets;
+    @OneToOne(mappedBy = "appointment", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private ServiceTicket serviceTickets;
 
     @Column(name = "created_at")
     LocalDateTime createdAt;

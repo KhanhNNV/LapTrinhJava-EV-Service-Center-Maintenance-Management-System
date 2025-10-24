@@ -21,7 +21,7 @@ public class AppointmentDto {
     String serviceType;
     String status;
     String note;
-
+    String serviceProgress;
     Integer customerId;
     String customerName;
     Integer createdById;

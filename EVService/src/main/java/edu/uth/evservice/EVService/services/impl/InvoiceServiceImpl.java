@@ -17,6 +17,7 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -102,4 +103,73 @@ public class InvoiceServiceImpl implements IInvoiceService {
                 invoice.getUser().getUserId()
         );  
     }
+    @Override
+    public Map<String, Object> getFinancialSummary() {
+        List<Invoice> allInvoices = invoiceRepository.findAll();
+
+        double totalRevenue = allInvoices.stream()
+                .filter(inv -> inv.getPaymentStatus() == PaymentStatus.PAID)
+                .mapToDouble(Invoice::getTotalAmount)
+                .sum();
+
+        // Giả sử chi phí = 70% doanh thu (chưa có bảng chi phí thực tế)
+        // hoặc bạn có thể thay bằng tính toán từ bảng TicketPart
+        double totalExpense = totalRevenue * 0.7;
+
+        double profit = totalRevenue - totalExpense;
+
+        return Map.of(
+                "totalRevenue", totalRevenue,
+                "totalExpense", totalExpense,
+                "profit", profit,
+                "paidInvoicesCount", allInvoices.stream().filter(i -> i.getPaymentStatus() == PaymentStatus.PAID).count(),
+                "pendingInvoicesCount", allInvoices.stream().filter(i -> i.getPaymentStatus() == PaymentStatus.PENDING).count(),
+                "cancelledInvoicesCount", allInvoices.stream().filter(i -> i.getPaymentStatus() == PaymentStatus.CANCELLED).count()
+        );
+    }
+    @Override
+    public Map<String, Object> getAnalyticsReport() {
+        List<Invoice> invoices = invoiceRepository.findAll();
+
+        // --- 1️⃣ Top dịch vụ phổ biến ---
+        // (dựa vào ServiceTicket -> Appointment -> serviceType)
+        Map<String, Long> serviceTypeCount = invoices.stream()
+                .filter(inv -> inv.getServiceTicket() != null && inv.getServiceTicket().getAppointment() != null)
+                .collect(Collectors.groupingBy(
+                        inv -> inv.getServiceTicket().getAppointment().getServiceType(),
+                        Collectors.counting()
+                ));
+
+        // Lấy dịch vụ phổ biến nhất
+        String mostPopularService = serviceTypeCount.entrySet().stream()
+                .max(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey)
+                .orElse("Không có dữ liệu");
+
+        // --- 2️⃣ Doanh thu theo loại dịch vụ ---
+        Map<String, Double> revenueByServiceType = invoices.stream()
+                .filter(inv -> inv.getPaymentStatus() == PaymentStatus.PAID)
+                .filter(inv -> inv.getServiceTicket() != null && inv.getServiceTicket().getAppointment() != null)
+                .collect(Collectors.groupingBy(
+                        inv -> inv.getServiceTicket().getAppointment().getServiceType(),
+                        Collectors.summingDouble(Invoice::getTotalAmount)
+                ));
+
+        // --- 3️⃣ Xu hướng doanh thu theo tháng ---
+        Map<String, Double> monthlyRevenue = invoices.stream()
+                .filter(inv -> inv.getPaymentStatus() == PaymentStatus.PAID)
+                .collect(Collectors.groupingBy(
+                        inv -> inv.getInvoiceDate().getYear() + "-" + String.format("%02d", inv.getInvoiceDate().getMonthValue()),
+                        Collectors.summingDouble(Invoice::getTotalAmount)
+                ));
+
+        return Map.of(
+                "mostPopularService", mostPopularService,
+                "serviceUsageCount", serviceTypeCount,
+                "revenueByServiceType", revenueByServiceType,
+                "monthlyRevenueTrend", monthlyRevenue
+        );
+    }
+
+
 }

@@ -1,15 +1,16 @@
 package edu.uth.evservice.EVService.services.impl;
 
+import edu.uth.evservice.EVService.dto.EmployeePerformanceDto;
 import edu.uth.evservice.EVService.dto.UserDto;
 import edu.uth.evservice.EVService.model.User;
 import edu.uth.evservice.EVService.model.enums.Role;
+import edu.uth.evservice.EVService.repositories.IAppointmentRepository;
 import edu.uth.evservice.EVService.repositories.IUserRepository;
 import edu.uth.evservice.EVService.requests.CreateUserRequest;
 import edu.uth.evservice.EVService.services.IUserService;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,7 +21,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class UserServiceImpl implements IUserService {
     IUserRepository userRepository;
-
+    IAppointmentRepository appointmentRepository;
     @Override
     public UserDto createUser(CreateUserRequest request) {
         Role role;
@@ -34,6 +35,7 @@ public class UserServiceImpl implements IUserService {
             throw new RuntimeException("Username đã tồn tại");
         if (userRepository.existsByEmail(request.getEmail()))
             throw new RuntimeException("Email đã tồn tại");
+
 
         User user = User.builder()
                 .username(request.getUsername())
@@ -98,5 +100,28 @@ public class UserServiceImpl implements IUserService {
                 .address(user.getAddress())
                 .role(user.getRole())
                 .build();
+    }
+    @Override
+    public List<EmployeePerformanceDto> getEmployeePerformanceReport() {
+        List<Object[]> results = appointmentRepository.getEmployeePerformanceReport();
+
+        return results.stream().map(r -> {
+            Integer staffId = (Integer) r[0];
+            String staffName = (String) r[1];
+            Long total = (Long) r[2];
+            Long completed = (Long) r[3];
+            Long pending = (Long) r[4];
+
+            double completionRate = (total != 0) ? (completed * 100.0 / total) : 0.0;
+
+            return EmployeePerformanceDto.builder()
+                    .staffId(staffId)
+                    .staffName(staffName)
+                    .totalAppointments(total)
+                    .completedAppointments(completed)
+                    .pendingAppointments(pending)
+                    .completionRate(completionRate)
+                    .build();
+        }).collect(Collectors.toList());
     }
 }
