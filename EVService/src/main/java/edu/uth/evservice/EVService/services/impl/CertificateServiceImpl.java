@@ -1,15 +1,16 @@
 package edu.uth.evservice.EVService.services.impl;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+
 import edu.uth.evservice.EVService.dto.CertificateDto;
 import edu.uth.evservice.EVService.model.Certificate;
 import edu.uth.evservice.EVService.repositories.ICertificateRepository;
 import edu.uth.evservice.EVService.requests.CertificateRequest;
 import edu.uth.evservice.EVService.services.ICertificateService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -26,14 +27,15 @@ public class CertificateServiceImpl implements ICertificateService {
     @Override
     public CertificateDto getCertificateById(Integer id) {
         Certificate certificate = certificateRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Certificate not found with id: " + id)); // Thay bằng ResourceNotFoundException
+                .orElseThrow(() -> new RuntimeException("Certificate not found with id: " + id));
         return toDto(certificate);
     }
 
     @Override
     public CertificateDto createCertificate(CertificateRequest request) {
         certificateRepository.findByCertificateName(request.getCertificateName()).ifPresent(c -> {
-            throw new IllegalArgumentException("Certificate with name '" + request.getCertificateName() + "' already exists.");
+            throw new IllegalArgumentException(
+                    "Certificate with name '" + request.getCertificateName() + "' already exists.");
         });
 
         Certificate newCertificate = Certificate.builder()
@@ -78,4 +80,5 @@ public class CertificateServiceImpl implements ICertificateService {
                 .validityPeriod(certificate.getValidityPeriod())
                 .build();
     }
+
 }
