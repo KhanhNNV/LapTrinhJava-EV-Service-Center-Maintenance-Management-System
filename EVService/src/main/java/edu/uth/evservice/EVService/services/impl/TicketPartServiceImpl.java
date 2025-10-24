@@ -47,25 +47,54 @@ public class TicketPartServiceImpl implements ITicketPartService {
                         "TicketPart not found with ticketId: " + ticketId + " and partId: " + partId));
     }
 
+//    @Override
+//    public TicketPartDto createTicketPart(TicketPartRequest request) {
+//        if (request == null) {
+//            throw new IllegalArgumentException("TicketPart request cannot be null");
+//        }
+//
+//        ServiceTicket ticket = serviceTicketRepository.findById(request.getTicketId())
+//                .orElseThrow(() -> new EntityNotFoundException(
+//                        "Service ticket not found with id: " + request.getTicketId()));
+//        Part part = partRepository.findById(request.getPartId())
+//                .orElseThrow(() -> new EntityNotFoundException("Part not found with id: " + request.getPartId()));
+//
+//        TicketPart ticketPart = new TicketPart();
+//        ticketPart.setTicket(ticket);
+//        ticketPart.setPart(part);
+//        ticketPart.setQuantity(request.getQuantity());
+//        ticketPart.setUnitPriceAtTimeOfService(request.getUnitPriceAtTimeOfService());
+//
+//        TicketPart saved = ticketPartRepository.save(ticketPart);
+//        return toDto(saved);
+//    }
+
     @Override
     public TicketPartDto createTicketPart(TicketPartRequest request) {
-        if (request == null) {
-            throw new IllegalArgumentException("TicketPart request cannot be null");
-        }
-
+        // 1. Tìm đối tượng ServiceTicket thực tế từ database
         ServiceTicket ticket = serviceTicketRepository.findById(request.getTicketId())
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Service ticket not found with id: " + request.getTicketId()));
+
+        // 2. Tìm đối tượng Part thực tế từ database
         Part part = partRepository.findById(request.getPartId())
                 .orElseThrow(() -> new EntityNotFoundException("Part not found with id: " + request.getPartId()));
 
+        // 3. Tạo bản ghi liên kết mới
         TicketPart ticketPart = new TicketPart();
+
+        // 4. GÁN CẢ HAI ĐỐI TƯỢNG ĐẦY ĐỦ VÀO BẢN GHI
         ticketPart.setTicket(ticket);
         ticketPart.setPart(part);
         ticketPart.setQuantity(request.getQuantity());
-        ticketPart.setUnitPriceAtTimeOfService(request.getUnitPriceAtTimeOfService());
+        ticketPart.setUnitPriceAtTimeOfService(part.getUnitPrice()); // Lấy giá từ đối tượng Part
 
+        // Gán ID phức hợp
+        ticketPart.setId(new TicketPartId(ticket.getTicketId(), part.getPartId()));
+
+        // 5. Lưu thực thể đã hoàn chỉnh
         TicketPart saved = ticketPartRepository.save(ticketPart);
+
         return toDto(saved);
     }
 
@@ -127,4 +156,5 @@ public class TicketPartServiceImpl implements ITicketPartService {
                 ticketPart.getQuantity(),
                 ticketPart.getUnitPriceAtTimeOfService());
     }
+
 }

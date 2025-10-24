@@ -41,4 +41,10 @@ public class AppointmentController {
         appointmentService.deleteAppointment(id);
         return ResponseEntity.ok().build();
     }
+    @PutMapping("{id}/status")
+    public AppointmentDto updateAppointmentStatus(@PathVariable Integer id, @RequestParam String status) {
+        return appointmentService.updateStatus(id, status);
+
+    }
+
 }

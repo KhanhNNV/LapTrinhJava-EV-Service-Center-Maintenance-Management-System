@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,7 +33,8 @@ public class Conversation {
     private String topic;
 
     @Column(name = "start_time", nullable = false)
-    private LocalDate startTime;
+     private LocalDate startTime;
+//    private LocalDateTime startTime; // đề xuất Đổi kiểu dữ liệu
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id", referencedColumnName = "user_id",nullable = false)

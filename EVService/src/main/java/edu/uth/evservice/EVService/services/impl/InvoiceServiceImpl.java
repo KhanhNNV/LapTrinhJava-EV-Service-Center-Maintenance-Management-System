@@ -11,11 +11,13 @@ import edu.uth.evservice.EVService.repositories.IServiceTicketRepository;
 import edu.uth.evservice.EVService.repositories.IUserRepository;
 import edu.uth.evservice.EVService.requests.CreateInvoiceRequest;
 import edu.uth.evservice.EVService.services.IInvoiceService;
+import edu.uth.evservice.EVService.services.IServiceTicketService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,6 +28,8 @@ public class InvoiceServiceImpl implements IInvoiceService {
     final IInvoiceRepository invoiceRepository;
     final IUserRepository userRepository;
     final IServiceTicketRepository serviceTicketRepository;
+    //
+    final IServiceTicketService ticketService;
 
     @Override
     public List<InvoiceDto> getAllInvoices() {
@@ -42,27 +46,33 @@ public class InvoiceServiceImpl implements IInvoiceService {
                 .orElseThrow(() -> new EntityNotFoundException("Invoice not found with id: " + id));
     }
 
-    @Override
-    public InvoiceDto createInvoice(CreateInvoiceRequest request) {
-        User user = userRepository.findById(request.getUserId()).orElseThrow(
-            ()-> new EntityNotFoundException("Customer not found id: "+ request.getUserId()
-        ));
+//
+    //code moi
+@Override
+public InvoiceDto createInvoice(CreateInvoiceRequest request) {
+    // 1. Tìm ServiceTicket dựa trên ticketId từ request
+    ServiceTicket ticket = serviceTicketRepository.findById(request.getTicketId())
+            .orElseThrow(() -> new EntityNotFoundException("Ticket not found with id: " + request.getTicketId()));
 
-        ServiceTicket ticket = serviceTicketRepository.findById(request.getTicketId()).orElseThrow(
-            ()-> new EntityNotFoundException("Ticket not found id: "+ request.getTicketId()
-        ));
-        Invoice invoice = Invoice.builder()
-                .invoiceDate(request.getInvoiceDate())
-                .totalAmount(request.getTotalAmount())
-                .paymentStatus(PaymentStatus.valueOf(request.getPaymentStatus().toUpperCase()))
-                .paymentMethod(PaymentMethod.valueOf(request.getPaymentMethod().toUpperCase()))
-                .user(user)
-                .serviceTicket(ticket)
-                .build();
+    // 2. Tự động lấy User (khách hàng) từ Ticket
+    User user = ticket.getAppointment().getCustomer();
 
-        Invoice savedInvoice = invoiceRepository.save(invoice);
-        return toDto(savedInvoice);
-    }
+    // 3. TỰ ĐỘNG TÍNH TỔNG TIỀN
+    BigDecimal calculatedTotal = ticketService.calculateTotalAmount(request.getTicketId());
+
+    // 4. Tạo hóa đơn với các thông tin đã được xử lý
+    Invoice invoice = Invoice.builder()
+            .invoiceDate(request.getInvoiceDate())
+            .totalAmount(calculatedTotal.doubleValue())// Dùng số tiền đã tính
+            .paymentStatus(PaymentStatus.PENDING) // Mặc định là chưa thanh toán
+            .paymentMethod(PaymentMethod.valueOf(request.getPaymentMethod().toUpperCase()))
+            .user(user)
+            .serviceTicket(ticket)
+            .build();
+
+    Invoice savedInvoice = invoiceRepository.save(invoice);
+    return toDto(savedInvoice);
+}
 
     @Override
     public InvoiceDto updateInvoice(Integer id, CreateInvoiceRequest request) {

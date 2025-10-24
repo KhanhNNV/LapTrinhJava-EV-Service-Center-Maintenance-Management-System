@@ -3,6 +3,8 @@ package edu.uth.evservice.EVService.model;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import edu.uth.evservice.EVService.model.enums.PaymentMethod;
 import edu.uth.evservice.EVService.model.enums.PaymentStatus;
@@ -26,7 +28,8 @@ public class Invoice {
     private LocalDate invoiceDate;
 
     @Column(name = "total_amount", nullable = false)
-    private Double totalAmount;
+     private Double totalAmount;
+
 
     @Enumerated(EnumType.STRING)
     @Column(name = "payment_status", nullable = false)

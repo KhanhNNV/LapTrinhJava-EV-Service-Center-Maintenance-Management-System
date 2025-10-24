@@ -5,6 +5,7 @@ import edu.uth.evservice.EVService.model.User;
 import edu.uth.evservice.EVService.model.enums.Role;
 import edu.uth.evservice.EVService.repositories.IUserRepository;
 import edu.uth.evservice.EVService.requests.CreateUserRequest;
+import edu.uth.evservice.EVService.requests.UpdateUserRequest;
 import edu.uth.evservice.EVService.services.IUserService;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -63,25 +64,41 @@ public class UserServiceImpl implements IUserService {
                 .collect(Collectors.toList());
     }
 
-    @Override
-    public UserDto updateUser(Integer id, CreateUserRequest request) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
+//    @Override
+//    public UserDto updateUser(Integer id, CreateUserRequest request) {
+//        User user = userRepository.findById(id)
+//                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
+//
+//        if (request.getRole() != null) {
+//            try {
+//                user.setRole(Role.valueOf(request.getRole().toUpperCase()));
+//            } catch (IllegalArgumentException e) {
+//                throw new RuntimeException("Role không hợp lệ: " + request.getRole());
+//            }
+//        }
+//
+//        user.setFullName(request.getFullName());
+//        user.setPhoneNumber(request.getPhoneNumber());
+//        user.setAddress(request.getAddress());
+//
+//        return mapToDto(userRepository.save(user));
+//    }
+    // Sử dụng UpdateUserRequest Cập nhật hồ sơ khách hàng
+@Override
+public UserDto updateUser(Integer id, UpdateUserRequest request) { // <-- Sửa ở đây
+    User user = userRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
 
-        if (request.getRole() != null) {
-            try {
-                user.setRole(Role.valueOf(request.getRole().toUpperCase()));
-            } catch (IllegalArgumentException e) {
-                throw new RuntimeException("Role không hợp lệ: " + request.getRole());
-            }
-        }
+    // Cập nhật các trường được phép
+    user.setFullName(request.getFullName());
+    user.setPhoneNumber(request.getPhoneNumber());
+    user.setAddress(request.getAddress());
 
-        user.setFullName(request.getFullName());
-        user.setPhoneNumber(request.getPhoneNumber());
-        user.setAddress(request.getAddress());
+    // Chúng ta không cho phép thay đổi vai trò (role) trong thao tác này
+    // để đảm bảo an toàn.
 
-        return mapToDto(userRepository.save(user));
-    }
+    return mapToDto(userRepository.save(user));
+}
 
     @Override
     public void deleteUser(Integer id) {

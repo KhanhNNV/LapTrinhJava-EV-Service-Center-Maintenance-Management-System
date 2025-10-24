@@ -19,10 +19,22 @@ public class ServiceTicketController {
 
     private final IServiceTicketService ticketService;
 
+//    @GetMapping
+//    public ResponseEntity<List<ServiceTicketDto>> getAll() {
+//        return ResponseEntity.ok(ticketService.getAllTickets());
+//    }
+    //Quản lý Hàng chờ
     @GetMapping
-    public ResponseEntity<List<ServiceTicketDto>> getAll() {
-        return ResponseEntity.ok(ticketService.getAllTickets());
+    public ResponseEntity<List<ServiceTicketDto>> getAll(@RequestParam(required = false) String status){
+        if (status != null && !status.isEmpty()) {
+            // 2. Nếu có, gọi service để lọc theo status
+            return ResponseEntity.ok(ticketService.getTicketsByStatus(status));
+        } else {
+            // 3. Nếu không, trả về tất cả như cũ
+            return ResponseEntity.ok(ticketService.getAllTickets());
+        }
     }
+    //@RequestParam(required = false): Báo cho Spring biết rằng tham số status trong URL là không bắt buộc.
 
     @GetMapping("/{id}")
     public ResponseEntity<ServiceTicketDto> getById(@PathVariable int id) {
@@ -46,4 +58,5 @@ public class ServiceTicketController {
         ticketService.deleteTicket(id);
         return ResponseEntity.ok().build();
     }
+
 }

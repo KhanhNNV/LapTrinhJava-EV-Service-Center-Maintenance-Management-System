@@ -2,6 +2,7 @@ package edu.uth.evservice.EVService.repositories;
 
 import java.util.List;
 
+import edu.uth.evservice.EVService.model.TicketServiceItem;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import edu.uth.evservice.EVService.model.TicketPart;
@@ -13,5 +14,6 @@ public interface ITicketPartRepository extends JpaRepository<TicketPart, TicketP
 
     // Tìm tất cả các TicketPart theo part_id
     List<TicketPart> findByPart_PartId(Integer partId);
+
 
 }

@@ -123,6 +123,7 @@ public class AppointmentServiceImpl implements IAppointmentService {
         return toDto(appointment);
     }
 
+
     @Override
     public List<AppointmentDto> getByCustomer(Integer customerId) {
         return appointmentRepository.findByCustomer_UserId(customerId)
