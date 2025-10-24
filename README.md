@@ -1,6 +1,6 @@
 # LapTrinhJava
 
-# Cấu trúc dự án
+## Cấu trúc dự án
 
 ```plaintext
 📁 LapTrinhJava-EV-Service-Center-Maintenance-Management-System/
