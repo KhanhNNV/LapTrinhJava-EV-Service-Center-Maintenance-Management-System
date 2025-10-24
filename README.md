@@ -2,7 +2,7 @@
 
 # Cấu trúc dự án
 
-``
+```plaintext
 📁 LapTrinhJava-EV-Service-Center-Maintenance-Management-System/
 ├── 📁 EVService/
 │   ├── 📁 .mvn/
@@ -179,4 +179,4 @@
 │   └── ⚙️ pom.xml
 ├── ⚙️ .gitignore
 └── 📝 README.md
-``
+```
