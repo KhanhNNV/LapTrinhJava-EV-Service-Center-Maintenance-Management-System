@@ -5,6 +5,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import edu.uth.evservice.EVService.model.User;
 import edu.uth.evservice.EVService.repositories.IUserRepository;
 import lombok.RequiredArgsConstructor;
 
@@ -15,8 +16,9 @@ public class UserDetailServiceCustomizerImpl implements UserDetailsService {
     
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-       return userRepository.findByEmail(email)
+       User user = userRepository.findByEmail(email)
        .orElseThrow(()->new UsernameNotFoundException("Không tìm thấy người dùng với email: "));
+        return new CustomerUserDetails(user);
     }
 
 
