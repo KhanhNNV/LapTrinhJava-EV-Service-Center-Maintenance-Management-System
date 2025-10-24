@@ -20,7 +20,6 @@ public class ServiceTicketDto {
     private LocalDateTime endTime;
     private String status;
     private String notes;
-
     private Integer appointmentId;
     private Integer technicianId;
     private List<Integer> ticketServiceItemIds;
