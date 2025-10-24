@@ -11,6 +11,11 @@ import java.util.List;
 public interface IServiceTicketService {
     List<ServiceTicketDto> getAllTickets();
     ServiceTicketDto getTicketById(Integer id);
+
+    // đề xuất thêm và tạm comment để tránh lỗi ở ServiceTicketServiceImpl
+    // ServiceTicketDto getTicketByAppointmentId(Integer appointmentId);
+    //
+    
     ServiceTicketDto createTicket(ServiceTicketRequest request);
     ServiceTicketDto updateTicket(Integer id, ServiceTicketRequest request);
     void deleteTicket(Integer id);

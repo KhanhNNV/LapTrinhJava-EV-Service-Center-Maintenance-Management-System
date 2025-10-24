@@ -1,0 +1,35 @@
+Các file đã thêm 
+ - 3 File trong controller/Customer
+ - 2 file trong requests: PaymentRequest.java: cho yêu cầu tạo một thanh toán mới từ client
+                          PaymentConfirmationRequest.java: yêu cầu xác nhận trạng thái thanh toán, 
+ - 1 file trong dto: CostSummaryResponseDto.java: trả về tổng hợp chi phí cho client  
+
+Sửa: 
+- Thêm trong CreateInvoiceRequest.java 
+        @Builder 
+        @NoArgsConstructor  
+        @AllArgsConstructo
+- Đề thêm 3 thuộc tính trong IInvoiceService.java
+        List<InvoiceDto> getInvoicesByCustomerId(Integer customerId); Lấy toàn 1 theo khách hàng
+        InvoiceDto getInvoiceByAppointmentId(Integer appointmentId);  Lấy 1 hóa đơn theo 1 lần bảo dưỡng
+        InvoiceDto updatePaymentStatus(Integer invoiceId, String status); Xác nhận cập nhật và thanh toán
+
+- Đề xuất thêm  1 thuộc tính trong IServiceTicketService.java
+        ServiceTicketDto getTicketByAppointmentId(Integer appointmentId); 
+
+2 đề xuất để dùng trong file RecordCostControllert.java
+
+API
+
+## Đặt lịch & Theo dõi dịch vụ (ServiceScheduleController)
+POST /api/customer/service-schedule/appointments
+GET /api/customer/service-schedule/service-centers
+GET /api/customer/service-schedule/appointments/:appointmentId
+GET /api/customer/service-schedule/customers/:customerId/appointments
+PUT /api/customer/service-schedule/appointments/:appointmentId/cancel
+
+## Theo dõi xe & Nhắc nhở (VehicleTrackingController)
+GET /api/customer/tracking/:customerId/notifications
+GET /api/customer/tracking/:customerId/contracts
+GET /api/customer/tracking/:customerId/vehicles
+PUT /api/customer/tracking/notifications/:notificationId/mark-read
