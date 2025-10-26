@@ -1,7 +1,7 @@
 package edu.uth.evservice.EVService.dto;
 
 import lombok.*;
-import com.fasterxml.jackson.annotation.JsonFormat;
+
 
 import java.time.LocalDateTime;
 import java.util.List;
