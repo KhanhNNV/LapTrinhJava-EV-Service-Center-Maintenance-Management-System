@@ -1,0 +1,64 @@
+/* Password strength */
+.passwordStrength {
+  margin-top: 0.5rem;
+}
+
+.strengthContainer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.strengthBarBg {
+  flex: 1;
+  height: 6px;
+  background: #e5e7eb; /* gray-200 */
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.strengthBar {
+  height: 100%;
+  transition: width 0.3s ease-in-out, background-color 0.3s ease-in-out; /* Thêm transition */
+}
+
+.strengthBarWeak { 
+  width: 33%;
+  background: #ef4444; /* red-500 */
+}
+
+.strengthBarMedium {
+  width: 66%;
+  background: #f59e0b; 
+}
+
+.strengthBarStrong {
+  width: 100%;
+  background: #10b981; 
+}
+
+.strengthText {
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.strengthTextWeak { color: #ef4444; } 
+.strengthTextMedium { color: #f59e0b; }
+.strengthTextStrong { color: #10b981; }
+
+/* Error text */
+.errorText {
+  color: #ef4444; 
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+}
+
+
+@media (max-width: 640px) {
+  .socialButtons {
+    flex-direction: column;
+  }
+  .socialBtn {
+    width: 100%;
+  }
+}
