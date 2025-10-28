@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import styles from './OtpStep.module.css';
 
 //~ Component nhận props email, onBack, onConfirm từ AuthPage
-export default function LoginOtpStep({ email, onBack, onConfirm }) {
+export default function OtpStep({ email, onBack, onConfirm }) {
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const inputsRef = useRef([]); // Ref để quản lý focus giữa các input
 

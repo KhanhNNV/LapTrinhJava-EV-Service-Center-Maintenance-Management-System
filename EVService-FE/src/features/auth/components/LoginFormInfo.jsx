@@ -66,7 +66,7 @@ export default function LoginFormInfo({
       </div>
 
       {/* Dùng formStyles.rememberForgot nếu bạn đã định nghĩa trong đó, hoặc giữ inline style/class riêng */}
-      <div className={formStyles.rememberForgot} style={{ marginBottom: '1.5rem' }}>
+      <div className={formStyles.rememberForgot} >
         <div className={formStyles.checkboxWrapper}>
           <input type="checkbox" className={formStyles.checkbox} id="rememberMe" />
           <label htmlFor="rememberMe" className={formStyles.checkboxLabel}>

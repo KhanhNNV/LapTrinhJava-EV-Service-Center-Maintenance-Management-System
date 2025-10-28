@@ -153,16 +153,6 @@ export default function RegisterFormInfo({
          </button>
       </div>
 
-      <p className={formStyles.textCenter}>
-        Đã có tài khoản?{' '}
-        <a
-          href="#"
-          className="link"
-          onClick={(e) => { e.preventDefault(); switchToLogin(); }}
-        >
-          Đăng nhập
-        </a>
-      </p>
     </div>
   );
 }

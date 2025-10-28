@@ -1,4 +1,4 @@
-package edu.uth.evservice.EVService.services.jwt;
+package edu.uth.evservice.EVService.services.impl.jwt;
 
 import java.text.ParseException;
 import java.util.Date;
@@ -19,6 +19,7 @@ import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 
+import edu.uth.evservice.EVService.services.jwt.IJwtService;
 import lombok.RequiredArgsConstructor;
 
 @Service

@@ -146,7 +146,7 @@ export default function AuthPage() {
                             setFullName={setFullName}
                             setEmail={setRegEmail}
                             setPassword={setRegPassword}
-                            setConfirm={setConfirm}
+                            setConfirm={setRegConfirm}
                             setAccept={setAcceptTerms}
                             onNext={handleRegisterInfoNext} // Đảm bảo gọi đúng hàm
                             onSocial={handleSocialLogin}
@@ -168,7 +168,7 @@ export default function AuthPage() {
                     )}
                     {/* Link "Đăng nhập" chỉ hiện ở bước 1 */}
                     {regStep === 1 && (
-                         <p className={formStyles.textCenter} style={{ marginTop: '1rem' }}>
+                         <p className={formStyles.textCenter} style={{ marginTop: '0.5rem' }}>
                             Đã có tài khoản?{' '}
                             <a href="#" className="link" onClick={(e) => { e.preventDefault(); switchToLogin(); }}>
                                 Đăng nhập

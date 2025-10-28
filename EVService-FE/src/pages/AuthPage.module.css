@@ -2,7 +2,7 @@
 .tabButtons {
   display: flex;
   gap: 0.5rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 }
 
 .tabBtn {
@@ -10,8 +10,8 @@
   padding: 0.875rem;
   border: none;
   border-radius: 0.75rem;
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: 0.75rem;
+  font-weight: 500;
   cursor: pointer;
   transition: 0.3s;
   background: transparent; /* Mặc định là trong suốt */
