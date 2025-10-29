@@ -34,7 +34,7 @@ public class TechnicianPartsController {
             Authentication authentication) {
 
         // Logic kiểm tra quyền sở hữu ticket trước khi thêm phụ tùng là chính xác.
-        ticketService.verifyTicketOwnership(ticketId, authentication.getName());
+        ticketService.verifyTicketOwnership(authentication.getName(), ticketId);
 
         partRequest.setTicketId(ticketId);
         TicketPartDto addedPart = ticketPartService.createTicketPart(partRequest);
