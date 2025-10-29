@@ -4,10 +4,11 @@ import jakarta.persistence.*;
 import lombok.*;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import edu.uth.evservice.EVService.model.enums.ServiceTicketStatus;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-
 
 @Entity
 @Table(name = "serviceTickets")
@@ -16,7 +17,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 public class ServiceTicket {
 
     @Id
@@ -30,8 +31,9 @@ public class ServiceTicket {
     @Column(name = "end_time")
     private LocalDateTime endTime;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "status", length = 50)
-    private String status;
+    private ServiceTicketStatus status;
 
     @Column(name = "notes", columnDefinition = "TEXT")
     private String notes;
@@ -43,7 +45,7 @@ public class ServiceTicket {
 
     // technician là 1 User; nhiều ticket có thể thuộc 1 technician
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "technician_id",referencedColumnName = "user_id", nullable = false)
+    @JoinColumn(name = "technician_id", referencedColumnName = "user_id", nullable = false)
     private User technician;
 
     @OneToOne(mappedBy = "serviceTicket", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
@@ -53,6 +55,6 @@ public class ServiceTicket {
     private List<TicketServiceItem> ticketServiceItems = new ArrayList<>();
 
     @OneToMany(mappedBy = "ticket", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<TicketPart>  ticketParts = new ArrayList<>();
+    private List<TicketPart> ticketParts = new ArrayList<>();
 
 }
