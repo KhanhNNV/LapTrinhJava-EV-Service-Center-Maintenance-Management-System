@@ -2,6 +2,12 @@ package edu.uth.evservice.EVService.controller;
 
 import java.util.List;
 
+import edu.uth.evservice.EVService.dto.ServiceTicketDto;
+import edu.uth.evservice.EVService.model.User;
+import edu.uth.evservice.EVService.requests.AssignTechnicianRequest;
+import edu.uth.evservice.EVService.services.IServiceTicketService;
+import edu.uth.evservice.EVService.services.IUserService;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,32 +27,29 @@ import edu.uth.evservice.EVService.services.IAppointmentService;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
-@Data
-class AssignTechnicianRequest {
-    private Integer technicianId;
-}
-
 @RestController
 @RequestMapping("/api/appointments")
 @RequiredArgsConstructor
 public class AppointmentController {
 
     private final IAppointmentService appointmentService;
+    private final IUserService userService;
+    private final IServiceTicketService ticketService;
 
-    @GetMapping
-    public List<AppointmentDto> getAppointments() {
-        return appointmentService.getAllAppointments();
-    }
-
-    @GetMapping("/{id}")
-    public AppointmentDto getAppointmentById(@PathVariable int id) {
-        return appointmentService.getAppointmentById(id);
-    }
-
-    @PostMapping
-    public AppointmentDto createAppointment(@RequestBody AppointmentRequest request) {
-        return appointmentService.createAppointment(request);
-    }
+//    @GetMapping
+//    public List<AppointmentDto> getAppointments() {
+//        return appointmentService.getAllAppointments();
+//    }
+//
+//    @GetMapping("/{id}")
+//    public AppointmentDto getAppointmentById(@PathVariable int id) {
+//        return appointmentService.getAppointmentById(id);
+//    }
+//
+//    @PostMapping
+//    public AppointmentDto createAppointment(@RequestBody AppointmentRequest request) {
+//        return appointmentService.createAppointment(request);
+//    }
 
     // Customer create appointment
     @PostMapping("/customer/create")
@@ -82,17 +85,44 @@ public class AppointmentController {
     @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
     public ResponseEntity<AppointmentDto> assignAndConfirm(
             @PathVariable Integer appointmentId,
-            @RequestBody AssignTechnicianRequest request) {
+            @RequestBody AssignTechnicianRequest request,
+            Authentication authentication) {
+        String staffEmail = authentication.getName();
         AppointmentDto updatedAppointment = appointmentService.assignTechnicianAndConfirm(appointmentId,
-                request.getTechnicianId());
+                request.getTechnicianId(),staffEmail);
         return ResponseEntity.ok(updatedAppointment);
     }
 
     /**
-     * Bước 4: Staff (hoặc KTV) check-in cho khách.
+     * Bước 3: KTV xem danh sách LỊCH HẸN (chưa phải công việc) đã được gán cho
+     * mình.
+     */
+//    @GetMapping("/assigned")
+//    public ResponseEntity<List<AppointmentDto>> getAssignedAppointments(Authentication authentication) {
+//        User currentTech = userService.findByUsername(authentication.getName())
+//                .orElseThrow(() -> new EntityNotFoundException(
+//                        "Technician not found with username: " + authentication.getName()));
+//        List<AppointmentDto> appointments = appointmentService
+//                .getConfirmedAppointmentsForTechnician(currentTech.getUserId());
+//        return ResponseEntity.ok(appointments);
+//    }
+    @GetMapping("/technician/appointment")
+    @PreAuthorize("hasAnyRole('TECHNICIAN')")
+    public ResponseEntity<List<AppointmentDto>> getApointmentsByTechnicianId(Authentication authentication) {
+        User currentTech = userService.findByEmail(authentication.getName())
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Technician not found with username: " + authentication.getName()));
+        List<AppointmentDto> appointments = appointmentService
+                .getAppointmentByTechinician(currentTech.getUserId());
+        return ResponseEntity.ok(appointments);
+    }
+
+
+    /**
+     * Bước 4: Tech check-in lịch.
      */
     @PutMapping("/{appointmentId}/check-in")
-    @PreAuthorize("hasAnyRole('STAFF', 'ADMIN', 'TECHNICIAN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TECHNICIAN')")
     public ResponseEntity<AppointmentDto> checkIn(@PathVariable Integer appointmentId) {
         return ResponseEntity.ok(appointmentService.checkInAppointment(appointmentId));
     }
@@ -102,5 +132,6 @@ public class AppointmentController {
         appointmentService.deleteAppointment(id);
         return ResponseEntity.ok().build();
     }
+    
 
 }

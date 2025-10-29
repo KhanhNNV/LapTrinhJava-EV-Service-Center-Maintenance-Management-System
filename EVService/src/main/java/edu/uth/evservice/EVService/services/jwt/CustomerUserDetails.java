@@ -11,11 +11,14 @@ import org.springframework.stereotype.Service;
 import edu.uth.evservice.EVService.model.User;
 import lombok.RequiredArgsConstructor;
 
-@Service
-@RequiredArgsConstructor
+
 public class CustomerUserDetails implements UserDetails{
 
     private final User user;
+
+    public CustomerUserDetails(User user) {
+        this.user = user;
+    }
     
 
     //. Trả về quyền được cấp cho người dùng

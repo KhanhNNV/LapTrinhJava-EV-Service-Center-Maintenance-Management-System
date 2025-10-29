@@ -43,32 +43,6 @@ public class AppointmentServiceImpl implements IAppointmentService {
                 .orElseThrow(() -> new RuntimeException("Appointment not found"));
     }
 
-    @Override
-    public AppointmentDto createAppointment(AppointmentRequest request) {
-        User customer = userRepository.findById(request.getCustomerId())
-                .orElseThrow(() -> new RuntimeException("Customer not found"));
-        User staff = userRepository.findById(request.getCreatedById())
-                .orElseThrow(() -> new RuntimeException("Staff not found"));
-        Vehicle vehicle = vehicleRepository.findById(request.getVehicleId())
-                .orElseThrow(() -> new RuntimeException("Vehicle not found"));
-        ServiceCenter center = centerRepository.findById(request.getCenterId())
-                .orElseThrow(() -> new RuntimeException("Center not found"));
-
-        Appointment appointment = Appointment.builder()
-                .appointmentDate(request.getAppointmentDate())
-                .appointmentTime(request.getAppointmentTime())
-                .status(AppointmentStatus.PENDING)
-                .serviceType(request.getServiceType())
-                .note(request.getNote())
-                .customer(customer)
-                .createdBy(staff)
-                .vehicle(vehicle)
-                .center(center)
-                .build();
-
-        appointmentRepository.save(appointment);
-        return toDto(appointment);
-    }
 
     @Override
     public AppointmentDto updateAppointment(Integer id, AppointmentRequest request) {
@@ -99,11 +73,6 @@ public class AppointmentServiceImpl implements IAppointmentService {
             appointment.setCenter(center);
         }
 
-        if (request.getCreatedById() != null) {
-            User staff = userRepository.findById(request.getCreatedById())
-                    .orElseThrow(() -> new RuntimeException("Staff not found"));
-            appointment.setCreatedBy(staff);
-        }
 
         appointmentRepository.save(appointment);
         return toDto(appointment);
@@ -131,21 +100,32 @@ public class AppointmentServiceImpl implements IAppointmentService {
 
     @Override
     public List<AppointmentDto> getByStaff(Integer staffId) {
-        return appointmentRepository.findByCreatedBy_UserId(staffId)
+        return appointmentRepository.findByStaff_UserId(staffId)
                 .stream().map(this::toDto).collect(Collectors.toList());
     }
 
     @Override
-    public AppointmentDto assignTechnicianAndConfirm(Integer appointmentId, Integer technicianId) {
+    public AppointmentDto assignTechnicianAndConfirm(Integer appointmentId, Integer technicianId, String staffEmail ) {
         Appointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new EntityNotFoundException("Appointment not found"));
         User technician = userRepository.findById(technicianId)
                 .orElseThrow(() -> new EntityNotFoundException("Technician not found"));
+        User staff = userRepository.findByEmail(staffEmail)
+                .orElseThrow(() -> new EntityNotFoundException("Staff not found with email: " + staffEmail));
 
+        //Tìm tech trống lịch
+        List<Appointment> technicianAppointments = appointmentRepository
+                .findByAssignedTechnician_UserIdAndAppointmentDate(technicianId, appointment.getAppointmentDate());
+        if (!technicianAppointments.isEmpty()) {
+            throw new IllegalStateException("Technician is already assigned to another appointment on this date.");
+        }
+
+        appointment.setStaff(staff);
         appointment.setAssignedTechnician(technician);
         appointment.setStatus(AppointmentStatus.CONFIRMED);
 
-        return toDto(appointmentRepository.save(appointment));
+        //có tech và staff
+        return toDtoFull(appointmentRepository.save(appointment));
     }
 
     @Override
@@ -158,7 +138,7 @@ public class AppointmentServiceImpl implements IAppointmentService {
         }
 
         appointment.setStatus(AppointmentStatus.CHECKED_IN);
-        return toDto(appointmentRepository.save(appointment));
+        return toDtoFull(appointmentRepository.save(appointment));
     }
 
     @Override
@@ -167,11 +147,17 @@ public class AppointmentServiceImpl implements IAppointmentService {
                 .findByAssignedTechnician_UserIdAndStatus(technicianId, AppointmentStatus.CONFIRMED)
                 .stream().map(this::toDto).collect(Collectors.toList());
     }
+    @Override
+    public List<AppointmentDto> getAppointmentByTechinician(Integer technicianId) {
+        return appointmentRepository
+                .findByAssignedTechnician_UserId(technicianId)
+                .stream().map(this::toDtoFull).collect(Collectors.toList());
+    }
 
     @Override
-    public AppointmentDto createAppointmentForCustomer(String username, AppointmentRequest request) {
-        User customer = userRepository.findByUsername(username)
-                .orElseThrow(() -> new EntityNotFoundException("Customer not found with username: " + username));
+    public AppointmentDto createAppointmentForCustomer(String email, AppointmentRequest request) {
+        User customer = userRepository.findByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("Customer not found with email: " + email));
 
         Vehicle vehicle = vehicleRepository.findById(request.getVehicleId())
                 .orElseThrow(() -> new EntityNotFoundException("Vehicle not found with ID: " + request.getVehicleId()));
@@ -191,7 +177,6 @@ public class AppointmentServiceImpl implements IAppointmentService {
                 .serviceType(request.getServiceType())
                 .note(request.getNote())
                 .customer(customer) // Người sở hữu lịch hẹn
-                .createdBy(customer) // Người tạo cũng là khách hàng
                 .vehicle(vehicle)
                 .center(center)
                 .status(AppointmentStatus.PENDING) // Luôn bắt đầu là PENDING
@@ -237,10 +222,30 @@ public class AppointmentServiceImpl implements IAppointmentService {
                 .note(a.getNote())
                 .customerId(a.getCustomer().getUserId())
                 .customerName(a.getCustomer().getFullName())
-                .createdById(a.getCreatedBy().getUserId())
-                .createdByName(a.getCreatedBy().getFullName())
                 .vehicleId(a.getVehicle().getVehicleId())
                 .centerId(a.getCenter().getCenterId())
+                .createdAt(a.getCreatedAt())
+                .updatedAt(a.getUpdatedAt())
+                .build();
+    }
+
+    //Response có tech và staff
+    private AppointmentDto toDtoFull(Appointment a) {
+        return AppointmentDto.builder()
+                .appointmentId(a.getAppointmentId())
+                .appointmentDate(a.getAppointmentDate())
+                .appointmentTime(a.getAppointmentTime())
+                .serviceType(a.getServiceType())
+                .status(a.getStatus().name())
+                .note(a.getNote())
+                .customerId(a.getCustomer().getUserId())
+                .customerName(a.getCustomer().getFullName())
+                .staffId(a.getStaff().getUserId())
+                .staffName(a.getStaff().getFullName())
+                .vehicleId(a.getVehicle().getVehicleId())
+                .centerId(a.getCenter().getCenterId())
+                .technicianId(a.getAssignedTechnician().getUserId())
+                .technicianName(a.getAssignedTechnician().getFullName())
                 .createdAt(a.getCreatedAt())
                 .updatedAt(a.getUpdatedAt())
                 .build();

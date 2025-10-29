@@ -64,7 +64,7 @@ public class User{
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
     List<Appointment> customerAppointments = new ArrayList<>();
 
-    @OneToMany(mappedBy = "createdBy", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "staff", cascade = CascadeType.ALL, orphanRemoval = true)
     List<Appointment> createdAppointments = new ArrayList<>();
 
     @OneToMany(mappedBy = "customerConversation", cascade = CascadeType.ALL, orphanRemoval = true)

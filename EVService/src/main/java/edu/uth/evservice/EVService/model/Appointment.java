@@ -64,8 +64,8 @@ public class Appointment {
     private User customer; // người đặt lịch / chủ xe
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "created_by_id", referencedColumnName = "user_id", nullable = false)
-    private User createdBy; // nhân viên tạo lịch
+    @JoinColumn(name = "staff_id", referencedColumnName = "user_id")
+    private User staff; // nhân viên tạo lịch
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "technician_id", referencedColumnName = "user_id") // Nullable vì ban đầu chưa gán

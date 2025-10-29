@@ -26,8 +26,6 @@ public class AppointmentRequest {
     String status; // pending, confirmed, canceled, completed
     String note;
 
-    Integer customerId;
-    Integer createdById; // staff/technician
     Integer vehicleId;
     Integer centerId;
 }

@@ -97,6 +97,11 @@ public class UserServiceImpl implements IUserService {
         return userRepository.findByUsername(username);
     }
 
+    @Override
+    public Optional<User> findByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
+
     private UserDto mapToDto(User user) {
         return UserDto.builder()
                 .userId(user.getUserId())

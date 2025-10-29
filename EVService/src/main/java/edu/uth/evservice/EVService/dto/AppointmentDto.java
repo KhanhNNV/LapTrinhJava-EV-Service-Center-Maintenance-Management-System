@@ -24,10 +24,12 @@ public class AppointmentDto {
 
     Integer customerId;
     String customerName;
-    Integer createdById;
-    String createdByName;
+    Integer staffId;
+    String staffName;
     Integer vehicleId;
     Integer centerId;
+    Integer technicianId;
+    String technicianName;
 
     LocalDateTime createdAt;
     LocalDateTime updatedAt;

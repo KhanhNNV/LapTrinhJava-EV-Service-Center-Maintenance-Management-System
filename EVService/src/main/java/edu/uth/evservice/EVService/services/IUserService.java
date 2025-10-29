@@ -19,4 +19,6 @@ public interface IUserService {
     void deleteUser(Integer id);
 
     Optional<User> findByUsername(String username);
+    Optional<User> findByEmail(String email);
+
 }

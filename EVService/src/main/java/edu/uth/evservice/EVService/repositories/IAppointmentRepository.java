@@ -1,5 +1,6 @@
 package edu.uth.evservice.EVService.repositories;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -12,7 +13,9 @@ import edu.uth.evservice.EVService.model.enums.AppointmentStatus;
 public interface IAppointmentRepository extends JpaRepository<Appointment, Integer> {
     List<Appointment> findByCustomer_UserId(Integer userId);
 
-    List<Appointment> findByCreatedBy_UserId(Integer userId);
+    List<Appointment> findByStaff_UserId(Integer userId);
+
+    List<Appointment> findByAssignedTechnician_UserId(Integer userId);
 
     // @Query("SELECT a FROM Appointment a JOIN a.serviceTickets st " +
     // "WHERE st.technician.id = :technicianId " +
@@ -24,4 +27,5 @@ public interface IAppointmentRepository extends JpaRepository<Appointment, Integ
     // @Param("endDate") LocalDate endDate);
 
     List<Appointment> findByAssignedTechnician_UserIdAndStatus(Integer technicianId, AppointmentStatus status);
+    List<Appointment> findByAssignedTechnician_UserIdAndAppointmentDate(Integer technicianId, LocalDate appointmentDate);
 }
