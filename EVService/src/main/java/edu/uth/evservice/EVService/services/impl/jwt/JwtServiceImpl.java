@@ -70,7 +70,7 @@ public class JwtServiceImpl implements IJwtService{
     //.  Tạo chuỗi JWT Access Token
     public String generateRefeshToken(Authentication authenication) {
         Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + accessTime); //~ THỜI GIAN HIỆN TẠI + KHOẢNG THỜI GIAN ACCESS TỒN TẠI
+        Date expiryDate = new Date(now.getTime() + refeshTime); //~ THỜI GIAN HIỆN TẠI + KHOẢNG THỜI GIAN ACCESS TỒN TẠI
         try{
             //~ Tạo header + sử dụng thuật toán HS512
             JWSHeader header = new JWSHeader (JWSAlgorithm.HS512);

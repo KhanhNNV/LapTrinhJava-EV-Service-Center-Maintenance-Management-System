@@ -45,7 +45,7 @@ public class AuthenticationServiceImpl implements IAuthenticaionService {
         return new JwtDto(accessToken,refreshToken);
     }
     public UserDto registerRequest(RegisterRequest registerRequest){
-         //~ Chuyển thằng registerRequest sang thằng createUserRequest
+        //~ Chuyển thằng registerRequest sang thằng createUserRequest
         CreateUserRequest createUserRequest = new CreateUserRequest();
         createUserRequest.setUsername(registerRequest.getUsername());
         createUserRequest.setFullName(registerRequest.getFullName());
@@ -57,7 +57,6 @@ public class AuthenticationServiceImpl implements IAuthenticaionService {
         try {
         return userService.createUser(createUserRequest);
         } catch (RuntimeException e) { 
-        // Đừng return null. Quăng exception cho Controller/Advice xử lý thành 400.
         throw e;
     }
     }

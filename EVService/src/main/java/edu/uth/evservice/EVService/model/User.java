@@ -31,13 +31,13 @@ public class User{
     @Column(name = "full_name", nullable = false)
     String fullName;
 
-    @Column(name = "email", nullable = false, unique = true)
+    @Column(name = "email", nullable = false, unique = false)
     String email;
 
     @Column(name = "password", nullable = false)
     String password;
 
-    @Column(name = "phone_number", length = 15)
+    @Column(name = "phone_number", length = 15, nullable = false, unique = true)
     String phoneNumber;
 
     @Nationalized
