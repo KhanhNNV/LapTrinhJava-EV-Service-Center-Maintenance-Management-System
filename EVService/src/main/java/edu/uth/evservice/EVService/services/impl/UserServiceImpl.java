@@ -1,5 +1,12 @@
 package edu.uth.evservice.EVService.services.impl;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
 import edu.uth.evservice.EVService.dto.UserDto;
 import edu.uth.evservice.EVService.model.User;
 import edu.uth.evservice.EVService.model.enums.Role;
@@ -9,18 +16,14 @@ import edu.uth.evservice.EVService.services.IUserService;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
-@FieldDefaults(level = AccessLevel.PRIVATE,makeFinal = true)
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @AllArgsConstructor
 public class UserServiceImpl implements IUserService {
     IUserRepository userRepository;
-    PasswordEncoder passwordEncoder; 
+    PasswordEncoder passwordEncoder;
+
     @Override
     public UserDto createUser(CreateUserRequest request) {
         Role role;
@@ -39,7 +42,7 @@ public class UserServiceImpl implements IUserService {
                 .username(request.getUsername())
                 .fullName(request.getFullName())
                 .email(request.getEmail())
-                //.Mã hóa mật khẩu trước khi lưu vào database
+                // .Mã hóa mật khẩu trước khi lưu vào database
                 .password(passwordEncoder.encode(request.getPassword()))
                 .phoneNumber(request.getPhoneNumber())
                 .address(request.getAddress())
@@ -76,7 +79,7 @@ public class UserServiceImpl implements IUserService {
                 throw new RuntimeException("Role không hợp lệ: " + request.getRole());
             }
         }
-        //. Việc đổi mật khẩu sẽ nằm ở file **** (Mốt tính)
+        // . Việc đổi mật khẩu sẽ nằm ở file **** (Mốt tính)
         user.setFullName(request.getFullName());
         user.setPhoneNumber(request.getPhoneNumber());
         user.setAddress(request.getAddress());
@@ -87,6 +90,11 @@ public class UserServiceImpl implements IUserService {
     @Override
     public void deleteUser(Integer id) {
         userRepository.deleteById(id);
+    }
+
+    @Override
+    public Optional<User> findByUsername(String username) {
+        return userRepository.findByUsername(username);
     }
 
     private UserDto mapToDto(User user) {
