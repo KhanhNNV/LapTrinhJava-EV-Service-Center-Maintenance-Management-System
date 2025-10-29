@@ -1,0 +1,56 @@
+.successContent {
+    text-align: center;
+}
+
+.successIcon {
+    width: 90px;
+    height: 90px;
+    background: #10b981;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    border: 0.1rem solid rgba(0, 0, 0, 0.1);
+
+}
+
+.successIcon span {
+    font-size: 60px;
+    color: #ffffff;
+}
+
+
+
+.successTitle {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #1f3728;
+    margin-bottom: 0.5rem;
+}
+
+.successText {
+    color: #6b7280;
+    margin-bottom: 1.5rem;
+}
+
+.btnPrimary {
+    width: 100%;
+    max-width: 200px;
+    margin: 0 auto;
+    padding: 0.875rem;
+    background: #667eea;
+    color: #fff;
+    border: none;
+    border-radius: 0.75rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btnPrimary:hover {
+    background: #5568d3;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}

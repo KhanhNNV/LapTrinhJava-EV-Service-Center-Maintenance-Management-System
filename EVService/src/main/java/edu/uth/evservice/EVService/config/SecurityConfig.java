@@ -29,6 +29,7 @@ public class SecurityConfig {
     }
 
     //. Đây là interface của Spring mục đích là để xác thực thông tin đăng nhập 
+    //. 
     @Bean
     public AuthenticationManager authorizationManager (AuthenticationConfiguration authenticationConfiguration) throws Exception{
         return authenticationConfiguration.getAuthenticationManager();

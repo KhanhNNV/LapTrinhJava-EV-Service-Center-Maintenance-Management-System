@@ -1,0 +1,131 @@
+/* OTP Container và Info Box */
+.otpContainer {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.otpInfo {
+  background: #eff6ff; /* blue-50 */
+  border: 1px solid #bfdbfe; /* blue-200 */
+  border-radius: 0.75rem;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.otpInfo .material-icons { /* Style cho icon mail */
+  font-size: 2.5rem;
+  color: #3b82f6; /* blue-500 */
+  margin-bottom: 0.5rem;
+}
+
+.otpInfoText {
+  font-size: 0.875rem;
+  color: #374151; /* gray-700 */
+  margin-bottom: 0.25rem;
+}
+
+.otpEmail {
+  font-weight: 600;
+  color: #1f2937; /* gray-800 */
+}
+
+/* OTP Inputs */
+.otpLabel {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151; /* gray-700 */
+  margin-bottom: 0.75rem;
+  display: block; /* Đảm bảo label chiếm đủ dòng */
+  text-align: center;
+}
+
+.otpInputs {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.otpInput {
+  width: 3rem;
+  height: 3.5rem;
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 600;
+  border: 2px solid #d1d5db; /* gray-300 */
+  border-radius: 0.75rem;
+  transition: 0.3s;
+  /* Loại bỏ mũi tên tăng/giảm cho input number nếu dùng type="number" */
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.otpInput::-webkit-outer-spin-button,
+.otpInput::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+
+.otpInput:focus {
+  outline: none;
+  border-color: #667eea; /* indigo-500 */
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* Resend Link */
+.otpResend {
+  font-size: 0.875rem;
+  color: #6b7280; /* gray-500 */
+  text-align: center;
+}
+
+/* Button Group */
+.buttonGroup {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.btnSecondary {
+  flex: 1; /* Chia đều không gian */
+  padding: 0.875rem;
+  background: transparent;
+  color: #374151;
+  border: 2px solid #d1d5db;
+  border-radius: 0.75rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
+}
+.btnSecondary:hover {
+  background: #f9fafb;
+}
+
+.btnPrimary {
+  flex: 1; /* Chia đều không gian */
+  padding: 0.875rem;
+  background: #667eea;
+  color: #fff;
+  border: none;
+  border-radius: 0.75rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.btnPrimary:hover {
+  background: #5568d3;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+
+@media (max-width: 640px) {
+  .otpInput {
+    width: 2.5rem;
+    height: 3rem;
+    font-size: 1.25rem;
+  }
+}

@@ -1,0 +1,32 @@
+
+.gradientBg {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.authContainer {
+  width: 100%;
+  max-width: 480px;
+}
+
+.authCard {
+  background: white;
+  border-radius: 1.5rem;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+}
+
+.authContent {
+  padding: 1rem 2rem;
+}
+
+
+@media (max-width: 640px) {
+  .authContent {
+    padding: 1.5rem;
+  }
+}

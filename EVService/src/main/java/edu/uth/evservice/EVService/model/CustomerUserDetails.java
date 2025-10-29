@@ -1,4 +1,4 @@
-package edu.uth.evservice.EVService.services.jwt;
+package edu.uth.evservice.EVService.model;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -6,11 +6,8 @@ import java.util.Collections;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Service;
 
-import edu.uth.evservice.EVService.model.User;
 import lombok.RequiredArgsConstructor;
-
 
 public class CustomerUserDetails implements UserDetails{
 
@@ -19,7 +16,7 @@ public class CustomerUserDetails implements UserDetails{
     public CustomerUserDetails(User user) {
         this.user = user;
     }
-    
+
 
     //. Trả về quyền được cấp cho người dùng
     @Override

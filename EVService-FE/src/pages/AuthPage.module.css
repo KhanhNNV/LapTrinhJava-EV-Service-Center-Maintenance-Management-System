@@ -1,0 +1,36 @@
+/* Styles cho các nút chuyển tab Đăng nhập/Đăng ký */
+.tabButtons {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.tabBtn {
+  flex: 1;
+  padding: 0.875rem;
+  border: none;
+  border-radius: 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: 0.3s;
+  background: transparent; /* Mặc định là trong suốt */
+}
+
+/* Style cho tab đang active */
+.tabBtnActive {
+  background: #667eea; /* indigo-500 */
+  color: #fff;
+}
+
+/* Style cho tab không active */
+.tabBtnInactive {
+  color: #6b7280; /* gray-500 */
+  border: 2px solid #d1d5db; /* gray-300 */
+}
+
+.tabBtnInactive:hover {
+   background: #f9fafb; /* gray-50 - hiệu ứng hover nhẹ */
+}
+
+/* Các style khác dành riêng cho AuthPage có thể thêm vào đây */
