@@ -1,9 +1,12 @@
 package edu.uth.evservice.EVService.requests;
 
-import lombok.*;
-import com.fasterxml.jackson.annotation.JsonFormat;
-
 import java.time.LocalDateTime;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 /**
  * Dữ liệu client gửi lên khi tạo / cập nhật ticket

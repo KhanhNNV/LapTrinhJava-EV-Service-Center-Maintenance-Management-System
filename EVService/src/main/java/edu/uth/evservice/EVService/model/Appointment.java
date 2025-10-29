@@ -1,14 +1,34 @@
 package edu.uth.evservice.EVService.model;
 
-import jakarta.persistence.*;
-import lombok.*;
-import lombok.experimental.FieldDefaults;
-import org.hibernate.annotations.Nationalized;
-import edu.uth.evservice.EVService.model.enums.AppointmentStatus;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+
+import org.hibernate.annotations.Nationalized;
+
+import edu.uth.evservice.EVService.model.enums.AppointmentStatus;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Table;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.FieldDefaults;
 
 @Entity
 @Table(name = "appointments")
@@ -35,7 +55,7 @@ public class Appointment {
     @Nationalized
     String serviceType;
 
-    @Column(name = "status", nullable = false)
+    @Column(name = "status", nullable = false, length = 30)
     @Enumerated(EnumType.STRING)
     AppointmentStatus status;
 
@@ -44,8 +64,12 @@ public class Appointment {
     private User customer; // người đặt lịch / chủ xe
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "created_by_id",referencedColumnName = "user_id", nullable = false)
+    @JoinColumn(name = "created_by_id", referencedColumnName = "user_id", nullable = false)
     private User createdBy; // nhân viên tạo lịch
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "technician_id", referencedColumnName = "user_id") // Nullable vì ban đầu chưa gán
+    private User assignedTechnician;
 
     @ManyToOne
     @JoinColumn(name = "vehicle_id", nullable = false)
