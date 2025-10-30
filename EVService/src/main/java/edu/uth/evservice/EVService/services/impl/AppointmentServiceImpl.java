@@ -105,13 +105,13 @@ public class AppointmentServiceImpl implements IAppointmentService {
     }
 
     @Override
-    public AppointmentDto assignTechnicianAndConfirm(Integer appointmentId, Integer technicianId, String staffEmail ) {
+    public AppointmentDto assignTechnicianAndConfirm(Integer appointmentId, Integer technicianId, String staffUsername ) {
         Appointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new EntityNotFoundException("Appointment not found"));
         User technician = userRepository.findById(technicianId)
                 .orElseThrow(() -> new EntityNotFoundException("Technician not found"));
-        User staff = userRepository.findByEmail(staffEmail)
-                .orElseThrow(() -> new EntityNotFoundException("Staff not found with email: " + staffEmail));
+        User staff = userRepository.findByUsername(staffUsername)
+                .orElseThrow(() -> new EntityNotFoundException("Staff not found with username: " + staffUsername));
 
         //Tìm tech trống lịch
         List<Appointment> technicianAppointments = appointmentRepository
@@ -155,9 +155,9 @@ public class AppointmentServiceImpl implements IAppointmentService {
     }
 
     @Override
-    public AppointmentDto createAppointmentForCustomer(String email, AppointmentRequest request) {
-        User customer = userRepository.findByEmail(email)
-                .orElseThrow(() -> new EntityNotFoundException("Customer not found with email: " + email));
+    public AppointmentDto createAppointmentForCustomer(String username, AppointmentRequest request) {
+        User customer = userRepository.findByUsername(username)
+                .orElseThrow(() -> new EntityNotFoundException("Customer not found with username: " + username));
 
         Vehicle vehicle = vehicleRepository.findById(request.getVehicleId())
                 .orElseThrow(() -> new EntityNotFoundException("Vehicle not found with ID: " + request.getVehicleId()));

@@ -34,8 +34,8 @@ public class UserDetailServiceCustomizerImpl implements UserDetailsService {
 //    }
 
     @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = userRepository.findByEmail(email)
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        User user = userRepository.findByUsername(username)
                 .orElseThrow(()->new UsernameNotFoundException("Không tìm thấy người dùng với email: "));
         return new CustomerUserDetails(user);
     }

@@ -28,7 +28,7 @@ public class AuthenticationServiceImpl implements IAuthenticaionService {
     public JwtDto loginRequest (LoginRequest loginRequest){
         //~Tạo đối tượng UsernamePasswordAuthenticationToken từ email và password người dùng gửi lên
         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                loginRequest.getEmail(),
+                loginRequest.getUsername(),
                 loginRequest.getPassword()
         );
         //~ Thực hiện xác thực bằng AuthenticationManager
@@ -36,7 +36,7 @@ public class AuthenticationServiceImpl implements IAuthenticaionService {
         //~ Này viết ra để kiểm tra lỗi
         Authentication authFromContext = SecurityContextHolder.getContext().getAuthentication();
         if (authFromContext != null && authFromContext.isAuthenticated()) {
-            System.out.println("Người dùng '" + authFromContext.getName() + "' vừa đăng nhập thành công.");
+            System.out.println("Người dùng '" + authentication.getName() + "' vừa đăng nhập thành công.");
         }
         //~ Tạo accessToken và refeshToken
         String accessToken = jwtService.generateAccessToken(authentication);

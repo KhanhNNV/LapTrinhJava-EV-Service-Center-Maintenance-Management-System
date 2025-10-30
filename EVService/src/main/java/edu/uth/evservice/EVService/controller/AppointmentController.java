@@ -34,7 +34,6 @@ public class AppointmentController {
 
     private final IAppointmentService appointmentService;
     private final IUserService userService;
-    private final IServiceTicketService ticketService;
 
 //    @GetMapping
 //    public List<AppointmentDto> getAppointments() {
@@ -109,7 +108,7 @@ public class AppointmentController {
     @GetMapping("/technician/appointment")
     @PreAuthorize("hasAnyRole('TECHNICIAN')")
     public ResponseEntity<List<AppointmentDto>> getApointmentsByTechnicianId(Authentication authentication) {
-        User currentTech = userService.findByEmail(authentication.getName())
+        User currentTech = userService.findByUsername(authentication.getName())
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Technician not found with username: " + authentication.getName()));
         List<AppointmentDto> appointments = appointmentService

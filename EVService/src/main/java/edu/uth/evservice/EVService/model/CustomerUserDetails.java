@@ -34,7 +34,7 @@ public class CustomerUserDetails implements UserDetails{
     //. Trả về email
     @Override
     public String getUsername() {
-        return user.getEmail();
+        return user.getUsername();
     }
 
 }
