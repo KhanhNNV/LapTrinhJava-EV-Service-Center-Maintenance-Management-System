@@ -33,7 +33,7 @@ public class JwtDecoderConfig implements JwtDecoder{
     public Jwt decode(String token) throws JwtException {
         try{
             //~Kiểm tra token xác thực hợp lệ không
-            if(jwtService.verifyToken(token)){
+            if(!jwtService.verifyToken(token)){
                 throw new RuntimeException("Invalid token");
             }
             //~Khởi tạo NimbusJwtDecoder nếu chưa có

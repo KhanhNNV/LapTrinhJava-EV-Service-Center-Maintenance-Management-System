@@ -4,12 +4,15 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
 
 import lombok.RequiredArgsConstructor;
@@ -18,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
     private final JwtDecoderConfig jwtDecoderConfig;
@@ -55,12 +59,28 @@ public class SecurityConfig {
             )
             //~ Dùng chuẩn JWT để kiểm tra vé (Token)
             //~ Cấu hình ở file JWT Decode
-            .oauth2ResourceServer((oauth2) -> oauth2.jwt(JwtConfigurer -> JwtConfigurer.decoder(jwtDecoderConfig)))
-            
+//            .oauth2ResourceServer((oauth2) -> oauth2.jwt(JwtConfigurer -> JwtConfigurer.decoder(jwtDecoderConfig)))
+                .oauth2ResourceServer(oauth2 -> oauth2
+                        .jwt(jwt -> jwt
+                                .decoder(jwtDecoderConfig)
+                                .jwtAuthenticationConverter(jwtAuthenticationConverter())
+                        )
+                )
             //~Vì dùng JWT nên việt lưu session ở phía server là không cần thiết
             //~Chế độ STATELESS (Không trạng thái)
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         return http.build();
+    }
+
+    @Bean
+    public JwtAuthenticationConverter jwtAuthenticationConverter() {
+        JwtGrantedAuthoritiesConverter converter = new JwtGrantedAuthoritiesConverter();
+        converter.setAuthoritiesClaimName("role");   // trùng với key trong token
+        converter.setAuthorityPrefix("");             // token đã có "ROLE_" rồi
+
+        JwtAuthenticationConverter jwtConverter = new JwtAuthenticationConverter();
+        jwtConverter.setJwtGrantedAuthoritiesConverter(converter);
+        return jwtConverter;
     }
 
 

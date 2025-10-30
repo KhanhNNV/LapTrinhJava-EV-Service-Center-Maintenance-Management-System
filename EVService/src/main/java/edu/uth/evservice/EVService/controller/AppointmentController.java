@@ -106,8 +106,11 @@ public class AppointmentController {
 //        return ResponseEntity.ok(appointments);
 //    }
     @GetMapping("/technician/appointment")
-    @PreAuthorize("hasAnyRole('TECHNICIAN')")
+    @PreAuthorize("hasRole('TECHNICIAN')")
     public ResponseEntity<List<AppointmentDto>> getApointmentsByTechnicianId(Authentication authentication) {
+
+
+
         User currentTech = userService.findByUsername(authentication.getName())
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Technician not found with username: " + authentication.getName()));

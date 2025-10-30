@@ -1,5 +1,6 @@
 package edu.uth.evservice.EVService.services.impl.jwt;
 
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.Date;
 import java.util.stream.Collectors;
@@ -51,7 +52,7 @@ public class JwtServiceImpl implements IJwtService{
                 .subject(authenication.getName()) //~email
                 .issueTime(now)
                 .expirationTime(expiryDate)
-                .claim("role: ", scope)
+                .claim("role", scope)
                 .build();
             //~ Tạo đối tượng JWT chứa header + payload
             SignedJWT signedJWT = new SignedJWT(header, claimsSet);
@@ -105,7 +106,8 @@ public class JwtServiceImpl implements IJwtService{
         if (expirationTime.before(new Date())){
             return false;
         }
-        return signedJWT.verify(new MACVerifier(token));
+        MACVerifier verifier = new MACVerifier(keySecret.getBytes(StandardCharsets.UTF_8));
+        return signedJWT.verify(verifier);
     }   
 }
 
