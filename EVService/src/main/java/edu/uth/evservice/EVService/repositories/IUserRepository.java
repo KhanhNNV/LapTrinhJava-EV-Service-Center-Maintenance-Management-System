@@ -1,7 +1,9 @@
 package edu.uth.evservice.EVService.repositories;
 
+import java.util.List;
 import java.util.Optional;
 
+import edu.uth.evservice.EVService.model.enums.Role;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -19,4 +21,6 @@ public interface IUserRepository extends JpaRepository<User, Integer> {
     boolean existsByEmail(String email);
 
     boolean existsByUsername(String username);
+    List<User> findByRole(Role role);// Phân role user sử dụng cho crud admincontroller
+
 }
