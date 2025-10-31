@@ -1,7 +1,9 @@
 package edu.uth.evservice.EVService.repositories;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
+import edu.uth.evservice.EVService.model.enums.ServiceTicketStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -14,4 +16,8 @@ import edu.uth.evservice.EVService.model.ServiceTicket;
 @Repository
 public interface IServiceTicketRepository extends JpaRepository<ServiceTicket, Integer> {
     List<ServiceTicket> findByTechnician_UserId(Integer technicianId);
+    List<ServiceTicket> findByStatusAndEndTimeBetween(
+            ServiceTicketStatus status,
+            LocalDateTime startDate,
+            LocalDateTime endDate);
 }

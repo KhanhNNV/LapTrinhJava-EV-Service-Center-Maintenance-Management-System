@@ -1,9 +1,14 @@
 package edu.uth.evservice.EVService.services.impl;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
+import edu.uth.evservice.EVService.dto.TechnicianPerformanceDto;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -178,4 +183,44 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
                 .technicianId(ticket.getTechnician().getUserId())
                 .build();
     }
+
+    @Override
+    public List<TechnicianPerformanceDto> calculateTechnicianPerformance(LocalDateTime startDate, LocalDateTime endDate) {
+        List<ServiceTicket> completedTickets = ticketRepo.findAll().stream()
+                .filter(t -> t.getStatus() == ServiceTicketStatus.COMPLETED)
+                .filter(t -> t.getEndTime() != null
+                        && !t.getEndTime().isBefore(startDate)
+                        && !t.getEndTime().isAfter(endDate))
+                .collect(Collectors.toList());
+
+        // Gom nhóm theo kỹ thuật viên
+        Map<User, List<ServiceTicket>> groupedByTechnician =
+                completedTickets.stream().collect(Collectors.groupingBy(ServiceTicket::getTechnician));
+
+        // Tính toán hiệu suất
+        return groupedByTechnician.entrySet().stream()
+                .map(entry -> {
+                    User tech = entry.getKey();
+                    List<ServiceTicket> tickets = entry.getValue();
+
+                    long totalMinutes = tickets.stream()
+                            .filter(t -> t.getStartTime() != null && t.getEndTime() != null)
+                            .mapToLong(t -> java.time.Duration.between(t.getStartTime(), t.getEndTime()).toMinutes())
+                            .sum();
+
+                    long totalTickets = tickets.size();
+                    double avgMinutes = totalTickets > 0 ? (double) totalMinutes / totalTickets : 0;
+
+                    return TechnicianPerformanceDto.builder()
+                            .technicianId(tech.getUserId())
+                            .technicianName(tech.getFullName())
+                            .totalTickets(totalTickets)
+                            .totalMinutes(totalMinutes)
+                            .avgMinutes(avgMinutes)
+                            .build();
+                })
+                .collect(Collectors.toList());
+    }
+
+
 }
