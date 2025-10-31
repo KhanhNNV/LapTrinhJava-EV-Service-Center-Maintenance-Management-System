@@ -44,25 +44,25 @@ public class VehicleServiceImpl implements IVehicleService {
                 .collect(Collectors.toList());
     }
 
-    @Override
-    public VehicleDto createVehicle(VehicleRequest request) {
-        User user = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+    // @Override
+    // public VehicleDto createVehicle(VehicleRequest request) {
+    //     User user = userRepository.findById(request.getUserId())
+    //             .orElseThrow(() -> new RuntimeException("User not found"));
 
-        ServiceCenter center = serviceCenterRepository.findById(request.getCenterId())
-                .orElseThrow(() -> new RuntimeException("Service center not found"));
+    //     ServiceCenter center = serviceCenterRepository.findById(request.getCenterId())
+    //             .orElseThrow(() -> new RuntimeException("Service center not found"));
 
-        Vehicle vehicle = Vehicle.builder()
-                .model(request.getModel())
-                .brand(request.getBrand())
-                .licensePlate(request.getLicensePlate())
-                .recentMaintenanceDate(request.getRecentMaintenanceDate())
-                .user(user)
-                .serviceCenter(center)
-                .build();
+    //     Vehicle vehicle = Vehicle.builder()
+    //             .model(request.getModel())
+    //             .brand(request.getBrand())
+    //             .licensePlate(request.getLicensePlate())
+    //             .recentMaintenanceDate(request.getRecentMaintenanceDate())
+    //             .user(user)
+    //             .serviceCenter(center)
+    //             .build();
 
-        return toDTO(vehicleRepository.save(vehicle));
-    }
+    //     return toDTO(vehicleRepository.save(vehicle));
+    // }
 
     @Override
     public VehicleDto updateVehicle(Integer id, VehicleRequest request) {
@@ -82,6 +82,47 @@ public class VehicleServiceImpl implements IVehicleService {
         vehicleRepository.deleteById(id);
     }
 
+    // START: Thêm logic cho phương thức đăng ký xe của customer
+    // Lý do: Đây là phương thức an toàn để khách hàng tự đăng ký xe của mình.
+    // Công dụng:
+    // 1. Sử dụng `customerUsername` lấy từ token (đã được xác thực) để xác định chủ xe, thay vì `userId` từ request.
+    // 2. Kiểm tra xem biển số xe đã tồn tại trong hệ thống hay chưa.
+    // 3. Xử lý logic gán xe cho một trung tâm dịch vụ nếu có.
+    // 4. Lưu xe vào CSDL và trả về thông tin chi tiết (DTO).
+    @Override
+    public VehicleDto registerVehicle(VehicleRequest request, String customerUsername) {
+        // 1. Tìm customer bằng username (an toàn hơn)
+        User customer = userRepository.findByUsername(customerUsername)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng: " + customerUsername));
+
+        // 2. Kiểm tra biển số xe đã tồn tại
+        if (vehicleRepository.existsByLicensePlate(request.getLicensePlate())) {
+            throw new IllegalStateException("Biển số xe " + request.getLicensePlate() + " đã tồn tại.");
+        }
+
+        // 3. Tìm ServiceCenter (tái sử dụng logic từ hàm createVehicle cũ của bạn)
+        // Nếu việc đăng ký xe không cần gán trung tâm ngay, bạn có thể bỏ phần này.
+        ServiceCenter center = null;
+        if (request.getCenterId() != null) {
+            center = serviceCenterRepository.findById(request.getCenterId())
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy trung tâm dịch vụ"));
+        }
+
+        // 4. Tạo đối tượng Vehicle
+        Vehicle vehicle = Vehicle.builder()
+                .model(request.getModel())
+                .brand(request.getBrand())
+                .licensePlate(request.getLicensePlate())
+                .recentMaintenanceDate(request.getRecentMaintenanceDate())
+                .user(customer) // Gán chủ xe là người đang đăng nhập
+                .serviceCenter(center) // Gán trung tâm dịch vụ
+                .build();
+
+        // 5. Lưu và chuyển đổi sang DTO bằng hàm có sẵn
+        return toDTO(vehicleRepository.save(vehicle));
+    }
+    // END: Thêm logic cho phương thức đăng ký xe của customer
+
     private VehicleDto toDTO(Vehicle vehicle) {
         return VehicleDto.builder()
                 .vehicleId(vehicle.getVehicleId())
@@ -93,4 +134,6 @@ public class VehicleServiceImpl implements IVehicleService {
                 .centerId(vehicle.getServiceCenter() != null ? vehicle.getServiceCenter().getCenterId() : null)
                 .build();
     }
+
+    
 }
