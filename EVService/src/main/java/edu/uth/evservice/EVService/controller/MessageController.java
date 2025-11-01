@@ -2,6 +2,7 @@ package edu.uth.evservice.EVService.controller;
 
 import java.util.List;
 
+import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -42,8 +43,11 @@ public class MessageController {
     }
 
     @PostMapping
-    public MessageDto createMessage(@Validated @RequestBody CreateMessageRequest request) {
-        return messageService.createMessage(request);
+    public MessageDto createMessage(@Validated @RequestBody CreateMessageRequest request, Authentication authentication) {
+        // Lấy username của người đang đăng nhập từ "vé" JWT
+        String username = authentication.getName();
+        // Gọi service và truyền thêm username vào
+        return messageService.createMessage(request, username);
     }
 
     @PutMapping("/{id}")

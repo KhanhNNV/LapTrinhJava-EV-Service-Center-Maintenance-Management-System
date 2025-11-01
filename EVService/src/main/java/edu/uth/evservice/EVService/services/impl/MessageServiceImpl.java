@@ -1,9 +1,11 @@
 package edu.uth.evservice.EVService.services.impl;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import edu.uth.evservice.EVService.model.enums.ConversationStatus;
 import org.springframework.stereotype.Service;
 
 import edu.uth.evservice.EVService.dto.MessageDto;
@@ -53,26 +55,60 @@ public class MessageServiceImpl implements IMessageService {
                 .collect(Collectors.toList());
     }
 
+//    @Override
+//    public MessageDto createMessage(CreateMessageRequest request) {
+//        Conversation conversation = conversationRepository.findById(request.getConversationId())
+//                .orElseThrow(() -> new EntityNotFoundException(
+//                        "Conversation not found with id: " + request.getConversationId()));
+//        Message m = new Message();
+//        // resolve sender user
+//        if (request.getSenderId() == null) {
+//            throw new IllegalArgumentException("senderId is required");
+//        }
+//        User sender = userRepository.findById(request.getSenderId())
+//                .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + request.getSenderId()));
+//        m.setUser(sender);
+//        m.setIsRead(request.getIsRead() != null ? request.getIsRead() : Boolean.FALSE);
+//        m.setContent(request.getContent());
+//        m.setConversation(conversation);
+//        m.setTimestamp(request.getTimestamp() != null ? request.getTimestamp() : LocalDateTime.now());
+//
+//        Message saved = messageRepository.save(m);
+//        return toDto(saved);
+//    }
     @Override
-    public MessageDto createMessage(CreateMessageRequest request) {
-        Conversation conversation = conversationRepository.findById(request.getConversationId())
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "Conversation not found with id: " + request.getConversationId()));
-        Message m = new Message();
-        // resolve sender user
-        if (request.getSenderId() == null) {
-            throw new IllegalArgumentException("senderId is required");
+    public MessageDto createMessage(CreateMessageRequest request, String username) {
+        // Tim nguoi gui tin nhan
+        User sender = userRepository.findByUsername(username)
+                .orElseThrow(() -> new EntityNotFoundException("User (Sender) not found with id: " + request.getSenderId()));
+        Conversation conversation; // Tao bien de chua phong chat
+        // KiemTra tin nhan
+        if(request.getConversationId() == null) {
+            //Tin nhan dau tien se tao phong chat moi
+            Conversation newConversation = Conversation.builder()
+                    .customerConversation(sender) // gan nguoi gui la Khach hang
+                    .staffConversation(null)
+                    .status(ConversationStatus.NEW) // voi trang thai NEW
+                    .topic("Yêu câù help:" + sender.getFullName())
+                    .startTime(LocalDate.now())
+                    .build();
+            conversation = conversationRepository.save(newConversation);
+        }else {
+            // Tin nhan trong phong chat da co
+            conversation = conversationRepository.findById(request.getConversationId())
+                    .orElseThrow(() -> new EntityNotFoundException
+                            ("Conversation not found with id: " + request.getConversationId()));
         }
-        User sender = userRepository.findById(request.getSenderId())
-                .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + request.getSenderId()));
-        m.setUser(sender);
-        m.setIsRead(request.getIsRead() != null ? request.getIsRead() : Boolean.FALSE);
-        m.setContent(request.getContent());
-        m.setConversation(conversation);
-        m.setTimestamp(request.getTimestamp() != null ? request.getTimestamp() : LocalDateTime.now());
-
-        Message saved = messageRepository.save(m);
-        return toDto(saved);
+        // Tao va luu tin nhan
+        Message newMessage = Message.builder()
+                .user(sender)
+                .content(request.getContent())
+                .conversation(conversation)
+                .timestamp(LocalDateTime.now())
+                .isRead(false)
+                .build();
+        Message savedMessage = messageRepository.save(newMessage);
+        return toDto(savedMessage);
     }
 
     @Override
