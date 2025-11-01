@@ -50,7 +50,7 @@ public class ServiceTicketController {
         return ResponseEntity.ok().build();
     }
     //Báo cáo hiệu suất làm việc của technician
-    @GetMapping("/admin/performance")
+    @GetMapping("/admin/report/performance")
     public ResponseEntity<List<TechnicianPerformanceDto>> getTechnicianPerformance(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {

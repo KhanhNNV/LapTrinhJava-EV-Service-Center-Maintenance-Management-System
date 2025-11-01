@@ -46,28 +46,12 @@ public class UserController {
         return ResponseEntity.ok("Đã xóa user có ID = " + id);
     }
 
-    // TECHNICIAN
-    // In ra danh sách Technician
-    @GetMapping("/admin/technicians/read")
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
-    public ResponseEntity<?> getAllTechnicians() {
-        return ResponseEntity.ok(userService.getUsersByRole(Role.TECHNICIAN));
-    }
-
     // Tạo Technician
-    @PostMapping("/admin/technicians/create")
+    @PostMapping("/admin/technician/create")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> createTechnician(@RequestBody CreateUserRequest request) {
         request.setRole(Role.TECHNICIAN.name());
         return ResponseEntity.ok(userService.createUser(request));
-    }
-
-    // STAFF
-    // In ra danh sách Staff
-    @GetMapping("/admin/staff/read")
-    @PreAuthorize("hasAnyRole('ADMIN')")
-    public ResponseEntity<?> getAllStaff() {
-        return ResponseEntity.ok(userService.getUsersByRole(Role.STAFF));
     }
 
     // Tạo Staff
@@ -76,13 +60,5 @@ public class UserController {
     public ResponseEntity<?> createStaff(@RequestBody CreateUserRequest request) {
         request.setRole(Role.STAFF.name());
         return ResponseEntity.ok(userService.createUser(request));
-    }
-
-    // CUSTOMER
-    // In ra danh sách Customer
-    @GetMapping("/admin/customers/read")
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
-    public ResponseEntity<?> getAllCustomers() {
-        return ResponseEntity.ok(userService.getUsersByRole(Role.CUSTOMER));
     }
 }
