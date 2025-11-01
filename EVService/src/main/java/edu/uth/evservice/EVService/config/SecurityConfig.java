@@ -9,12 +9,12 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
 
+import edu.uth.evservice.EVService.services.impl.oauth2.CustomOAuth2UserService;
+import edu.uth.evservice.EVService.services.impl.oauth2.OAuthenticationSuccessHandler;
 import lombok.RequiredArgsConstructor;
 
 
@@ -24,13 +24,13 @@ import lombok.RequiredArgsConstructor;
 @EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
-    private final JwtDecoderConfig jwtDecoderConfig;
 
-    //. Mã hóa mật khẩu 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+
+
+    private final JwtDecoderConfig jwtDecoderConfig;
+    private final OAuthenticationSuccessHandler oAuthenticationSuccessHandler;
+    private final CustomOAuth2UserService customOauth2UserService;
+    
 
     //. Đây là interface của Spring mục đích là để xác thực thông tin đăng nhập 
     //. 
@@ -51,7 +51,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(authorize -> authorize
 
                 //- Cho phép tất cả request auth đều có thể truy cập bỏi bất cứ ai
-                .requestMatchers("/auth/**").permitAll()
+                .requestMatchers("/auth/**", "/oauth2/**","/login/oauth/code/**").permitAll()
 
                 //~ Tất cả các request khác đều yêu cầu phải xác thực JWT
                 .anyRequest().authenticated()
@@ -59,16 +59,24 @@ public class SecurityConfig {
             )
             //~ Dùng chuẩn JWT để kiểm tra vé (Token)
             //~ Cấu hình ở file JWT Decode
-//            .oauth2ResourceServer((oauth2) -> oauth2.jwt(JwtConfigurer -> JwtConfigurer.decoder(jwtDecoderConfig)))
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(jwt -> jwt
                                 .decoder(jwtDecoderConfig)
                                 .jwtAuthenticationConverter(jwtAuthenticationConverter())
                         )
                 )
-            //~Vì dùng JWT nên việt lưu session ở phía server là không cần thiết
-            //~Chế độ STATELESS (Không trạng thái)
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+            //~Kích hoạt luồng OAuth2
+           .oauth2Login(oauth2 -> oauth2
+                //~Chỉ định service để tìm/tạo user
+                .userInfoEndpoint(userInfo -> userInfo
+                    .userService(customOauth2UserService) 
+                )
+                //~ Chỉ định handler để tạo JWT và redirect về React
+                .successHandler(oAuthenticationSuccessHandler) 
+            )
+            //~Vì dùng JWT nên việc lưu session ở phía server là không cần thiết
+            //~Chế độ STATELESS (Không trạng thái) nhưng sử dụng login.register social nên cũng cần sài tí thằng session
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED));
         return http.build();
     }
 

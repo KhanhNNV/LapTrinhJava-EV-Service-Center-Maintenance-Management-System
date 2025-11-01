@@ -86,10 +86,17 @@ export default function LoginFormInfo({
         <span className={formStyles.dividerText}>Hoặc đăng nhập với</span>
       </div>
 
+
       <div className={formStyles.socialButtons}>
-        <button className={`${formStyles.socialBtn} ${formStyles.google}`} onClick={() => onSocial('Google')}>
+
+        <a 
+          href="http://localhost:8081/oauth2/authorization/google" 
+          className={`${formStyles.socialBtn} ${formStyles.google}`}
+          role="button" 
+        >
           <GoogleIcon /> Google
-        </button>
+        </a>
+
         <button className={`${formStyles.socialBtn} ${formStyles.facebook}`} onClick={() => onSocial('Facebook')}>
           <FacebookIcon /> Facebook
         </button>

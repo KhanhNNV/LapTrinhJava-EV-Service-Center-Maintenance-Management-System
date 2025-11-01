@@ -28,20 +28,20 @@ public class User{
     String username;
 
     @Nationalized
-    @Column(name = "full_name", nullable = false)
+    @Column(name = "full_name", nullable = true)
     String fullName;
 
-    @Column(name = "email", nullable = false, unique = false)
+    @Column(name = "email", nullable = true, unique = true)
     String email;
 
     @Column(name = "password", nullable = false)
     String password;
 
-    @Column(name = "phone_number", length = 15, nullable = false, unique = true)
+    @Column(name = "phone_number", length = 15, unique = true)
     String phoneNumber;
 
     @Nationalized
-    @Column(name = "address", nullable = false)
+    @Column(name = "address")
     String address;
 
     @Enumerated(EnumType.STRING)
