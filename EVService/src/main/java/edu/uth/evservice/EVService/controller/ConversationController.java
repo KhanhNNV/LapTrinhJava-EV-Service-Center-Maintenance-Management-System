@@ -1,10 +1,13 @@
 package edu.uth.evservice.EVService.controller;
 
+import org.springframework.security.core.Authentication;
 import edu.uth.evservice.EVService.dto.ConversationDto;
 import edu.uth.evservice.EVService.requests.CreateConversationRequest;
 import edu.uth.evservice.EVService.services.IConversationService;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -40,4 +43,12 @@ public class ConversationController {
     public void deleteConversation(@PathVariable Integer id) {
         conversationService.deleteConversation(id);
     }
+    @PutMapping("/{id}/claim")
+    @PreAuthorize("hasAnyRole('STAFF','ADMIN')") // Chỉ STAFF hoặc ADMIN mới được dùng
+    public ResponseEntity<ConversationDto> claimConversation(@PathVariable Integer id, Authentication authentication) {
+        String username = authentication.getName(); // Lấy username của nhân viên đang đăng nhập từ JWT
+        ConversationDto updatedConversation = conversationService.claimConversation(id, username);// Gọi service để thực hiện logic
+        return ResponseEntity.ok(updatedConversation);
+    }
+
 }

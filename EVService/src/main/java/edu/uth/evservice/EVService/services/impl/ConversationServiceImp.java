@@ -12,6 +12,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -100,5 +101,28 @@ public class ConversationServiceImp  implements IConversationService {
             conversation.getCustomerConversation().getUserId(),
             conversation.getStaffConversation() != null ? conversation.getStaffConversation().getUserId() : null
         );
+    }
+    @Override
+    @Transactional
+    public ConversationDto claimConversation (Integer conversationId , String staffUsername) {
+        //Tim cuoc tro chuyen trong database
+        Conversation conversation = conversationRepository.findById(conversationId)
+                .orElseThrow(() -> new EntityNotFoundException("Conversation not found with id: " + conversationId));
+        //  Kiem tra trang thai cuoc tro chuyen
+        if(conversation.getStatus() != ConversationStatus.NEW) {
+            throw new IllegalArgumentException("Conversation is not new and cannot be claimed.");
+        }
+        // Kiem tra da co ai nhan cuoc tro chuyen chua
+        if (conversation.getStaffConversation() != null) {
+            throw new IllegalArgumentException("Conversation is not new and cannot be claimed.");
+        }
+        // Tim nhan vien xu ly
+        User staff = userRepository.findByUsername(staffUsername)
+                .orElseThrow(() -> new EntityNotFoundException("Staff not found with username: " + staffUsername));
+        // Cap nhap thong tin gan nhan vien vao cuoc tro chuyen
+        conversation.setStaffConversation(staff);
+        conversation.setStatus(ConversationStatus.IN_PROGRESS);
+        Conversation savedConversation = conversationRepository.save(conversation);
+        return toDto(savedConversation);
     }
 }
