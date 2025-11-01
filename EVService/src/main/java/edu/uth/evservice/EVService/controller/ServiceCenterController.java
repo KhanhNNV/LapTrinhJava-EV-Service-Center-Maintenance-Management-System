@@ -42,12 +42,12 @@ public class ServiceCenterController {
         return ResponseEntity.noContent().build();
     }
     // // UPDATE: Chỉ ADMIN mới có quyền cập nhật
-    // @PutMapping("/{id}")
-    // @PreAuthorize("hasRole('ADMIN')")
-    // public ResponseEntity<ServiceCenterDto> updateServiceCenter(@PathVariable Integer id, @Valid @RequestBody ServiceCenterRequest request) {
-    //     ServiceCenterDto updatedCenter = serviceCenterService.updateServiceCenter(id, request);
-    //     return ResponseEntity.ok(updatedCenter);
-    // }
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ServiceCenterDto> updateServiceCenter(@PathVariable Integer id, @Valid @RequestBody ServiceCenterRequest request) {
+        ServiceCenterDto updatedCenter = serviceCenterService.updateServiceCenter(id, request);
+        return ResponseEntity.ok(updatedCenter);
+    }
 
     @GetMapping("/{id}")
     public ResponseEntity<ServiceCenterDto> getServiceCenterById(@PathVariable("id") int centerId) {
