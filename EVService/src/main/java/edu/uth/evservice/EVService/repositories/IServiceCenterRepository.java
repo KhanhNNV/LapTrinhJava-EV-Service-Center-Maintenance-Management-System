@@ -7,4 +7,5 @@ import edu.uth.evservice.EVService.model.ServiceCenter;
 
 @Repository
 public interface IServiceCenterRepository extends JpaRepository<ServiceCenter,Integer> {
+    boolean existsByCenterName(String centerName);
 }

@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,18 +18,21 @@ import org.springframework.web.bind.annotation.RestController;
 import edu.uth.evservice.EVService.dto.ServiceCenterDto;
 import edu.uth.evservice.EVService.requests.ServiceCenterRequest;
 import edu.uth.evservice.EVService.services.IServiceCenterService;
+import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/controller/service-centers")
+@RequestMapping("api/controller/service-centers")
 public class ServiceCenterController {
 
     @Autowired
     private IServiceCenterService serviceCenterService;
 
+    // CREATE: Chỉ ADMIN mới có quyền tạo trung tâm dịch vụ
     @PostMapping
-    public ResponseEntity<ServiceCenterDto> createServiceCenter(@RequestBody ServiceCenterRequest serviceCenterRequest) {
-        ServiceCenterDto createdServiceCenter = serviceCenterService.createServiceCenter(serviceCenterRequest);
-        return new ResponseEntity<>(createdServiceCenter, HttpStatus.CREATED);
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ServiceCenterDto> createServiceCenter(@Valid @RequestBody ServiceCenterRequest request) {
+        ServiceCenterDto createdCenter = serviceCenterService.createServiceCenter(request);
+        return new ResponseEntity<>(createdCenter, HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")
