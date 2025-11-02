@@ -34,6 +34,7 @@ public class ServiceCenterController {
         ServiceCenterDto createdCenter = serviceCenterService.createServiceCenter(request);
         return new ResponseEntity<>(createdCenter, HttpStatus.CREATED);
     }
+
     // DELETE: Chỉ ADMIN mới có quyền xóa
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
@@ -41,21 +42,25 @@ public class ServiceCenterController {
         serviceCenterService.deleteServiceCenter(id);
         return ResponseEntity.noContent().build();
     }
+
     // // UPDATE: Chỉ ADMIN mới có quyền cập nhật
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ServiceCenterDto> updateServiceCenter(@PathVariable Integer id, @Valid @RequestBody ServiceCenterRequest request) {
+    public ResponseEntity<ServiceCenterDto> updateServiceCenter(@PathVariable Integer id,
+            @Valid @RequestBody ServiceCenterRequest request) {
         ServiceCenterDto updatedCenter = serviceCenterService.updateServiceCenter(id, request);
         return ResponseEntity.ok(updatedCenter);
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','STAFF','CUSTOMER')")
     public ResponseEntity<ServiceCenterDto> getServiceCenterById(@PathVariable("id") int centerId) {
         ServiceCenterDto serviceCenterDto = serviceCenterService.getServiceCenterById(centerId);
         return ResponseEntity.ok(serviceCenterDto);
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN','STAFF','CUSTOMER')")
     public ResponseEntity<List<ServiceCenterDto>> getAllServiceCenters() {
         List<ServiceCenterDto> serviceCenters = serviceCenterService.getAllServiceCenters();
         return ResponseEntity.ok(serviceCenters);
