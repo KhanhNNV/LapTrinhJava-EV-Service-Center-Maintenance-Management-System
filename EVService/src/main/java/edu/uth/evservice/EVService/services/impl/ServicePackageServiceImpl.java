@@ -37,7 +37,7 @@ public class ServicePackageServiceImpl implements IServicePackageService {
     //             .build();
     // }
 
-    @Override
+   @Override
     public List<ServicePackageDto> getAllPackages() {
         return servicePackageRepository.findAll()
                 .stream()
@@ -46,10 +46,10 @@ public class ServicePackageServiceImpl implements IServicePackageService {
     }
 
     @Override
-    public ServicePackageDto getPackageById(Integer id) {
-        return servicePackageRepository.findById(id)
-                .map(this::toDto)
-                .orElse(null);
+    public ServicePackageDto getPackageById(Integer packageId) {
+        ServicePackage servicePackage = servicePackageRepository.findById(packageId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy gói dịch vụ với ID: " + packageId));
+        return toDto(servicePackage);
     }
 
     // ===== THÊM XÓA SỬA CHO ADMIN

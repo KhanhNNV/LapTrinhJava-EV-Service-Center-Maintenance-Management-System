@@ -24,15 +24,18 @@ public class ServicePackageController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ServicePackageDto> createPackage(@Valid @RequestBody ServicePackageRequest request) {
         ServicePackageDto createdPackage = packageService.createPackage(request);
-        return new ResponseEntity<>(createdPackage, HttpStatus.CREATED);}
+        return new ResponseEntity<>(createdPackage, HttpStatus.CREATED);
+    }
 
     // UPDATE: Chỉ ADMIN mới có quyền cập nhật
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ServicePackageDto> updatePackage(@PathVariable("id") Integer id, @Valid @RequestBody ServicePackageRequest request) {
+    public ResponseEntity<ServicePackageDto> updatePackage(@PathVariable("id") Integer id,
+            @Valid @RequestBody ServicePackageRequest request) {
         ServicePackageDto updatedPackage = packageService.updatePackage(id, request);
         return ResponseEntity.ok(updatedPackage);
     }
+
     // DELETE: Chỉ ADMIN mới có quyền xóa
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
@@ -40,9 +43,18 @@ public class ServicePackageController {
         packageService.deletePackage(id);
         return ResponseEntity.noContent().build();
     }
+
     // READ ALL: Ai cũng có thể xem danh sách (Customer, Staff, Admin)
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN','STAFF','CUSTOMER')")
     public ResponseEntity<List<ServicePackageDto>> getAllPackages() {
         return ResponseEntity.ok(packageService.getAllPackages());
+    }
+
+    // READ ONE: Ai cũng có thể xem chi tiết
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','STAFF','CUSTOMER')")
+    public ResponseEntity<ServicePackageDto> getPackageById(@PathVariable("id") Integer id) {
+        return ResponseEntity.ok(packageService.getPackageById(id));
     }
 }
