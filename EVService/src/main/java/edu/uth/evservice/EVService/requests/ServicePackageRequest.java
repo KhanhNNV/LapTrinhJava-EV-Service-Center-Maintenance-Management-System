@@ -7,4 +7,5 @@ public class ServicePackageRequest {
     private String packageName;
     private Double price;
     private Integer duration;
+    private String description;
 }
