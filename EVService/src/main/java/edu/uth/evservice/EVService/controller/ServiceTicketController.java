@@ -7,9 +7,11 @@ import edu.uth.evservice.EVService.services.IServiceTicketService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -49,13 +51,21 @@ public class ServiceTicketController {
         ticketService.deleteTicket(id);
         return ResponseEntity.ok().build();
     }
-    //Báo cáo hiệu suất làm việc của technician
-    @GetMapping("/admin/report/performance")
+    // Báo cáo hiệu suất làm việc của technician
+    @GetMapping("/performance")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<TechnicianPerformanceDto>> getTechnicianPerformance(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
 
-        List<TechnicianPerformanceDto> report = ticketService.calculateTechnicianPerformance(startDate, endDate);
+        // Kiểm tra tính hợp lệ của thời gian
+        if (endDate.isBefore(startDate)) {
+            return ResponseEntity.badRequest().body(Collections.emptyList());
+        }
+
+        List<TechnicianPerformanceDto> report =
+                ticketService.calculateTechnicianPerformance(startDate, endDate);
+
         return ResponseEntity.ok(report);
     }
 }

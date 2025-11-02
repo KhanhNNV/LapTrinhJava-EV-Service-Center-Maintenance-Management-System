@@ -2,10 +2,7 @@ package edu.uth.evservice.EVService.services.impl;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import edu.uth.evservice.EVService.dto.TechnicianPerformanceDto;
@@ -183,21 +180,18 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
                 .technicianId(ticket.getTechnician().getUserId())
                 .build();
     }
-
     @Override
     public List<TechnicianPerformanceDto> calculateTechnicianPerformance(LocalDateTime startDate, LocalDateTime endDate) {
-        List<ServiceTicket> completedTickets = ticketRepo.findAll().stream()
-                .filter(t -> t.getStatus() == ServiceTicketStatus.COMPLETED)
-                .filter(t -> t.getEndTime() != null
-                        && !t.getEndTime().isBefore(startDate)
-                        && !t.getEndTime().isAfter(endDate))
-                .collect(Collectors.toList());
+        // Lấy các ticket đã hoàn thành trong khoảng thời gian
+        List<ServiceTicket> completedTickets =
+                ticketRepo.findByStatusAndEndTimeBetween(ServiceTicketStatus.COMPLETED, startDate, endDate);
 
         // Gom nhóm theo kỹ thuật viên
-        Map<User, List<ServiceTicket>> groupedByTechnician =
-                completedTickets.stream().collect(Collectors.groupingBy(ServiceTicket::getTechnician));
+        Map<User, List<ServiceTicket>> groupedByTechnician = completedTickets.stream()
+                .filter(t -> t.getTechnician() != null)
+                .collect(Collectors.groupingBy(ServiceTicket::getTechnician));
 
-        // Tính toán hiệu suất
+        // Tính toán hiệu suất cho từng kỹ thuật viên
         return groupedByTechnician.entrySet().stream()
                 .map(entry -> {
                     User tech = entry.getKey();
@@ -205,7 +199,7 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
 
                     long totalMinutes = tickets.stream()
                             .filter(t -> t.getStartTime() != null && t.getEndTime() != null)
-                            .mapToLong(t -> java.time.Duration.between(t.getStartTime(), t.getEndTime()).toMinutes())
+                            .mapToLong(t -> Duration.between(t.getStartTime(), t.getEndTime()).toMinutes())
                             .sum();
 
                     long totalTickets = tickets.size();
@@ -219,8 +213,7 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
                             .avgMinutes(avgMinutes)
                             .build();
                 })
+                .sorted(Comparator.comparingLong(TechnicianPerformanceDto::getTotalTickets).reversed()) // sắp giảm dần theo số vé
                 .collect(Collectors.toList());
     }
-
-
 }

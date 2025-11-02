@@ -36,7 +36,7 @@ public interface IServiceTicketService {
     ServiceTicketDto updateTicketStatus(Integer ticketId, String username, ServiceTicketStatus newStatus);
 
     ServiceTicketDto updateTicketNotes(Integer ticketId, String username, String newNotes);
-    // --- Chức năng báo cáo hiệu suất kỹ thuật viên ---
+    // --- BÁO CÁO HIỆU SUẤT KỸ THUẬT VIÊN ---
     List<TechnicianPerformanceDto> calculateTechnicianPerformance(LocalDateTime startDate, LocalDateTime endDate);
 
 }

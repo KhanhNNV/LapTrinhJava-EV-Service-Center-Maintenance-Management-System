@@ -17,7 +17,7 @@ public class UserController {
     private final IUserService userService;
 
     // Lấy tất cả user theo role
-    @GetMapping("/admin/role/{role}")
+    @GetMapping("/admin/{role}")
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public ResponseEntity<?> getUsersByRole(@PathVariable Role role) {
         return ResponseEntity.ok(userService.getUsersByRole(role));
@@ -47,7 +47,7 @@ public class UserController {
     }
 
     // Tạo Technician
-    @PostMapping("/admin/technician/create")
+    @PostMapping("/admin/CreateTechnician")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> createTechnician(@RequestBody CreateUserRequest request) {
         request.setRole(Role.TECHNICIAN.name());
@@ -55,7 +55,7 @@ public class UserController {
     }
 
     // Tạo Staff
-    @PostMapping("/admin/staff/create")
+    @PostMapping("/admin/CreateStaff")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> createStaff(@RequestBody CreateUserRequest request) {
         request.setRole(Role.STAFF.name());

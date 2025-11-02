@@ -16,8 +16,10 @@ import edu.uth.evservice.EVService.model.ServiceTicket;
 @Repository
 public interface IServiceTicketRepository extends JpaRepository<ServiceTicket, Integer> {
     List<ServiceTicket> findByTechnician_UserId(Integer technicianId);
+    // Lấy tất cả vé hoàn thành trong khoảng thời gian
     List<ServiceTicket> findByStatusAndEndTimeBetween(
             ServiceTicketStatus status,
             LocalDateTime startDate,
-            LocalDateTime endDate);
+            LocalDateTime endDate
+    );
 }
