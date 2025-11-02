@@ -10,6 +10,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/service-packages")
 @RequiredArgsConstructor
@@ -37,5 +39,10 @@ public class ServicePackageController {
     public ResponseEntity<Void> deletePackage(@PathVariable("id") Integer id) {
         packageService.deletePackage(id);
         return ResponseEntity.noContent().build();
+    }
+    // READ ALL: Ai cũng có thể xem danh sách (Customer, Staff, Admin)
+    @GetMapping
+    public ResponseEntity<List<ServicePackageDto>> getAllPackages() {
+        return ResponseEntity.ok(packageService.getAllPackages());
     }
 }
