@@ -31,11 +31,11 @@ public class ServicePackageController {
         ServicePackageDto updatedPackage = packageService.updatePackage(id, request);
         return ResponseEntity.ok(updatedPackage);
     }
-    // // DELETE: Chỉ ADMIN mới có quyền xóa
-    // @DeleteMapping("/{id}")
-    // @PreAuthorize("hasRole('ADMIN')")
-    // public ResponseEntity<Void> deletePackage(@PathVariable("id") Integer id) {
-    //     packageService.deletePackage(id);
-    //     return ResponseEntity.noContent().build();
-    // }
+    // DELETE: Chỉ ADMIN mới có quyền xóa
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deletePackage(@PathVariable("id") Integer id) {
+        packageService.deletePackage(id);
+        return ResponseEntity.noContent().build();
+    }
 }
