@@ -1,5 +1,7 @@
 package edu.uth.evservice.EVService.config;
 
+import java.util.Arrays;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -12,6 +14,9 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import edu.uth.evservice.EVService.services.impl.oauth2.CustomOAuth2UserService;
 import edu.uth.evservice.EVService.services.impl.oauth2.OAuthenticationSuccessHandler;
@@ -39,10 +44,35 @@ public class SecurityConfig {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
+    //. Cơ chế COR(Cross-Origin Resource Sharing)
+    //~ Giải thích: Với nguyên tắc của ALL trình duyệt, chỉ cung câp cùng nguồn:
+    //~ origin = protocol + domain + port
+    //~ vì chúng server port 8081 còn client port 5173 => != port 
+    //~ cách khắc phục viết hàm CORS:
+	@Bean
+	public CorsConfigurationSource corsConfigurationSource() {
+		CorsConfiguration configuration = new CorsConfiguration();
+        //~ Cho phép danh sách các đường dẫn nào truy cập ở đây chỉ có 1 là FE với port 5173
+		configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173"));
+        //~ Cho phép các phương thức được sử dụng
+		configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"));
+		//~ Cho phép các header mà FE gửi kèm
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept"));
+        //~ Cho phép trình duyệt gửi kèm thông tin xác thực (credentials) như cookie hoặc JWT header trong request
+        configuration.setAllowCredentials(true);
+
+        //~ Đăng ký config trên cho toàn bộ API 
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+		source.registerCorsConfiguration("/**", configuration);
+		return source;
+	}
     @Bean
     //.Cấu hình bảo mật chính cho toàn bộ hệ thống backend 
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+            //~Thêm cấu hình CORS
+            .cors(cors-> cors.configurationSource(corsConfigurationSource()))
+
             //~Vì dự án dùng JWT, nên không cần dùng CSRF
             //~ CSRF là cơ chế xác thực dự trên cookie/session
             .csrf(AbstractHttpConfigurer::disable)
