@@ -28,4 +28,5 @@ public class AppointmentRequest {
 
     Integer vehicleId;
     Integer centerId;
+    Integer contractId;
 }

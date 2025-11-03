@@ -21,9 +21,20 @@ public interface IAppointmentService {
     List<AppointmentDto> getByStaff(Integer staffId);
 
     // --- LOGIC MỚI CHO WORKFLOW ---
-    AppointmentDto assignTechnicianAndConfirm(Integer appointmentId, Integer technicianId, String staffEmail);
+    // AppointmentDto assignTechnicianAndConfirm(Integer appointmentId, Integer
+    // technicianId, String staffUserName);
 
-    AppointmentDto checkInAppointment(Integer appointmentId, Integer currentTechId, boolean isUserAccepted);
+    // confirm cho khach hang
+    AppointmentDto confirmForCustomer(Integer appointmentId, String staffUserName);
+
+    // check-in chi can xac nhan role admin, staff
+    AppointmentDto checkInAppointment(Integer appointmentId, boolean isUserAccepted);
+
+    // phan cong appointment cho tech
+    AppointmentDto assignTechnician(Integer appointmentId, Integer technicianId);
+
+    // List<AppointmentDto> getCheckedInAppointments(); // staff lay danh sach
+    // appoint da checkin
 
     // Methods for Customer
     AppointmentDto createAppointmentForCustomer(String username, AppointmentRequest request);

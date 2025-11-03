@@ -48,6 +48,11 @@ public class AppointmentController {
         // return appointmentService.createAppointment(request);
         // }
 
+        @GetMapping("staff/{staffId}/appointment")
+        public List<AppointmentDto> getAppoitnmentByStaff(@PathVariable int staffId) {
+                return appointmentService.getByStaff(staffId);
+        }
+
         @PutMapping("/{id}")
         public AppointmentDto updateAppointment(@PathVariable int id, @RequestBody AppointmentRequest request) {
                 return appointmentService.updateAppointment(id, request);
@@ -83,24 +88,49 @@ public class AppointmentController {
         }
 
         /**
-         * Bước 2: Staff gán KTV và xác nhận lịch hẹn.
+         * Bước 2: Staff gán KTV
          */
-        @PutMapping("/{appointmentId}/assign-and-confirm")
-        @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
-        public ResponseEntity<AppointmentDto> assignAndConfirm(
-                        @PathVariable Integer appointmentId,
-                        @RequestBody AssignTechnicianRequest request,
+
+        // Staff xac nhan lich hen
+        @PutMapping("/{appointmentId}/confirmForCustomer")
+        @PreAuthorize("hasAnyRole('STAFF')")
+        public ResponseEntity<AppointmentDto> confirmForCustomer(@PathVariable Integer appointmentId,
                         Authentication authentication) {
-                String staffEmail = authentication.getName();
-                AppointmentDto updatedAppointment = appointmentService.assignTechnicianAndConfirm(appointmentId,
-                                request.getTechnicianId(), staffEmail);
+                String staffUserName = authentication.getName();
+                AppointmentDto updatedAppointment = appointmentService.confirmForCustomer(appointmentId, staffUserName);
                 return ResponseEntity.ok(updatedAppointment);
         }
 
-        /**
-         * Bước 3: KTV xem danh sách LỊCH HẸN (chưa phải công việc) đã được gán cho
-         * mình.
-         */
+        // check-in lịch hen cho customer
+        @PutMapping("/{appointmentId}/check-in")
+        @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+        public ResponseEntity<AppointmentDto> checkIn(@PathVariable Integer appointmentId,
+                        Authentication authentication) {
+                User currentUser = userService.findByUsername(authentication.getName())
+                                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+                boolean isAdmin = currentUser.getRole().name().equals("ADMIN");
+                boolean isStaff = currentUser.getRole().name().equals("STAFF");
+
+                AppointmentDto result = appointmentService.checkInAppointment(
+                                appointmentId,
+                                isAdmin || isStaff);
+
+                return ResponseEntity.ok(result);
+        }
+
+        // phan cong lich hen cho technician
+        @PutMapping("/{appointmentId}/assignTechnician")
+        @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
+        public ResponseEntity<AppointmentDto> assignTechnician(
+                        @PathVariable Integer appointmentId,
+                        @RequestBody AssignTechnicianRequest request,
+                        Authentication authentication) {
+                AppointmentDto updatedAppointment = appointmentService.assignTechnician(appointmentId,
+                                request.getTechnicianId());
+                return ResponseEntity.ok(updatedAppointment);
+        }
+
+        // KTV xem danh sách LỊCH HẸN (chưa phải công việc) được gán
         @GetMapping("/technician/appointment")
         @PreAuthorize("hasRole('TECHNICIAN')")
         public ResponseEntity<List<AppointmentDto>> getApointmentsByTechnicianId(Authentication authentication) {
@@ -110,26 +140,6 @@ public class AppointmentController {
                 List<AppointmentDto> appointments = appointmentService
                                 .getAppointmentByTechinician(currentTech.getUserId());
                 return ResponseEntity.ok(appointments);
-        }
-
-        /**
-         * Bước 4: Tech check-in lịch.
-         */
-        @PutMapping("/{appointmentId}/check-in")
-        @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'TECHNICIAN')")
-        public ResponseEntity<AppointmentDto> checkIn(@PathVariable Integer appointmentId,
-                        Authentication authentication) {
-                User currentTech = userService.findByUsername(authentication.getName())
-                                .orElseThrow(() -> new EntityNotFoundException("User not found"));
-                boolean isAdmin = currentTech.getRole().name().equals("ADMIN");
-                boolean isStaff = currentTech.getRole().name().equals("STAFF");
-
-                AppointmentDto result = appointmentService.checkInAppointment(
-                                appointmentId,
-                                currentTech.getUserId(),
-                                isAdmin || isStaff);
-
-                return ResponseEntity.ok(result);
         }
 
 }

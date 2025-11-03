@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 import edu.uth.evservice.EVService.model.enums.ContractStatus;
 
@@ -22,6 +24,9 @@ public class CustomerPackageContract {
     @Column(name = "contract_id")
     Integer contractId;
 
+    @Column(name = "contract_name")
+    String contractName;
+
     @ManyToOne
     @JoinColumn(name = "user_id", referencedColumnName = "user_id", nullable = false)
     User user;
@@ -29,6 +34,10 @@ public class CustomerPackageContract {
     @ManyToOne
     @JoinColumn(name = "package_id", referencedColumnName = "package_id", nullable = false)
     ServicePackage servicePackage;
+
+    // them moi
+    @OneToMany(mappedBy = "contract")
+    private List<Appointment> appointments = new ArrayList<>();
 
     @Column(name = "start_date", nullable = false)
     LocalDate startDate;
