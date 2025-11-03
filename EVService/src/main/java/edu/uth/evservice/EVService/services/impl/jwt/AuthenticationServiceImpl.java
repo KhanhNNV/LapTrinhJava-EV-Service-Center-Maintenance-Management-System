@@ -28,7 +28,7 @@ public class AuthenticationServiceImpl implements IAuthenticaionService {
     public JwtDto loginRequest (LoginRequest loginRequest){
         //~Tạo đối tượng UsernamePasswordAuthenticationToken từ email và password người dùng gửi lên
         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                loginRequest.getUsername(),
+                loginRequest.getUsernameOrEmail(),
                 loginRequest.getPassword()
         );
         //~ Thực hiện xác thực bằng AuthenticationManager

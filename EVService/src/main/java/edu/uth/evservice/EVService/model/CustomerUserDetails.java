@@ -30,6 +30,11 @@ public class CustomerUserDetails implements UserDetails, OAuth2User{
         return this.user;
     }
 
+    public Integer getId(){
+        return user.getUserId();
+    }
+    
+
     //===================Phương thức UserDetails ===========================
     
     //. Trả về quyền được cấp cho người dùng

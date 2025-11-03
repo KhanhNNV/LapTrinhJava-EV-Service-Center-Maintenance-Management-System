@@ -20,6 +20,7 @@ import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 
+import edu.uth.evservice.EVService.model.CustomerUserDetails;
 import edu.uth.evservice.EVService.services.jwt.IJwtService;
 import lombok.RequiredArgsConstructor;
 
@@ -43,16 +44,19 @@ public class JwtServiceImpl implements IJwtService{
                         .collect(Collectors.joining(" ")); //~ Một list danh danh sách quyền 
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + accessTime); //~ THỜI GIAN HIỆN TẠI + KHOẢNG THỜI GIAN ACCESS TỒN TẠI
+        CustomerUserDetails userDetails = (CustomerUserDetails) authenication.getPrincipal();
         try{
             //~ Tạo header + sử dụng thuật toán HS512
             JWSHeader header = new JWSHeader (JWSAlgorithm.HS512);
 
             //~ Tạo payload: chứa những nội dung cần thiết
             JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
-                .subject(authenication.getName()) //~email
+                .subject(userDetails.getId().toString()) //~id
                 .issueTime(now)
                 .expirationTime(expiryDate)
                 .claim("role", scope)
+                .claim("username", userDetails.getUsername())
+                .claim("email", userDetails.getUser().getEmail())
                 .build();
             //~ Tạo đối tượng JWT chứa header + payload
             SignedJWT signedJWT = new SignedJWT(header, claimsSet);
@@ -72,13 +76,14 @@ public class JwtServiceImpl implements IJwtService{
     public String generateRefeshToken(Authentication authenication) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + refeshTime); //~ THỜI GIAN HIỆN TẠI + KHOẢNG THỜI GIAN ACCESS TỒN TẠI
+        CustomerUserDetails userDetails = (CustomerUserDetails) authenication.getPrincipal();
         try{
             //~ Tạo header + sử dụng thuật toán HS512
             JWSHeader header = new JWSHeader (JWSAlgorithm.HS512);
 
             //~ Tạo payload: chứa những nội dung cần thiết
             JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
-                .subject(authenication.getName()) //~email
+                .subject(userDetails.getId().toString()) //~email
                 .issueTime(now)
                 .expirationTime(expiryDate)
                 .build();

@@ -27,12 +27,12 @@ export default function LoginFormInfo({
       {/* Sử dụng class từ formStyles */}
       <div className={formStyles.formGroup}>
         <label className={formStyles.formLabel} htmlFor="login-email">
-          Email hoặc Số điện thoại
+          Tên đăng nhập/Email
         </label>
         <input
           id="login-email"
           className={formStyles.formInput}
-          placeholder="example@email.com"
+          placeholder="Nhập Tên đăng nhập/Email"
           value={email}
           onChange={(e) => onChangeEmail(e.target.value)}
           onKeyDown={handleKeyDown}
@@ -88,14 +88,12 @@ export default function LoginFormInfo({
 
 
       <div className={formStyles.socialButtons}>
-
-        <a 
-          href="http://localhost:8081/oauth2/authorization/google" 
+        <button 
           className={`${formStyles.socialBtn} ${formStyles.google}`}
-          role="button" 
+          onClick={() => onSocial('Google')} //Gọi hàm onSocial từ AuthPage
         >
           <GoogleIcon /> Google
-        </a>
+        </button>
 
         <button className={`${formStyles.socialBtn} ${formStyles.facebook}`} onClick={() => onSocial('Facebook')}>
           <FacebookIcon /> Facebook

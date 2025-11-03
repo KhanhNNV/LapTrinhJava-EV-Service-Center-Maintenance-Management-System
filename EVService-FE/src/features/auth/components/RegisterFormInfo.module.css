@@ -62,3 +62,53 @@
     width: 100%;
   }
 }
+
+
+.requirementList {
+  margin-top: 0.75rem;
+  padding-left: 0.25rem; 
+}
+
+.requirementItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem; 
+  font-size: 0.8rem; 
+  margin-bottom: 0.25rem; 
+}
+
+.requirementIcon {
+  font-weight: bold;
+  font-size: 1rem;
+  width: 1rem; 
+  text-align: center;
+}
+
+.requirementText {
+  flex: 1;
+}
+
+/* Trạng thái: Đã đạt */
+.requirementMet {
+  color: #10b981; 
+}
+
+/* Trạng thái: Chưa đạt */
+.requirementNotMet {
+  color: #6b7280; 
+}
+
+
+
+
+.formInputError {
+  border-color: #ef4444 !important; /* red-500, dùng !important để đè lên focus */
+  box-shadow: 0 0 0 1px #ef4444 !important;
+}
+
+/* Dùng cho text thông báo lỗi nhỏ (Sửa lỗi selector: bỏ "p") */
+.formErrorText {
+  color: #ef4444; /* red-500 */
+  font-size: 0.8rem; /* 13px */
+  margin-top: 0.25rem; /* 4px */
+}

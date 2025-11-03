@@ -1,15 +1,19 @@
 import React, { useState } from 'react';
-import AuthCard from '../features/auth/components/AuthCard'; //
-import LogoHeader from '../features/auth/components/LogoHeader'; //
-import LoginFormInfo from '../features/auth/components/LoginFormInfo'; //
-import OtpStep from '../features/auth/components/OtpStep'; //
-import RegisterFormInfo from '../features/auth/components/RegisterFormInfo'; //
-import RegisterSuccessStep from '../features/auth/components/RegisterSuccessStep'; //
-import styles from './AuthPage.module.css'; //
+import { useNavigate } from 'react-router-dom';
+import axios from'axios'
+import AuthCard from '../features/auth/components/AuthCard'; 
+import LogoHeader from '../features/auth/components/LogoHeader'; 
+import LoginFormInfo from '../features/auth/components/LoginFormInfo'; 
+import OtpStep from '../features/auth/components/OtpStep'; 
+import RegisterFormInfo from '../features/auth/components/RegisterFormInfo'; 
+import RegisterSuccessStep from '../features/auth/components/RegisterSuccessStep'; 
+import styles from './AuthPage.module.css'; 
 // Import formStyles để dùng textCenter
-import formStyles from '../features/auth/components/formStyles.module.css'; //
+import formStyles from '../features/auth/components/formStyles.module.css'; 
 
+const API_URL = 'http://localhost:8081';
 export default function AuthPage() {
+    const navigate = useNavigate();
     // --- State ---
     const [tab, setTab] = useState('login');
     // Login
@@ -18,68 +22,177 @@ export default function AuthPage() {
     const [loginPassword, setLoginPassword] = useState('');
     // Register
     const [regStep, setRegStep] = useState(1);
+    const [regUsername, setRegUsername] = useState('');
     const [fullName, setFullName] = useState('');
     const [regEmail, setRegEmail] = useState('');
     const [regPassword, setRegPassword] = useState('');
     const [regConfirm, setRegConfirm] = useState('');
+    const [regPhoneNumber, setRegPhoneNumber] = useState('');
+    const [regAddress, setRegAddress] = useState('');
     const [acceptTerms, setAcceptTerms] = useState(false);
-
+    
+    
+    //State cho validation và điều khoản
+    const [regErrors, setRegErrors] = useState({});
+    const [termsViewed, setTermsViewed] = useState(false);
     // --- Hàm xử lý ---
-    const handleLoginSuccess = (userName) => {
-        console.log('Login successful for:', userName);
-        alert(`Chào mừng ${userName}! Đăng nhập thành công.`);
-        // Thực tế: gọi hàm từ App.jsx để cập nhật state global
+    const handleLoginSuccess = (token) => {
+        if (!token) {
+            console.error('Login success called without token');
+            return;
+        }
+        console.log('Login successful, saving token...');
+        localStorage.setItem('authToken', token);
+        navigate('/dashboard', { replace: true });
     };
 
     const handleSocialLogin = (provider) => {
-        console.log(`Attempting social login with ${provider}`);
-        setTimeout(() => handleLoginSuccess(`${provider} User`), 300);
+        if (provider === 'Google') {
+            window.location.href = `${API_URL}/oauth2/authorization/google`;
+        }
     };
 
     const switchToLogin = () => {
         setTab('login');
         setLoginStep(1);
         setRegStep(1);
+        setRegErrors({});//~ Xóa lỗi khi chuyển tab
     };
 
     const switchToRegister = () => {
         setTab('register');
         setLoginStep(1);
         setRegStep(1);
+        setRegErrors({});//~ Xóa lỗi khi chuyển tab
     };
 
-    const handleLoginInfoSubmit = () => {
+    const handleLoginInfoSubmit = async() => {
         if (!loginEmail || !loginPassword) {
              alert('Vui lòng nhập đầy đủ Email và Mật khẩu!');
              return;
+        }
+        try {
+            const response = await axios.post(`${API_URL}/auth/login`, {
+                username: loginEmail, 
+                password: loginPassword
+            });
+            const { accessToken } = response.data; 
+            if (accessToken) {
+                handleLoginSuccess(accessToken);
+            } else {
+                alert('Đăng nhập thành công nhưng không nhận được token.');
+            }
+        } catch (error) {
+            console.error('Login failed:', error);
+            if (error.response && (error.response.status === 401 || error.response.status === 403 || error.response.status === 404)) {
+                 alert('Đăng nhập thất bại: Sai Tên đăng nhập hoặc Mật khẩu.');
+            } else {
+                 alert('Đã xảy ra lỗi kết nối. Vui lòng thử lại.');
+            }
+        }
+    };
+    const validateRegistration = () => {
+        const newErrors = {};
+
+        // ~ Kiểm tra các trường bắt buộc (theo yêu cầu của bạn)
+        if (!regUsername) newErrors.username = "Cần điền Tên đăng nhập";
+        if (!regPassword) newErrors.password = "Cần điền Mật khẩu";
+        if (!regConfirm) newErrors.confirm = "Cần điền xác nhận Mật khẩu";
+        if (!regPhoneNumber) newErrors.phoneNumber = "Cần điền Số điện thoại";
+        
+        // ~ Kiểm tra logic (mật khẩu khớp)
+        if (regPassword && regConfirm && regPassword !== regConfirm) {
+            newErrors.confirm = "Mật khẩu không khớp";
+        }
+        
+        // ~ Kiểm tra điều khoản (phải được tick)
+        if (!acceptTerms) {
+            //~ (Yêu cầu của bạn) Chỉ báo lỗi nếu họ đã xem
+            if (termsViewed) {
+                newErrors.acceptTerms = "Bạn phải tick đồng ý với điều khoản";
+            } else {
+                newErrors.acceptTerms = "Vui lòng xem và đồng ý điều khoản";
+            }
+        }
+        //~ Kiểm tra độ mạnh mật khẩu (dựa trên logic `passwordStrength` của bạn)
+        const hasUppercase = /[A-Z]/.test(regPassword);
+        const hasLowercase = /[a-z]/.test(regPassword);
+        const hasNumber = /[0-9]/.test(regPassword);
+        const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(regPassword);
+        const hasLength = regPassword.length >= 8;
+        
+        //~ Chỉ kiểm tra độ mạnh nếu mật khẩu không rỗng
+        if (regPassword && (!hasUppercase || !hasLowercase || !hasNumber || !hasSpecial || !hasLength)) {
+            //~ Lỗi này sẽ hiển thị qua UI (dấu ✗), nhưng ta vẫn thêm lỗi chính
+            newErrors.password = "Mật khẩu chưa đáp ứng đủ các yêu cầu";
+        }
+        //~ Hàm xử lý khi click vào ô (xóa lỗi)
+        const handleFieldFocus = (fieldName) => {
+            setRegErrors(prev => ({ ...prev, [fieldName]: undefined }));
+        };
+        //~ Hàm xử lý khi rời ô (hiện lại lỗi nếu còn)
+        const handleFieldBlur = (fieldName) => {
+            // Tạm thời chỉ re-validate các trường đơn giản
+            // (Tránh validate password strength khi đang gõ confirm)
+            if (fieldName !== 'password' && fieldName !== 'confirm') {
+                validateRegistration();
+            }
+            // Khi rời ô confirm, kiểm tra lại
+            if (fieldName === 'confirm') {
+                if (regPassword && regConfirm && regPassword !== regConfirm) {
+                    setRegErrors(prev => ({...prev, confirm: "Mật khẩu không khớp"}));
+                }
+            }
+        };
+        setRegErrors(newErrors);
+        //~ Trả về true nếu không có lỗi
+        return Object.keys(newErrors).length === 0;
+    };
+    const handleRegisterInfoNext = async() => {
+        if (!validateRegistration()) {
+            console.log("Validation failed", regErrors);
+            return;
+        }
+        try {
+            const registerData = {
+                username: regUsername,
+                fullName: fullName,
+                email: regEmail,
+                password: regPassword,
+                phoneNumber: regPhoneNumber,
+                address: regAddress
+            };
+
+            await axios.post(`${API_URL}/auth/register`, registerData);
+            console.log('Mã OTP được gửi qua email của bạn');
+            setRegStep(2);
+            setRegErrors({}); 
+
+         } catch (error) {
+            console.error('Register failed:', error);
+            if (error.response && error.response.data) {
+                const errorMessage = error.response.data.message || error.response.data;
+                if (errorMessage.includes("Username đã tồn tại")) {
+                    setRegErrors(prev => ({...prev, username: "Tên đăng nhập này đã tồn tại"}));
+                } else if (errorMessage.includes("Email đã tồn tại")) {
+                    setRegErrors(prev => ({...prev, email: "Email này đã tồn tại"}));
+                } else {
+                    alert(`Đăng ký thất bại: ${errorMessage}`);
+                }
+            } else {
+                 alert('Đã xảy ra lỗi kết nối. Vui lòng thử lại.');
+            }
          }
-        console.log('Login form submitted, moving to step 2');
-        setLoginStep(2); // Chuyển sang bước OTP
-    };
-
-    const handleLoginOtpConfirm = () => {
-        console.log('Login OTP confirmed');
-        const userName = loginEmail.split('@')[0] || 'User';
-        handleLoginSuccess(userName);
-    };
-
-    const handleRegisterInfoNext = () => {
-         if (!fullName || !regEmail || !regPassword || !regConfirm) return alert('Vui lòng điền đầy đủ thông tin!');
-         if (regPassword !== regConfirm) return alert('Mật khẩu không khớp!');
-         if (regPassword.length < 6) return alert('Mật khẩu phải có ít nhất 6 ký tự!');
-         if (!acceptTerms) return alert('Vui lòng đồng ý với điều khoản dịch vụ!');
-         console.log('Register form submitted, moving to step 2');
-         setRegStep(2);
      };
 
     const handleRegisterOtpConfirm = () => {
-        console.log('Register OTP confirmed');
+        console.log('Đăng kí OTP thành công');
         setRegStep(3);
     };
 
     const handleRegisterSuccessDone = () => {
-        console.log('Register successful, logging in user...');
-        handleLoginSuccess(fullName || 'New User');
+        console.log('Đăng kí thành công, Vui lòng đăng nhập lại');
+        switchToLogin();
     };
 
     // Logic showTabs giữ nguyên
@@ -92,7 +205,6 @@ export default function AuthPage() {
             {/* Chỉ hiển thị nút tab khi showTabs là true */}
             {showTabs && (
                 <div className={styles.tabButtons}>
-                    {/* <<< NÚT TAB ĐÃ ĐƯỢC THÊM LẠI >>> */}
                     <button
                         className={`${styles.tabBtn} ${tab === 'login' ? styles.tabBtnActive : styles.tabBtnInactive}`}
                         onClick={switchToLogin}
@@ -107,56 +219,60 @@ export default function AuthPage() {
                     >
                         Đăng ký
                     </button>
-                    {/* <<< KẾT THÚC NÚT TAB >>> */}
                 </div>
             )}
 
             {/* Nội dung thay đổi theo tab và bước */}
             {tab === 'login' ? (
-                <>
-                    {loginStep === 1 && (
-                        <LoginFormInfo
-                            email={loginEmail}
-                            password={loginPassword}
-                            onChangeEmail={setLoginEmail}
-                            onChangePassword={setLoginPassword}
-                            onSubmit={handleLoginInfoSubmit} // Đảm bảo gọi đúng hàm
-                            onSocial={handleSocialLogin}
-                            switchToRegister={switchToRegister}
-                        />
-                    )}
-                    {loginStep === 2 && (
-                        <OtpStep
-                            email={loginEmail}
-                            onBack={() => setLoginStep(1)}
-                            onConfirm={handleLoginOtpConfirm}
-                            confirmButtonText="ĐĂNG NHẬP"
-                        />
-                    )}
-                </>
+                <LoginFormInfo
+                    email={loginEmail}
+                    password={loginPassword}
+                    onChangeEmail={setLoginEmail}
+                    onChangePassword={setLoginPassword}
+                    onSubmit={handleLoginInfoSubmit} 
+                    onSocial={handleSocialLogin}
+                    switchToRegister={switchToRegister}
+                />
             ) : (
                 <>
                     {regStep === 1 && (
                         <RegisterFormInfo
+                            errors={regErrors}
+                            termsViewed={termsViewed}
+                            onTermsClick={() => setTermsViewed(true)}
+
+                            username={regUsername}
+                            setUsername={setRegUsername} 
+
+                            phoneNumber={regPhoneNumber}
+                            setPhone={setRegPhoneNumber} 
+
+                            address={regAddress}
+                            setRegAddress={setRegAddress}
+                            
                             fullName={fullName}
-                            email={regEmail}
-                            password={regPassword}
-                            confirm={regConfirm}
-                            accept={acceptTerms}
                             setFullName={setFullName}
+
+                            email={regEmail}
                             setEmail={setRegEmail}
+
+                            password={regPassword}
                             setPassword={setRegPassword}
+
+                            confirm={regConfirm}
                             setConfirm={setRegConfirm}
+
+                            accept={acceptTerms}
                             setAccept={setAcceptTerms}
-                            onNext={handleRegisterInfoNext} // Đảm bảo gọi đúng hàm
+                            
+                            onNext={handleRegisterInfoNext}
                             onSocial={handleSocialLogin}
-                            switchToLogin={switchToLogin}
                         />
                     )}
                     {regStep === 2 && (
                         <OtpStep
                             email={regEmail}
-                            onBack={() => setRegStep(1)}
+                            onBack={() => { setRegStep(1); setRegErrors({}); }} // Xóa lỗi khi back
                             onConfirm={handleRegisterOtpConfirm}
                             confirmButtonText="XÁC NHẬN"
                         />
