@@ -29,7 +29,6 @@ export default function RegisterFormInfo({
   termsViewed, 
   onTermsClick,
   onFieldFocus,
-  onFieldBlur,
 }) {
   const [showPwd, setShowPwd] = useState(false);
   const [showPwd2, setShowPwd2] = useState(false);
@@ -56,7 +55,7 @@ const passwordStrength = useMemo(() => {
   const hasLength = password.length >= 8; 
   //---------Danh sách gợi ý cho người dùng nếu mật khẩu chưa đủ mạnh-----------------
   const requirements = [
-      { text: "Ít nhất 8 ký tự", met: hasLength },
+      { text: "Tối thiểu nhất 8 ký tự", met: hasLength },
       { text: "Có chữ in hoa (A-Z)", met: hasUppercase },
       { text: "Có chữ thường (a-z)", met: hasLowercase },
       { text: "Có chữ số (0-9)", met: hasNumber },
@@ -65,8 +64,10 @@ const passwordStrength = useMemo(() => {
 
   //--------Tính điểm mật khẩu---------------------
   let score = 0;
-  if (password.length >= 8) score++;
-  if (hasUppercase && hasLowercase) score++;
+  if (password.length >= 8) score++ 
+  else score--;
+  if (hasUppercase ) score++;
+  if (hasLowercase) score++;
   if (hasNumber) score++;
   if (hasSpecial) score++;
 //-----------Phân loại mức độ----------------------
@@ -90,14 +91,14 @@ const passwordStrength = useMemo(() => {
   if (score === 3)
     return {
       label: "Mạnh",
-      className: styles.strengthTextMedium,
+      className: styles.strengthTextStrong,
       barClassName: styles.strengthBarStrong,
       score,
       requirements,
     };
   return {
     label: "Rất Mạnh",
-    className: styles.strengthTextStrong,
+    className: styles.strengthTextVeryStrong,
       barClassName: styles.strengthBarVeryStrong,
       score,
       requirements,
@@ -128,11 +129,14 @@ const handlePhoneChange = (e) => {
         </label>
         <input
           id="reg-username"
-          className={formStyles.formInput}
+          className={`${formStyles.formInput} ${
+            errors.username ? formStyles.formInputError : ''
+          }`}
           placeholder="NguyenVanA"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           onKeyDown={handleKeyDown}
+          onFocus={() => onFieldFocus('username')}
         />
         {/*Hiển thị lỗi */}
         {errors.username && (
@@ -164,11 +168,14 @@ const handlePhoneChange = (e) => {
         <input
           id="reg-email"
           type="email"
-          className={formStyles.formInput}
-          placeholder="example@email.com"
+          className={`${formStyles.formInput} ${
+            errors.email ? formStyles.formInputError : ''
+          }`}
+          placeholder="nguyenvana@email.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           onKeyDown={handleKeyDown}
+          onFocus={() => onFieldFocus('email')}
         />
         {/* Hiển thị lỗi */}
         {errors.email && (
@@ -184,11 +191,14 @@ const handlePhoneChange = (e) => {
         <input
           id="reg-phone"
           type="tel"
-          className={formStyles.formInput}
+          className={`${formStyles.formInput} ${
+            errors.phoneNumber ? formStyles.formInputError : ''
+          }`}
           placeholder="0123456789"
           value={phoneNumber}
           onChange = {handlePhoneChange}
           onKeyDown={handleKeyDown}
+          onFocus={() => onFieldFocus('phoneNumber')}
         />
        {/* Hiển thị lỗi */}
         {errors.phoneNumber && (
@@ -220,10 +230,13 @@ const handlePhoneChange = (e) => {
           <input
             id="reg-password"
             type={showPwd ? "text" : "password"}
-            className={formStyles.formInput}
+            className={`${formStyles.formInput} ${
+              errors.password ? formStyles.formInputError : ''
+            }`}
             placeholder="Nhập mật khẩu"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            onFocus={() => onFieldFocus('password')}
           />
           
           <button
@@ -291,13 +304,15 @@ const handlePhoneChange = (e) => {
           <input
             id="reg-confirm"
             type={showPwd2 ? "text" : "password"}
-            className={formStyles.formInput}
+            className={`${formStyles.formInput} ${
+              errors.confirm ? formStyles.formInputError : ''
+            }`}
             placeholder="Nhập lại mật khẩu"
             value={confirm}
             onChange={(e) => setConfirm(e.target.value)}
             onKeyDown={handleKeyDown}
-            onFocus={() => onFieldFocus('password')}
-            onBlur={() => onFieldBlur('password')}
+            onFocus={() => onFieldFocus('confirm')}
+        
           />
           <button
             type="button"
@@ -332,17 +347,18 @@ const handlePhoneChange = (e) => {
           className={formStyles.checkbox}
           checked={accept}
           onChange={(e) => setAccept(e.target.checked)}
+          onClick={() => onFieldFocus('acceptTerms')}
         />
         <label htmlFor="acceptTerms" className={formStyles.checkboxLabel}>
           Tôi đồng ý với{" "}
-          <a href="https://m.yodycdn.com/blog/anh-troll-nguoi-yeu-yodyvn33.jpg" className="link" target = "_blank">
+          <a href="https://m.yodycdn.com/blog/anh-troll-nguoi-yeu-yodyvn33.jpg" className="link" target = "_blank" rel="noopener noreferrer" onClick={onTermsClick}>
             Điều khoản dịch vụ
           </a>
         </label>
 
         {/* Hiển thị lỗi điều khoản */}
         {errors.acceptTerms && (
-          <p className={formStyles.formErrorText} style={{ marginTop: "-1rem", marginBottom: "1rem" }}>
+          <p className={formStyles.formErrorText} style={{ marginTop:"0"}}>
               {errors.acceptTerms}
           </p>
         )}

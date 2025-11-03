@@ -23,16 +23,20 @@
 }
 
 .strengthBarWeak { 
-  width: 33%;
+  width: 25%;
   background: #ef4444; /* red-500 */
 }
 
 .strengthBarMedium {
-  width: 66%;
+  width: 50%;
   background: #f59e0b; 
 }
 
 .strengthBarStrong {
+  width: 75%;
+  background: #91d20e; 
+}
+.strengthBarVeryStrong {
   width: 100%;
   background: #10b981; 
 }
@@ -44,7 +48,8 @@
 
 .strengthTextWeak { color: #ef4444; } 
 .strengthTextMedium { color: #f59e0b; }
-.strengthTextStrong { color: #10b981; }
+.strengthTextStrong { color: #91d20e; }
+.strengthTextVeryStrong { color: #10b981; }
 
 /* Error text */
 .errorText {
@@ -98,17 +103,3 @@
   color: #6b7280; 
 }
 
-
-
-
-.formInputError {
-  border-color: #ef4444 !important; /* red-500, dùng !important để đè lên focus */
-  box-shadow: 0 0 0 1px #ef4444 !important;
-}
-
-/* Dùng cho text thông báo lỗi nhỏ (Sửa lỗi selector: bỏ "p") */
-.formErrorText {
-  color: #ef4444; /* red-500 */
-  font-size: 0.8rem; /* 13px */
-  margin-top: 0.25rem; /* 4px */
-}

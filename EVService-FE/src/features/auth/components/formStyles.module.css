@@ -193,3 +193,15 @@
 }
 
 
+.formInputError {
+  border-color: #ef4444 !important; /* red-500, dùng !important để đè lên focus */
+  box-shadow: 0 0 0 1px #ef4444 !important;
+}
+
+/* Dùng cho text thông báo lỗi nhỏ */
+.formErrorText {
+  color: #ef4444; 
+  font-size: 0.8rem; 
+  margin-top: 0.25rem;
+}
+
