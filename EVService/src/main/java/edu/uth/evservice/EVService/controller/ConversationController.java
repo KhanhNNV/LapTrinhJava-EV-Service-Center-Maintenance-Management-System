@@ -50,5 +50,17 @@ public class ConversationController {
         ConversationDto updatedConversation = conversationService.claimConversation(id, username);// Gọi service để thực hiện logic
         return ResponseEntity.ok(updatedConversation);
     }
+    // === ENDPOINT MỚI ĐỂ ĐÓNG CUỘC TRÒ CHUYỆN ===
+    @PutMapping("/{id}/close")
+    @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')") // Chỉ STAFF hoặc ADMIN mới được dùng
+    public ResponseEntity<ConversationDto> closeConversation(
+            @PathVariable Integer id,
+            Authentication authentication) {
+
+        String staffUsername = authentication.getName();
+        ConversationDto updatedConversation = conversationService.closeConversation(id, staffUsername);
+
+        return ResponseEntity.ok(updatedConversation);
+    }
 
 }

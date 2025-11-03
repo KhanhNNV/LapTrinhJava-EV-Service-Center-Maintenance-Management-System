@@ -125,4 +125,26 @@ public class ConversationServiceImp  implements IConversationService {
         Conversation savedConversation = conversationRepository.save(conversation);
         return toDto(savedConversation);
     }
+    @Override
+    @Transactional
+    public ConversationDto closeConversation(Integer conversationId, String staffUsername) {
+        // 1. Tìm cuộc trò chuyện trong database
+        Conversation conversation = conversationRepository.findById(conversationId)
+                .orElseThrow(() -> new EntityNotFoundException("Conversation not found with id: " + conversationId));
+
+        // 2. KIỂM TRA QUYỀN SỞ HỮU - RẤT QUAN TRỌNG
+        // Đảm bảo có nhân viên phụ trách và nhân viên đó chính là người đang thực hiện hành động
+        if (conversation.getStaffConversation() == null ||
+                !conversation.getStaffConversation().getUsername().equals(staffUsername)) {
+            // Nếu không có nhân viên nào, hoặc người đóng không phải là người phụ trách
+            throw new SecurityException("You are not authorized to close this conversation.");
+        }
+
+        // 3. Đổi trạng thái sang "Đã đóng"
+        conversation.setStatus(ConversationStatus.CLOSED);
+
+        // 4. Lưu lại và trả về kết quả
+        Conversation savedConversation = conversationRepository.save(conversation);
+        return toDto(savedConversation);
+    }
 }
