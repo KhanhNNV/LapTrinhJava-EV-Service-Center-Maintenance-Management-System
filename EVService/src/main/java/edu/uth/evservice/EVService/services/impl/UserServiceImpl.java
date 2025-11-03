@@ -24,34 +24,6 @@ public class UserServiceImpl implements IUserService {
     IUserRepository userRepository;
     PasswordEncoder passwordEncoder;
 
-    @Override
-    public UserDto createUser(CreateUserRequest request) {
-        Role role;
-        try {
-            role = Role.valueOf(request.getRole().toUpperCase());
-        } catch (IllegalArgumentException e) {
-            throw new RuntimeException("Role không hợp lệ: " + request.getRole());
-        }
-
-        if (userRepository.existsByUsername(request.getUsername()))
-            throw new RuntimeException("Username đã tồn tại");
-        if (userRepository.existsByEmail(request.getEmail()))
-            throw new RuntimeException("Email đã tồn tại");
-
-        User user = User.builder()
-                .username(request.getUsername())
-                .fullName(request.getFullName())
-                .email(request.getEmail())
-                // .Mã hóa mật khẩu trước khi lưu vào database
-                .password(passwordEncoder.encode(request.getPassword()))
-                .phoneNumber(request.getPhoneNumber())
-                .address(request.getAddress())
-                .role(role)
-                .build();
-
-        userRepository.save(user);
-        return mapToDto(user);
-    }
 
     @Override
     public UserDto getUserById(Integer id) {

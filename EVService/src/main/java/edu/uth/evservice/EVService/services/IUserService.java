@@ -8,7 +8,6 @@ import edu.uth.evservice.EVService.model.User;
 import edu.uth.evservice.EVService.requests.CreateUserRequest;
 
 public interface IUserService {
-    UserDto createUser(CreateUserRequest request);
 
     UserDto getUserById(Integer id);
 
