@@ -8,11 +8,11 @@ import org.springframework.stereotype.Service;
 
 import edu.uth.evservice.EVService.dto.InventoryDto;
 import edu.uth.evservice.EVService.model.Inventory;
-import edu.uth.evservice.EVService.model.ServiceCenter;
 import edu.uth.evservice.EVService.model.Part;
+import edu.uth.evservice.EVService.model.ServiceCenter;
 import edu.uth.evservice.EVService.repositories.IInventoryRepository;
-import edu.uth.evservice.EVService.repositories.IServiceCenterRepository;
 import edu.uth.evservice.EVService.repositories.IPartRepository;
+import edu.uth.evservice.EVService.repositories.IServiceCenterRepository;
 import edu.uth.evservice.EVService.requests.InventoryRequest;
 import edu.uth.evservice.EVService.services.IInventoryService;
 import jakarta.persistence.EntityNotFoundException;
@@ -28,21 +28,23 @@ public class InventoryServiceImpl implements IInventoryService {
     private final IPartRepository partRepository;
     private final IServiceCenterRepository serviceCenterRepository;
 
-    private Part findPartById(Integer id) {
-        if (id == null) {
-            throw new IllegalArgumentException("Part ID cannot be null");
-        }
-        return partRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Part not found with id: " + id));
-    }
+    // private Part findPartById(Integer id) {
+    // if (id == null) {
+    // throw new IllegalArgumentException("Part ID cannot be null");
+    // }
+    // return partRepository.findById(id)
+    // .orElseThrow(() -> new EntityNotFoundException("Part not found with id: " +
+    // id));
+    // }
 
-    private ServiceCenter findServiceCenterById(Integer id) {
-        if (id == null) {
-            throw new IllegalArgumentException("Service center ID cannot be null");
-        }
-        return serviceCenterRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Service center not found with id: " + id));
-    }
+    // private ServiceCenter findServiceCenterById(Integer id) {
+    // if (id == null) {
+    // throw new IllegalArgumentException("Service center ID cannot be null");
+    // }
+    // return serviceCenterRepository.findById(id)
+    // .orElseThrow(() -> new EntityNotFoundException("Service center not found with
+    // id: " + id));
+    // }
 
     @Override
     public List<InventoryDto> getAllInventories() {
@@ -63,12 +65,16 @@ public class InventoryServiceImpl implements IInventoryService {
         if (request == null) {
             throw new IllegalArgumentException("Inventory request cannot be null");
         }
+        ServiceCenter serviceCenter = serviceCenterRepository.findById(request.getCenterId())
+                .orElseThrow(() -> new RuntimeException("Center not found"));
+        Part part = partRepository.findById(request.getPartId())
+                .orElseThrow(() -> new RuntimeException("Part not found"));
         Inventory inventory = new Inventory();
         inventory.setQuantity(request.getQuantity());
         inventory.setMinQuantity(request.getMinQuantity());
         inventory.setCreatedAt(LocalDate.now());
-        inventory.setPart(findPartById(request.getPartId())); // Gán part
-        inventory.setServiceCenter(findServiceCenterById(request.getCenterId())); // Gán serviceCenter
+        inventory.setPart(part); // Gán part
+        inventory.setServiceCenter(serviceCenter); // Gán serviceCenter
 
         Inventory saved = inventoryRepository.save(inventory);
         return toDto(saved);
@@ -103,12 +109,17 @@ public class InventoryServiceImpl implements IInventoryService {
             throw new IllegalArgumentException("Id and inventory request cannot be null");
         }
 
+        ServiceCenter serviceCenter = serviceCenterRepository.findById(inventory.getCenterId())
+                .orElseThrow(() -> new RuntimeException("Center not found"));
+        Part part = partRepository.findById(inventory.getPartId())
+                .orElseThrow(() -> new RuntimeException("Part not found"));
+
         return inventoryRepository.findById(id).map(existing -> {
             existing.setQuantity(inventory.getQuantity());
             existing.setMinQuantity(inventory.getMinQuantity());
             existing.setUpdatedAt(LocalDate.now());
-            existing.setPart(findPartById(inventory.getPartId()));
-            existing.setServiceCenter(findServiceCenterById(inventory.getCenterId()));
+            existing.setPart(part);
+            existing.setServiceCenter(serviceCenter);
 
             Inventory updated = inventoryRepository.save(existing);
             return toDto(updated);

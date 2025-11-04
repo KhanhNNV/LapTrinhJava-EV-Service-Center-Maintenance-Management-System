@@ -1,9 +1,11 @@
 package edu.uth.evservice.EVService.services.impl;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
+import edu.uth.evservice.EVService.dto.TechnicianPerformanceDto;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,6 +17,7 @@ import edu.uth.evservice.EVService.model.enums.AppointmentStatus;
 import edu.uth.evservice.EVService.model.enums.ServiceTicketStatus;
 import edu.uth.evservice.EVService.repositories.IAppointmentRepository;
 import edu.uth.evservice.EVService.repositories.IServiceTicketRepository;
+import edu.uth.evservice.EVService.repositories.ITicketServiceItemRepository;
 import edu.uth.evservice.EVService.repositories.IUserRepository;
 import edu.uth.evservice.EVService.requests.ServiceTicketRequest;
 import edu.uth.evservice.EVService.services.IServiceTicketService;
@@ -29,6 +32,7 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
     private final IServiceTicketRepository ticketRepo;
     private final IAppointmentRepository appointmentRepo;
     private final IUserRepository userRepo;
+    private final ITicketServiceItemRepository ticketServiceItemRepository;
 
     @Override
     public List<ServiceTicketDto> getAllTickets() {
@@ -84,12 +88,13 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
 
     // --- LOGIC MỚI CHO WORKFLOW ---
 
+    // tech tao ticket tu appointment duoc giao
     @Override
     public ServiceTicketDto createTicketFromAppointment(Integer appointmentId, String technicianUsername) {
         Appointment appointment = appointmentRepo.findById(appointmentId)
                 .orElseThrow(() -> new EntityNotFoundException("Appointment not found: " + appointmentId));
 
-        if (appointment.getStatus() != AppointmentStatus.CHECKED_IN) {
+        if (appointment.getStatus() != AppointmentStatus.ASSIGNED) {
             throw new IllegalStateException("Cannot create service ticket. Customer has not checked in yet.");
         }
         if (appointment.getServiceTickets() != null) {
@@ -106,8 +111,30 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
                 .status(ServiceTicketStatus.IN_PROGRESS)
                 .notes(appointment.getNote())
                 .build();
+        appointment.setStatus(AppointmentStatus.IN_PROGRESS);
+        ServiceTicket savedTicket = ticketRepo.save(ticket);
 
-        return toDto(ticketRepo.save(ticket));
+        // --- LOGIC MỚI: TỰ ĐỘNG THÊM SERVICE ITEMS NẾU CÓ CONTRACT ---
+        // if (appointment.getContract() != null) {
+        // ServicePackage servicePackage =
+        // appointment.getContract().getServicePackage();
+        // // Giả sử ServicePackage có một list các ServiceItem
+        // // Cần thêm mối quan hệ @ManyToMany giữa ServicePackage và ServiceItem
+        // List<ServiceItem> itemsInPackage = servicePackage.getServiceItems();
+
+        // for (ServiceItem item : itemsInPackage) {
+        // TicketServiceItem tsi = TicketServiceItem.builder()
+        // .id(new TicketServiceItemId(savedTicket.getTicketId(), item.getItemId()))
+        // .serviceTicket(savedTicket)
+        // .serviceItem(item)
+        // .quantity(1)
+        // .unitPriceAtTimeOfService(0.0) // Miễn phí vì nằm trong gói
+        // .build();
+        // ticketServiceItemRepository.save(tsi);
+        // }
+        // }
+
+        return toDto(savedTicket);
     }
 
     @Override
@@ -129,6 +156,7 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
         return toDto(ticketRepo.save(ticket));
     }
 
+    // kiem tra quyen so huu ticket cua tech
     @Override
     public void verifyTicketOwnership(String username, Integer ticketId) {
         User technician = userRepo.findByUsername(username)
@@ -147,6 +175,7 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
                 .stream().map(this::toDto).collect(Collectors.toList());
     }
 
+    // cap nhat ticket status
     @Override
     public ServiceTicketDto updateTicketStatus(Integer ticketId, String username, ServiceTicketStatus newStatus) {
         verifyTicketOwnership(username, ticketId);
@@ -177,5 +206,41 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
                 .appointmentId(ticket.getAppointment().getAppointmentId())
                 .technicianId(ticket.getTechnician().getUserId())
                 .build();
+    }
+    @Override
+    public List<TechnicianPerformanceDto> calculateTechnicianPerformance(LocalDateTime startDate, LocalDateTime endDate) {
+        // Lấy các ticket đã hoàn thành trong khoảng thời gian
+        List<ServiceTicket> completedTickets =
+                ticketRepo.findByStatusAndEndTimeBetween(ServiceTicketStatus.COMPLETED, startDate, endDate);
+
+        // Gom nhóm theo kỹ thuật viên
+        Map<User, List<ServiceTicket>> groupedByTechnician = completedTickets.stream()
+                .filter(t -> t.getTechnician() != null)
+                .collect(Collectors.groupingBy(ServiceTicket::getTechnician));
+
+        // Tính toán hiệu suất cho từng kỹ thuật viên
+        return groupedByTechnician.entrySet().stream()
+                .map(entry -> {
+                    User tech = entry.getKey();
+                    List<ServiceTicket> tickets = entry.getValue();
+
+                    long totalMinutes = tickets.stream()
+                            .filter(t -> t.getStartTime() != null && t.getEndTime() != null)
+                            .mapToLong(t -> Duration.between(t.getStartTime(), t.getEndTime()).toMinutes())
+                            .sum();
+
+                    long totalTickets = tickets.size();
+                    double avgMinutes = totalTickets > 0 ? (double) totalMinutes / totalTickets : 0;
+
+                    return TechnicianPerformanceDto.builder()
+                            .technicianId(tech.getUserId())
+                            .technicianName(tech.getFullName())
+                            .totalTickets(totalTickets)
+                            .totalMinutes(totalMinutes)
+                            .avgMinutes(avgMinutes)
+                            .build();
+                })
+                .sorted(Comparator.comparingLong(TechnicianPerformanceDto::getTotalTickets).reversed()) // sắp giảm dần theo số vé
+                .collect(Collectors.toList());
     }
 }

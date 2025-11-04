@@ -1,11 +1,16 @@
 package edu.uth.evservice.EVService.dto;
 
-import lombok.*;
-import lombok.experimental.FieldDefaults;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.FieldDefaults;
 
 // DTO = Data Transfer Object, dùng để truyền dữ liệu gọn gàng hơn
 @Getter
@@ -30,6 +35,8 @@ public class AppointmentDto {
     Integer centerId;
     Integer technicianId;
     String technicianName;
+    Integer contractId;
+    String contractName;
 
     LocalDateTime createdAt;
     LocalDateTime updatedAt;
