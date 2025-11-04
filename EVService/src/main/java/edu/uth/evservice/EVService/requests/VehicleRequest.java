@@ -3,6 +3,8 @@ package edu.uth.evservice.EVService.requests;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import java.time.LocalDate;
+import edu.uth.evservice.EVService.model.enums.VehicleType;
+import jakarta.validation.constraints.NotNull;
 
 @Data
 @AllArgsConstructor
@@ -16,4 +18,8 @@ public class VehicleRequest {
     LocalDate recentMaintenanceDate;
     Integer userId;
     Integer centerId;
+
+    //@NotNull đảm bảo người dùng không để trống trường này.
+    @NotNull(message = "Loại xe không được để trống")
+    VehicleType vehicleType;
 }

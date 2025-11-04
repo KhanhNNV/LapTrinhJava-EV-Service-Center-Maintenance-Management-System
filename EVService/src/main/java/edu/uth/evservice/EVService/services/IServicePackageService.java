@@ -8,12 +8,9 @@ import java.util.List;
 public interface IServicePackageService {
 
     List<ServicePackageDto> getAllPackages();
-
     ServicePackageDto getPackageById(Integer id);
 
     ServicePackageDto createPackage(ServicePackageRequest request);
-
     ServicePackageDto updatePackage(Integer id, ServicePackageRequest request);
-
     void deletePackage(Integer id);
 }

@@ -18,9 +18,14 @@ public class ServiceCenterServiceImpl implements IServiceCenterService {
     @Autowired
     private IServiceCenterRepository serviceCenterRepository;
 
-
+    //Tạo trung tâm dịch vụ
     @Override
     public ServiceCenterDto createServiceCenter(ServiceCenterRequest request) {
+        // Kiểm tra xem tên trung tâm đã tồn tại chưa để tránh trùng lặp
+        if (serviceCenterRepository.existsByCenterName(request.getCenterName())) {
+            throw new RuntimeException("Tên trung tâm '" + request.getCenterName() + "' đã tồn tại.");
+        }
+
         ServiceCenter serviceCenter = ServiceCenter.builder()
                 .centerName(request.getCenterName())
                 .address(request.getAddress())
@@ -30,7 +35,7 @@ public class ServiceCenterServiceImpl implements IServiceCenterService {
         ServiceCenter savedServiceCenter = serviceCenterRepository.save(serviceCenter);
         return toDto(savedServiceCenter);
     }
-
+    
     @Override
     public ServiceCenterDto getServiceCenterById(int centerId) {
         ServiceCenter serviceCenter = serviceCenterRepository.findById(centerId)
@@ -43,10 +48,11 @@ public class ServiceCenterServiceImpl implements IServiceCenterService {
         return serviceCenterRepository.findAll().stream().map(this::toDto).collect(Collectors.toList());
     }
 
+    //Cập nhật
     @Override
     public ServiceCenterDto updateServiceCenter(int centerId, ServiceCenterRequest request) {
         ServiceCenter existingCenter = serviceCenterRepository.findById(centerId)
-                .orElseThrow(() -> new RuntimeException("ServiceCenter not found with id: " + centerId));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy trung tâm dịch vụ với ID: " + centerId));
 
         if (request.getCenterName() != null) {
             existingCenter.setCenterName(request.getCenterName());
@@ -69,9 +75,9 @@ public class ServiceCenterServiceImpl implements IServiceCenterService {
     @Override
     public void deleteServiceCenter(int centerId) {
         if (!serviceCenterRepository.existsById(centerId)) {
-            throw new RuntimeException("ServiceCenter not found with id: " + centerId);
+            throw new RuntimeException("Không tìm thấy trung tâm dịch vụ với ID: " + centerId);
         }
-        serviceCenterRepository.deleteById(centerId);
+        serviceCenterRepository.deleteById(centerId); // Thành công thì im lặng thất bại thì la lên
     }
     
     private ServiceCenterDto toDto(ServiceCenter serviceCenter) {
@@ -83,5 +89,7 @@ public class ServiceCenterServiceImpl implements IServiceCenterService {
                 .email(serviceCenter.getEmail())
                 .build();
     }
+    
+
     
 }

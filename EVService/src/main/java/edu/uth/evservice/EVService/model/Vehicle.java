@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.Nationalized;
+import edu.uth.evservice.EVService.model.enums.VehicleType;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -38,6 +39,10 @@ public class Vehicle {
     @Column(name = "recent_maintenance_date")
     LocalDate recentMaintenanceDate;  // Ngày bảo trì gần nhất
 
+    //@Enumerated(EnumType.STRING) lưu tên (vd: "ELECTRIC_CAR")
+    @Enumerated(EnumType.STRING)
+    @Column(name = "vehicle_type", nullable = false)
+    VehicleType vehicleType;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
