@@ -23,9 +23,10 @@ public class AppointmentRequest {
     LocalTime appointmentTime;
     String serviceType;
 
-    String status; // pending, confirmed, canceled, completed
+    // String status; // pending, confirmed, canceled, completed
     String note;
 
     Integer vehicleId;
     Integer centerId;
+    Integer contractId;
 }

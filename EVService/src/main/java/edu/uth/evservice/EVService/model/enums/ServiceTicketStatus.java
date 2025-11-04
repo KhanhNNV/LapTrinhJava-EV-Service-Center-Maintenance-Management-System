@@ -1,8 +1,7 @@
 package edu.uth.evservice.EVService.model.enums;
 
 public enum ServiceTicketStatus {
-    PENDING, // Chờ xử lý (mới được tạo)
-    IN_PROGRESS, // Đang tiến hành
+    IN_PROGRESS, // Khi technician tao phieu thi bat dau lam viec luon
     ON_HOLD, // Tạm dừng (ví dụ: chờ phụ tùng)
     COMPLETED, // Đã hoàn thành
     CANCELLED // Đã hủy

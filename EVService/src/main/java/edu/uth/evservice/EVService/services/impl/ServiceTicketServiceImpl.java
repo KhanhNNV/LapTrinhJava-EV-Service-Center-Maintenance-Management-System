@@ -15,6 +15,7 @@ import edu.uth.evservice.EVService.model.enums.AppointmentStatus;
 import edu.uth.evservice.EVService.model.enums.ServiceTicketStatus;
 import edu.uth.evservice.EVService.repositories.IAppointmentRepository;
 import edu.uth.evservice.EVService.repositories.IServiceTicketRepository;
+import edu.uth.evservice.EVService.repositories.ITicketServiceItemRepository;
 import edu.uth.evservice.EVService.repositories.IUserRepository;
 import edu.uth.evservice.EVService.requests.ServiceTicketRequest;
 import edu.uth.evservice.EVService.services.IServiceTicketService;
@@ -29,6 +30,7 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
     private final IServiceTicketRepository ticketRepo;
     private final IAppointmentRepository appointmentRepo;
     private final IUserRepository userRepo;
+    private final ITicketServiceItemRepository ticketServiceItemRepository;
 
     @Override
     public List<ServiceTicketDto> getAllTickets() {
@@ -84,12 +86,13 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
 
     // --- LOGIC MỚI CHO WORKFLOW ---
 
+    // tech tao ticket tu appointment duoc giao
     @Override
     public ServiceTicketDto createTicketFromAppointment(Integer appointmentId, String technicianUsername) {
         Appointment appointment = appointmentRepo.findById(appointmentId)
                 .orElseThrow(() -> new EntityNotFoundException("Appointment not found: " + appointmentId));
 
-        if (appointment.getStatus() != AppointmentStatus.CHECKED_IN) {
+        if (appointment.getStatus() != AppointmentStatus.ASSIGNED) {
             throw new IllegalStateException("Cannot create service ticket. Customer has not checked in yet.");
         }
         if (appointment.getServiceTickets() != null) {
@@ -106,8 +109,30 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
                 .status(ServiceTicketStatus.IN_PROGRESS)
                 .notes(appointment.getNote())
                 .build();
+        appointment.setStatus(AppointmentStatus.IN_PROGRESS);
+        ServiceTicket savedTicket = ticketRepo.save(ticket);
 
-        return toDto(ticketRepo.save(ticket));
+        // --- LOGIC MỚI: TỰ ĐỘNG THÊM SERVICE ITEMS NẾU CÓ CONTRACT ---
+        // if (appointment.getContract() != null) {
+        // ServicePackage servicePackage =
+        // appointment.getContract().getServicePackage();
+        // // Giả sử ServicePackage có một list các ServiceItem
+        // // Cần thêm mối quan hệ @ManyToMany giữa ServicePackage và ServiceItem
+        // List<ServiceItem> itemsInPackage = servicePackage.getServiceItems();
+
+        // for (ServiceItem item : itemsInPackage) {
+        // TicketServiceItem tsi = TicketServiceItem.builder()
+        // .id(new TicketServiceItemId(savedTicket.getTicketId(), item.getItemId()))
+        // .serviceTicket(savedTicket)
+        // .serviceItem(item)
+        // .quantity(1)
+        // .unitPriceAtTimeOfService(0.0) // Miễn phí vì nằm trong gói
+        // .build();
+        // ticketServiceItemRepository.save(tsi);
+        // }
+        // }
+
+        return toDto(savedTicket);
     }
 
     @Override
@@ -129,6 +154,7 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
         return toDto(ticketRepo.save(ticket));
     }
 
+    // kiem tra quyen so huu ticket cua tech
     @Override
     public void verifyTicketOwnership(String username, Integer ticketId) {
         User technician = userRepo.findByUsername(username)
@@ -147,6 +173,7 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
                 .stream().map(this::toDto).collect(Collectors.toList());
     }
 
+    // cap nhat ticket status
     @Override
     public ServiceTicketDto updateTicketStatus(Integer ticketId, String username, ServiceTicketStatus newStatus) {
         verifyTicketOwnership(username, ticketId);

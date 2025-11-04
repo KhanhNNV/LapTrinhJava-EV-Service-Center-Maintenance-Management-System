@@ -1,17 +1,23 @@
 package edu.uth.evservice.EVService.services.impl;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import edu.uth.evservice.EVService.dto.AppointmentDto;
 import edu.uth.evservice.EVService.model.Appointment;
+import edu.uth.evservice.EVService.model.CustomerPackageContract;
 import edu.uth.evservice.EVService.model.ServiceCenter;
 import edu.uth.evservice.EVService.model.User;
 import edu.uth.evservice.EVService.model.Vehicle;
 import edu.uth.evservice.EVService.model.enums.AppointmentStatus;
+import edu.uth.evservice.EVService.model.enums.ContractStatus;
 import edu.uth.evservice.EVService.repositories.IAppointmentRepository;
+import edu.uth.evservice.EVService.repositories.ICustomerPackageContractRepository;
 import edu.uth.evservice.EVService.repositories.IServiceCenterRepository;
 import edu.uth.evservice.EVService.repositories.IUserRepository;
 import edu.uth.evservice.EVService.repositories.IVehicleRepository;
@@ -28,6 +34,7 @@ public class AppointmentServiceImpl implements IAppointmentService {
     private final IUserRepository userRepository;
     private final IVehicleRepository vehicleRepository;
     private final IServiceCenterRepository centerRepository;
+    private final ICustomerPackageContractRepository contractRepository;
 
     @Override
     public List<AppointmentDto> getAllAppointments() {
@@ -43,7 +50,6 @@ public class AppointmentServiceImpl implements IAppointmentService {
                 .orElseThrow(() -> new RuntimeException("Appointment not found"));
     }
 
-
     @Override
     public AppointmentDto updateAppointment(Integer id, AppointmentRequest request) {
         Appointment appointment = appointmentRepository.findById(id)
@@ -55,8 +61,8 @@ public class AppointmentServiceImpl implements IAppointmentService {
             appointment.setAppointmentTime(request.getAppointmentTime());
         if (request.getServiceType() != null)
             appointment.setServiceType(request.getServiceType());
-        if (request.getStatus() != null)
-            appointment.setStatus(AppointmentStatus.valueOf(request.getStatus().toUpperCase()));
+        // if (request.getStatus() != null)
+        // appointment.setStatus(AppointmentStatus.valueOf(request.getStatus().toUpperCase()));
 
         if (request.getNote() != null)
             appointment.setNote(request.getNote());
@@ -72,7 +78,6 @@ public class AppointmentServiceImpl implements IAppointmentService {
                     .orElseThrow(() -> new RuntimeException("Center not found"));
             appointment.setCenter(center);
         }
-
 
         appointmentRepository.save(appointment);
         return toDto(appointment);
@@ -104,32 +109,73 @@ public class AppointmentServiceImpl implements IAppointmentService {
                 .stream().map(this::toDto).collect(Collectors.toList());
     }
 
+    // @Override
+    // public AppointmentDto assignTechnicianAndConfirm(Integer appointmentId,
+    // Integer technicianId,
+    // String staffUsername) {
+    // Appointment appointment = appointmentRepository.findById(appointmentId)
+    // .orElseThrow(() -> new EntityNotFoundException("Appointment not found"));
+    // User technician = userRepository.findById(technicianId)
+    // .orElseThrow(() -> new EntityNotFoundException("Technician not found"));
+    // User staff = userRepository.findByUsername(staffUsername)
+    // .orElseThrow(() -> new EntityNotFoundException("Staff not found with
+    // username: " + staffUsername));
+
+    // // kiem tra neu appointment da bi huy hoac da xac nhan
+    // if (appointment.getStatus() == AppointmentStatus.CANCELED) {
+    // throw new IllegalStateException("Cannot confirm a canceled appointment.");
+    // }
+    // if (appointment.getStatus() == AppointmentStatus.CONFIRMED) {
+    // throw new IllegalStateException("Appointment is already confirmed.");
+    // }
+
+    // // Tìm tech trống lịch
+    // List<Appointment> technicianAppointments = appointmentRepository
+    // .findByAssignedTechnician_UserIdAndAppointmentDate(technicianId,
+    // appointment.getAppointmentDate());
+    // if (!technicianAppointments.isEmpty()) {
+    // throw new IllegalStateException("Technician is already assigned to another
+    // appointment on this date.");
+    // }
+
+    // appointment.setStaff(staff);
+    // appointment.setAssignedTechnician(technician);
+    // appointment.setStatus(AppointmentStatus.CONFIRMED);
+
+    // // có tech và staff
+    // return toDtoFull(appointmentRepository.save(appointment));
+    // }
+
+    // confirm cho khach hang
     @Override
-    public AppointmentDto assignTechnicianAndConfirm(Integer appointmentId, Integer technicianId, String staffUsername ) {
+    public AppointmentDto confirmForCustomer(Integer appointmentId, String staffUsername) {
         Appointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new EntityNotFoundException("Appointment not found"));
-        User technician = userRepository.findById(technicianId)
-                .orElseThrow(() -> new EntityNotFoundException("Technician not found"));
         User staff = userRepository.findByUsername(staffUsername)
                 .orElseThrow(() -> new EntityNotFoundException("Staff not found with username: " + staffUsername));
 
-        //Tìm tech trống lịch
-        List<Appointment> technicianAppointments = appointmentRepository
-                .findByAssignedTechnician_UserIdAndAppointmentDate(technicianId, appointment.getAppointmentDate());
-        if (!technicianAppointments.isEmpty()) {
-            throw new IllegalStateException("Technician is already assigned to another appointment on this date.");
+        // kiem tra neu appointment da bi huy hoac da xac nhan
+        if (appointment.getStatus() == AppointmentStatus.CANCELED) {
+            throw new IllegalStateException("Cannot confirm a canceled appointment.");
+        }
+        if (appointment.getStatus() == AppointmentStatus.CONFIRMED) {
+            throw new IllegalStateException("Appointment is already confirmed.");
+        }
+
+        if (appointment.getStatus() != AppointmentStatus.CHECKED_IN) {
+            throw new IllegalStateException("Appointment is already checked-in");
         }
 
         appointment.setStaff(staff);
-        appointment.setAssignedTechnician(technician);
         appointment.setStatus(AppointmentStatus.CONFIRMED);
 
-        //có tech và staff
-        return toDtoFull(appointmentRepository.save(appointment));
+        // có tech và staff
+        return toDto(appointmentRepository.save(appointment));
     }
 
+    // checkin cho customer
     @Override
-    public AppointmentDto checkInAppointment(Integer appointmentId) {
+    public AppointmentDto checkInAppointment(Integer appointmentId, boolean isUserAccepted) {
         Appointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new EntityNotFoundException("Appointment not found"));
 
@@ -137,16 +183,52 @@ public class AppointmentServiceImpl implements IAppointmentService {
             throw new IllegalStateException("Only confirmed appointments can be checked in.");
         }
 
+        if (!isUserAccepted) {
+            throw new AccessDeniedException("You are not allowed to check in!");
+        }
+
         appointment.setStatus(AppointmentStatus.CHECKED_IN);
+        appointment.setUpdatedAt(LocalDateTime.now());
+        return toDto(appointmentRepository.save(appointment));
+    }
+
+    // giao lich cho technician
+    @Override
+    public AppointmentDto assignTechnician(Integer appointmentId, Integer technicianId) {
+        Appointment appointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new EntityNotFoundException("Appointment not found"));
+
+        User technician = userRepository.findById(technicianId)
+                .orElseThrow(() -> new EntityNotFoundException("Technician not found"));
+
+        // kiem tra appointment da checkin
+        if (appointment.getStatus() != AppointmentStatus.CHECKED_IN) {
+            throw new IllegalStateException("Technicians cannot be assigned to unregistered appointments.");
+        }
+
+        // Kiểm tra KTV có đang bận (có lịch IN_PROGRESS trong ngày) không
+        List<Appointment> inProgressAppointments = appointmentRepository
+                .findByAssignedTechnician_UserIdAndStatus(technicianId, AppointmentStatus.IN_PROGRESS);
+
+        if (!inProgressAppointments.isEmpty()) {
+            throw new IllegalStateException(
+                    "Technician is currently working on another appointment (IN_PROGRESS). Cannot assign new one.");
+        }
+
+        // kiem tra so lich duoc giao trong ngay gioi han la 3
+        boolean isBusy = appointmentRepository
+                .findByAssignedTechnician_UserIdAndAppointmentDate(technicianId, appointment.getAppointmentDate())
+                .size() > 3;
+        if (isBusy) {
+            throw new IllegalStateException("Technicians are now taking maximum appointments per day.");
+        }
+
+        appointment.setAssignedTechnician(technician);
+        appointment.setStatus(AppointmentStatus.ASSIGNED);
+
         return toDtoFull(appointmentRepository.save(appointment));
     }
 
-    @Override
-    public List<AppointmentDto> getConfirmedAppointmentsForTechnician(Integer technicianId) {
-        return appointmentRepository
-                .findByAssignedTechnician_UserIdAndStatus(technicianId, AppointmentStatus.CONFIRMED)
-                .stream().map(this::toDto).collect(Collectors.toList());
-    }
     @Override
     public List<AppointmentDto> getAppointmentByTechinician(Integer technicianId) {
         return appointmentRepository
@@ -154,6 +236,7 @@ public class AppointmentServiceImpl implements IAppointmentService {
                 .stream().map(this::toDtoFull).collect(Collectors.toList());
     }
 
+    // dat lich hen cho customer
     @Override
     public AppointmentDto createAppointmentForCustomer(String username, AppointmentRequest request) {
         User customer = userRepository.findByUsername(username)
@@ -162,14 +245,30 @@ public class AppointmentServiceImpl implements IAppointmentService {
         Vehicle vehicle = vehicleRepository.findById(request.getVehicleId())
                 .orElseThrow(() -> new EntityNotFoundException("Vehicle not found with ID: " + request.getVehicleId()));
 
+        ServiceCenter center = centerRepository.findById(request.getCenterId())
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Service Center not found with ID: " + request.getCenterId()));
+
         // Security Check: Đảm bảo khách hàng chỉ đặt lịch cho xe của chính mình.
         if (!vehicle.getUser().getUserId().equals(customer.getUserId())) {
             throw new SecurityException("Forbidden: You can only book appointments for your own vehicles.");
         }
 
-        ServiceCenter center = centerRepository.findById(request.getCenterId())
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "Service Center not found with ID: " + request.getCenterId()));
+        // xu li contract
+        CustomerPackageContract contract = null;
+        if (request.getContractId() != null) {
+            contract = contractRepository.findById(request.getContractId())
+                    .orElseThrow(() -> new EntityNotFoundException(
+                            "Contract not found with id: " + request.getContractId()));
+            // kiem tra contract thuoc ve khach hang
+            if (!contract.getUser().getUserId().equals(customer.getUserId())) {
+                throw new SecurityException("Forbidden: This contract does not belong to you.");
+            }
+            // Business Rule: Kiểm tra contract còn hạn và active
+            if (contract.getStatus() != ContractStatus.ACTIVE || contract.getEndDate().isBefore(LocalDate.now())) {
+                throw new IllegalStateException("This contract is not active or has expired.");
+            }
+        }
 
         Appointment appointment = Appointment.builder()
                 .appointmentDate(request.getAppointmentDate())
@@ -179,13 +278,16 @@ public class AppointmentServiceImpl implements IAppointmentService {
                 .customer(customer) // Người sở hữu lịch hẹn
                 .vehicle(vehicle)
                 .center(center)
+                .createdAt(LocalDateTime.now())
                 .status(AppointmentStatus.PENDING) // Luôn bắt đầu là PENDING
+                .contract(contract)
                 .build();
 
         appointmentRepository.save(appointment);
         return toDto(appointment);
     }
 
+    // huy lich hen cua customer
     @Override
     public AppointmentDto cancelAppointmentForCustomer(Integer appointmentId, String username) {
         User customer = userRepository.findByUsername(username)
@@ -208,6 +310,8 @@ public class AppointmentServiceImpl implements IAppointmentService {
 
         appointment.setStatus(AppointmentStatus.CANCELED);
         appointment.setNote(appointment.getNote() + " [Canceled by customer]");
+        appointment.setAssignedTechnician(null); // Bỏ gán kỹ thuật viên khi hủy
+        appointment.setUpdatedAt(LocalDateTime.now());
         appointmentRepository.save(appointment);
         return toDto(appointment);
     }
@@ -224,12 +328,14 @@ public class AppointmentServiceImpl implements IAppointmentService {
                 .customerName(a.getCustomer().getFullName())
                 .vehicleId(a.getVehicle().getVehicleId())
                 .centerId(a.getCenter().getCenterId())
+                .contractId(a.getContract().getContractId())
+                .contractName(a.getContract().getContractName())
                 .createdAt(a.getCreatedAt())
                 .updatedAt(a.getUpdatedAt())
                 .build();
     }
 
-    //Response có tech và staff
+    // Response có tech và staff
     private AppointmentDto toDtoFull(Appointment a) {
         return AppointmentDto.builder()
                 .appointmentId(a.getAppointmentId())
