@@ -113,4 +113,12 @@ public class UserServiceImpl implements IUserService {
                 .role(user.getRole())
                 .build();
     }
+    // Phân role user sử dụng cho crud admincontroller
+    @Override
+    public List<UserDto> getUsersByRole(Role role) {
+        return userRepository.findByRole(role)
+                .stream()
+                .map(this::mapToDto)
+                .collect(Collectors.toList());
+    }
 }

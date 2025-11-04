@@ -1,9 +1,11 @@
 package edu.uth.evservice.EVService.services.impl;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
+import edu.uth.evservice.EVService.dto.TechnicianPerformanceDto;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -204,5 +206,41 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
                 .appointmentId(ticket.getAppointment().getAppointmentId())
                 .technicianId(ticket.getTechnician().getUserId())
                 .build();
+    }
+    @Override
+    public List<TechnicianPerformanceDto> calculateTechnicianPerformance(LocalDateTime startDate, LocalDateTime endDate) {
+        // Lấy các ticket đã hoàn thành trong khoảng thời gian
+        List<ServiceTicket> completedTickets =
+                ticketRepo.findByStatusAndEndTimeBetween(ServiceTicketStatus.COMPLETED, startDate, endDate);
+
+        // Gom nhóm theo kỹ thuật viên
+        Map<User, List<ServiceTicket>> groupedByTechnician = completedTickets.stream()
+                .filter(t -> t.getTechnician() != null)
+                .collect(Collectors.groupingBy(ServiceTicket::getTechnician));
+
+        // Tính toán hiệu suất cho từng kỹ thuật viên
+        return groupedByTechnician.entrySet().stream()
+                .map(entry -> {
+                    User tech = entry.getKey();
+                    List<ServiceTicket> tickets = entry.getValue();
+
+                    long totalMinutes = tickets.stream()
+                            .filter(t -> t.getStartTime() != null && t.getEndTime() != null)
+                            .mapToLong(t -> Duration.between(t.getStartTime(), t.getEndTime()).toMinutes())
+                            .sum();
+
+                    long totalTickets = tickets.size();
+                    double avgMinutes = totalTickets > 0 ? (double) totalMinutes / totalTickets : 0;
+
+                    return TechnicianPerformanceDto.builder()
+                            .technicianId(tech.getUserId())
+                            .technicianName(tech.getFullName())
+                            .totalTickets(totalTickets)
+                            .totalMinutes(totalMinutes)
+                            .avgMinutes(avgMinutes)
+                            .build();
+                })
+                .sorted(Comparator.comparingLong(TechnicianPerformanceDto::getTotalTickets).reversed()) // sắp giảm dần theo số vé
+                .collect(Collectors.toList());
     }
 }
