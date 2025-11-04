@@ -10,7 +10,6 @@ public interface IAppointmentService {
 
     AppointmentDto getAppointmentById(Integer id);
 
-
     AppointmentDto updateAppointment(Integer id, AppointmentRequest request);
 
     void deleteAppointment(Integer id);
@@ -22,9 +21,20 @@ public interface IAppointmentService {
     List<AppointmentDto> getByStaff(Integer staffId);
 
     // --- LOGIC MỚI CHO WORKFLOW ---
-    AppointmentDto assignTechnicianAndConfirm(Integer appointmentId, Integer technicianId,String staffEmail );
+    // AppointmentDto assignTechnicianAndConfirm(Integer appointmentId, Integer
+    // technicianId, String staffUserName);
 
-    AppointmentDto checkInAppointment(Integer appointmentId);
+    // confirm cho khach hang
+    AppointmentDto confirmForCustomer(Integer appointmentId, String staffUserName);
+
+    // check-in chi can xac nhan role admin, staff
+    AppointmentDto checkInAppointment(Integer appointmentId, boolean isUserAccepted);
+
+    // phan cong appointment cho tech
+    AppointmentDto assignTechnician(Integer appointmentId, Integer technicianId);
+
+    // List<AppointmentDto> getCheckedInAppointments(); // staff lay danh sach
+    // appoint da checkin
 
     // Methods for Customer
     AppointmentDto createAppointmentForCustomer(String username, AppointmentRequest request);
@@ -32,7 +42,6 @@ public interface IAppointmentService {
     AppointmentDto cancelAppointmentForCustomer(Integer appointmentId, String username);
 
     // Methods for Technician
-    List<AppointmentDto> getConfirmedAppointmentsForTechnician(Integer technicianId);
     List<AppointmentDto> getAppointmentByTechinician(Integer technicianId);
 
 }

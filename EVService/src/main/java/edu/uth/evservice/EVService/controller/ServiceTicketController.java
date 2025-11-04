@@ -1,5 +1,20 @@
 package edu.uth.evservice.EVService.controller;
 
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import edu.uth.evservice.EVService.dto.ServiceTicketDto;
 import edu.uth.evservice.EVService.dto.TechnicianPerformanceDto;
 import edu.uth.evservice.EVService.requests.ServiceTicketRequest;
@@ -67,5 +82,24 @@ public class ServiceTicketController {
                 ticketService.calculateTechnicianPerformance(startDate, endDate);
 
         return ResponseEntity.ok(report);
+
+    // Tao service ticket tu appointment cua technician
+    @PostMapping("/technician/{appointmentId}/create-service-ticket")
+    @PreAuthorize("hasRole('TECHNICIAN')")
+    public ResponseEntity<ServiceTicketDto> createServiceTicket(
+            @PathVariable Integer appointmentId,
+            Authentication authentication) {
+
+        ServiceTicketDto newTicket = ticketService.createTicketFromAppointment(appointmentId, authentication.getName());
+        return new ResponseEntity<>(newTicket, HttpStatus.CREATED);
+    }
+
+    // cap nhat trang thai service ticket khi hoan thanh cong viec
+    @PutMapping("/technician/{ticketId}/complete")
+    @PreAuthorize("hasRole('TECHNICIAN')")
+    public ResponseEntity<ServiceTicketDto> completeWork(@PathVariable Integer ticketId,
+            Authentication authentication) {
+        ServiceTicketDto updatedTicket = ticketService.completeWorkOnTicket(ticketId, authentication.getName());
+        return ResponseEntity.ok(updatedTicket);
     }
 }

@@ -19,8 +19,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -79,6 +77,11 @@ public class Appointment {
     @JoinColumn(name = "center_id", nullable = false)
     ServiceCenter center;
 
+    // them moi lien ket voi CustomerPackageContract de su dung goi dich vu uu dai
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "contract_id")
+    CustomerPackageContract contract;
+
     @OneToOne(mappedBy = "appointment", cascade = CascadeType.ALL)
     ServiceTicket serviceTickets;
 
@@ -91,16 +94,4 @@ public class Appointment {
     @Column(name = "note")
     private String note;
 
-    @PrePersist
-    public void onCreate() {
-        createdAt = LocalDateTime.now();
-        if (status == null) {
-            status = AppointmentStatus.PENDING; // mặc định là chờ xác nhận
-        }
-    }
-
-    @PreUpdate
-    public void onUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
 }
