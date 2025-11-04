@@ -116,6 +116,7 @@ public class VehicleServiceImpl implements IVehicleService {
                 .recentMaintenanceDate(request.getRecentMaintenanceDate())
                 .user(customer) // Gán chủ xe là người đang đăng nhập
                 .serviceCenter(center) // Gán trung tâm dịch vụ
+                .vehicleType(request.getVehicleType())
                 .build();
 
         // 5. Lưu và chuyển đổi sang DTO bằng hàm có sẵn
