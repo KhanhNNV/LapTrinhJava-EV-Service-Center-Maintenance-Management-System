@@ -17,14 +17,14 @@ public class UserController {
     private final IUserService userService;
 
     // Lấy tất cả user theo role
-    @GetMapping("/admin/{role}")
+    @GetMapping("/admin/{role:[a-zA-Z]+}")
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public ResponseEntity<?> getUsersByRole(@PathVariable Role role) {
         return ResponseEntity.ok(userService.getUsersByRole(role));
     }
 
     // Tìm user theo ID
-    @GetMapping("/admin/{id}")
+    @GetMapping("/admin/{id:\\d+}")
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public ResponseEntity<?> getUserById(@PathVariable Integer id) {
         return ResponseEntity.ok(userService.getUserById(id));

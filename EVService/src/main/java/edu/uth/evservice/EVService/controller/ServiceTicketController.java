@@ -80,8 +80,9 @@ public class ServiceTicketController {
 
         List<TechnicianPerformanceDto> report =
                 ticketService.calculateTechnicianPerformance(startDate, endDate);
-
         return ResponseEntity.ok(report);
+
+    }
 
     // Tao service ticket tu appointment cua technician
     @PostMapping("/technician/{appointmentId}/create-service-ticket")

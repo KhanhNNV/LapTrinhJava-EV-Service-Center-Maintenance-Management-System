@@ -21,7 +21,7 @@ import edu.uth.evservice.EVService.services.IServiceCenterService;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("api/controller/service-centers")
+@RequestMapping("api/service-centers")
 public class ServiceCenterController {
 
     @Autowired
