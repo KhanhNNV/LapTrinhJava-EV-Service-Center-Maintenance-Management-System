@@ -1,6 +1,7 @@
 package edu.uth.evservice.services.impl;
 
 import edu.uth.evservice.dtos.InvoiceDto;
+import edu.uth.evservice.exception.ResourceNotFoundException;
 import edu.uth.evservice.models.Invoice;
 import edu.uth.evservice.models.User;
 import edu.uth.evservice.models.enums.PaymentMethod;
@@ -11,7 +12,6 @@ import edu.uth.evservice.repositories.IServiceTicketRepository;
 import edu.uth.evservice.repositories.IUserRepository;
 import edu.uth.evservice.requests.CreateInvoiceRequest;
 import edu.uth.evservice.services.IInvoiceService;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
@@ -39,17 +39,17 @@ public class InvoiceServiceImpl implements IInvoiceService {
     public InvoiceDto getInvoiceById(Integer id) {
         return invoiceRepository.findById(id)
                 .map(this::toDto)
-                .orElseThrow(() -> new EntityNotFoundException("Invoice not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Invoice not found with id: " + id));
     }
 
     @Override
     public InvoiceDto createInvoice(CreateInvoiceRequest request) {
         User user = userRepository.findById(request.getUserId()).orElseThrow(
-            ()-> new EntityNotFoundException("Customer not found id: "+ request.getUserId()
+            ()-> new ResourceNotFoundException("Customer not found id: "+ request.getUserId()
         ));
 
         ServiceTicket ticket = serviceTicketRepository.findById(request.getTicketId()).orElseThrow(
-            ()-> new EntityNotFoundException("Ticket not found id: "+ request.getTicketId()
+            ()-> new ResourceNotFoundException("Ticket not found id: "+ request.getTicketId()
         ));
         Invoice invoice = Invoice.builder()
                 .invoiceDate(request.getInvoiceDate())
@@ -69,9 +69,9 @@ public class InvoiceServiceImpl implements IInvoiceService {
         return invoiceRepository.findById(id)
                 .map(existing -> {
                     User user = userRepository.findById(request.getUserId())
-                        .orElseThrow(() -> new EntityNotFoundException("Customer not found with id: " + request.getUserId()));
+                        .orElseThrow(() -> new ResourceNotFoundException("Customer not found with id: " + request.getUserId()));
                     ServiceTicket ticket = serviceTicketRepository.findById(request.getTicketId())
-                        .orElseThrow(() -> new EntityNotFoundException("ServiceTicket not found with id: " + request.getTicketId()));
+                        .orElseThrow(() -> new ResourceNotFoundException("ServiceTicket not found with id: " + request.getTicketId()));
                     existing.setInvoiceDate(request.getInvoiceDate());
                     existing.setTotalAmount(request.getTotalAmount());
                     existing.setPaymentStatus(PaymentStatus.valueOf(request.getPaymentStatus().toUpperCase()));
@@ -82,7 +82,7 @@ public class InvoiceServiceImpl implements IInvoiceService {
                     Invoice updated = invoiceRepository.save(existing);
                     return toDto(updated);
                 })
-                .orElseThrow(() -> new EntityNotFoundException("Invoice not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Invoice not found with id: " + id));
     }
     
 

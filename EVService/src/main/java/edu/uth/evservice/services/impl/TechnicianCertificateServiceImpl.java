@@ -3,6 +3,7 @@ package edu.uth.evservice.services.impl;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import edu.uth.evservice.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
 import edu.uth.evservice.dtos.TechnicianCertificateDto;
@@ -15,7 +16,6 @@ import edu.uth.evservice.repositories.ITechnicianCertificateRepository;
 import edu.uth.evservice.repositories.IUserRepository;
 import edu.uth.evservice.requests.AddCertificateRequest;
 import edu.uth.evservice.services.ITechnicianCertificateService;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -37,10 +37,10 @@ public class TechnicianCertificateServiceImpl implements ITechnicianCertificateS
     @Override
     public TechnicianCertificateDto addCertificateToTechnician(Integer technicianId, AddCertificateRequest request) {
         User technician = userRepository.findById(technicianId)
-                .orElseThrow(() -> new EntityNotFoundException("Technician not found: " + technicianId));
+                .orElseThrow(() -> new ResourceNotFoundException("Technician not found: " + technicianId));
 
         Certificate certificate = certificateRepository.findById(request.getCertificateId())
-                .orElseThrow(() -> new EntityNotFoundException("Certificate not found: " + request.getCertificateId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Certificate not found: " + request.getCertificateId()));
 
         TechnicianCertificate techCert = TechnicianCertificate.builder()
                 .id(new TechnicianCertificateId(technicianId, request.getCertificateId()))
@@ -59,7 +59,7 @@ public class TechnicianCertificateServiceImpl implements ITechnicianCertificateS
     public void removeCertificateFromTechnician(Integer technicianId, Integer certificateId) {
         TechnicianCertificateId id = new TechnicianCertificateId(technicianId, certificateId);
         if (!techCertRepository.existsById(id)) {
-            throw new EntityNotFoundException("Technician certificate mapping not found.");
+            throw new ResourceNotFoundException("Technician certificate mapping not found.");
         }
         techCertRepository.deleteById(id);
     }

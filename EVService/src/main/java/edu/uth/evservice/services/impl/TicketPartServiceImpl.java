@@ -3,6 +3,7 @@ package edu.uth.evservice.services.impl;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import edu.uth.evservice.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
 import edu.uth.evservice.dtos.TicketPartDto;
@@ -15,7 +16,6 @@ import edu.uth.evservice.repositories.IPartRepository;
 import edu.uth.evservice.repositories.IServiceTicketRepository;
 import edu.uth.evservice.requests.TicketPartRequest;
 import edu.uth.evservice.services.ITicketPartService;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -43,7 +43,7 @@ public class TicketPartServiceImpl implements ITicketPartService {
         TicketPartId id = new TicketPartId(ticketId, partId);
         return ticketPartRepository.findById(id)
                 .map(this::toDto)
-                .orElseThrow(() -> new EntityNotFoundException(
+                .orElseThrow(() -> new ResourceNotFoundException(
                         "TicketPart not found with ticketId: " + ticketId + " and partId: " + partId));
     }
 
@@ -52,12 +52,15 @@ public class TicketPartServiceImpl implements ITicketPartService {
         if (request == null) {
             throw new IllegalArgumentException("TicketPart request cannot be null");
         }
+        if (request.getQuantity() == null || request.getQuantity() <= 0) {
+            throw new IllegalArgumentException("Quantity must be greater than 0");
+        }
 
         ServiceTicket ticket = serviceTicketRepository.findById(request.getTicketId())
-                .orElseThrow(() -> new EntityNotFoundException(
+                .orElseThrow(() -> new ResourceNotFoundException(
                         "Service ticket not found with id: " + request.getTicketId()));
         Part part = partRepository.findById(request.getPartId())
-                .orElseThrow(() -> new EntityNotFoundException("Part not found with id: " + request.getPartId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Part not found with id: " + request.getPartId()));
 
         TicketPart ticketPart = new TicketPart();
         ticketPart.setTicket(ticket);
@@ -81,7 +84,7 @@ public class TicketPartServiceImpl implements ITicketPartService {
             existing.setUnitPriceAtTimeOfService(request.getUnitPriceAtTimeOfService());
             TicketPart updated = ticketPartRepository.save(existing);
             return toDto(updated);
-        }).orElseThrow(() -> new EntityNotFoundException(
+        }).orElseThrow(() -> new ResourceNotFoundException(
                 "TicketPart not found with ticketId: " + ticketId + " and partId: " + partId));
     }
 
@@ -92,7 +95,7 @@ public class TicketPartServiceImpl implements ITicketPartService {
         }
         TicketPartId id = new TicketPartId(ticketId, partId);
         ticketPartRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException(
+                .orElseThrow(() -> new ResourceNotFoundException(
                         "TicketPart not found with ticketId: " + ticketId + " and partId: " + partId));
         ticketPartRepository.deleteById(id);
     }

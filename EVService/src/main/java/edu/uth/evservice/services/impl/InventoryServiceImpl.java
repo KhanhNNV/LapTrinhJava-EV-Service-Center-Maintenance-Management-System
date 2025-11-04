@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import edu.uth.evservice.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
 import edu.uth.evservice.dtos.InventoryDto;
@@ -15,7 +16,6 @@ import edu.uth.evservice.repositories.IPartRepository;
 import edu.uth.evservice.repositories.IServiceCenterRepository;
 import edu.uth.evservice.requests.InventoryRequest;
 import edu.uth.evservice.services.IInventoryService;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -33,7 +33,7 @@ public class InventoryServiceImpl implements IInventoryService {
     // throw new IllegalArgumentException("Part ID cannot be null");
     // }
     // return partRepository.findById(id)
-    // .orElseThrow(() -> new EntityNotFoundException("Part not found with id: " +
+    // .orElseThrow(() -> new ResourceNotFoundException("Part not found with id: " +
     // id));
     // }
 
@@ -42,7 +42,7 @@ public class InventoryServiceImpl implements IInventoryService {
     // throw new IllegalArgumentException("Service center ID cannot be null");
     // }
     // return serviceCenterRepository.findById(id)
-    // .orElseThrow(() -> new EntityNotFoundException("Service center not found with
+    // .orElseThrow(() -> new ResourceNotFoundException("Service center not found with
     // id: " + id));
     // }
 
@@ -57,7 +57,7 @@ public class InventoryServiceImpl implements IInventoryService {
     public InventoryDto getInventoryById(Integer id) {
         return inventoryRepository.findById(id)
                 .map(this::toDto)
-                .orElseThrow(() -> new EntityNotFoundException("Inventory not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Inventory not found with id: " + id));
     }
 
     @Override
@@ -123,7 +123,7 @@ public class InventoryServiceImpl implements IInventoryService {
 
             Inventory updated = inventoryRepository.save(existing);
             return toDto(updated);
-        }).orElseThrow(() -> new EntityNotFoundException("Inventory not found with id: " + id));
+        }).orElseThrow(() -> new ResourceNotFoundException("Inventory not found with id: " + id));
     }
 
     @Override
@@ -132,7 +132,7 @@ public class InventoryServiceImpl implements IInventoryService {
             throw new IllegalArgumentException("Id cannot be null");
         }
         inventoryRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Inventory not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Inventory not found with id: " + id));
         inventoryRepository.deleteById(id);
     }
 

@@ -23,7 +23,7 @@ import edu.uth.evservice.repositories.IUserRepository;
 import edu.uth.evservice.repositories.IVehicleRepository;
 import edu.uth.evservice.requests.AppointmentRequest;
 import edu.uth.evservice.services.IAppointmentService;
-import jakarta.persistence.EntityNotFoundException;
+import edu.uth.evservice.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -114,11 +114,11 @@ public class AppointmentServiceImpl implements IAppointmentService {
     // Integer technicianId,
     // String staffUsername) {
     // Appointment appointment = appointmentRepository.findById(appointmentId)
-    // .orElseThrow(() -> new EntityNotFoundException("Appointment not found"));
+    // .orElseThrow(() -> new ResourceNotFoundException("Appointment not found"));
     // User technician = userRepository.findById(technicianId)
-    // .orElseThrow(() -> new EntityNotFoundException("Technician not found"));
+    // .orElseThrow(() -> new ResourceNotFoundException("Technician not found"));
     // User staff = userRepository.findByUsername(staffUsername)
-    // .orElseThrow(() -> new EntityNotFoundException("Staff not found with
+    // .orElseThrow(() -> new ResourceNotFoundException("Staff not found with
     // username: " + staffUsername));
 
     // // kiem tra neu appointment da bi huy hoac da xac nhan
@@ -150,9 +150,9 @@ public class AppointmentServiceImpl implements IAppointmentService {
     @Override
     public AppointmentDto confirmForCustomer(Integer appointmentId, String staffUsername) {
         Appointment appointment = appointmentRepository.findById(appointmentId)
-                .orElseThrow(() -> new EntityNotFoundException("Appointment not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Appointment not found"));
         User staff = userRepository.findByUsername(staffUsername)
-                .orElseThrow(() -> new EntityNotFoundException("Staff not found with username: " + staffUsername));
+                .orElseThrow(() -> new ResourceNotFoundException("Staff not found with username: " + staffUsername));
 
         // kiem tra neu appointment da bi huy hoac da xac nhan
         if (appointment.getStatus() == AppointmentStatus.CANCELED) {
@@ -177,7 +177,7 @@ public class AppointmentServiceImpl implements IAppointmentService {
     @Override
     public AppointmentDto checkInAppointment(Integer appointmentId, boolean isUserAccepted) {
         Appointment appointment = appointmentRepository.findById(appointmentId)
-                .orElseThrow(() -> new EntityNotFoundException("Appointment not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Appointment not found"));
 
         if (appointment.getStatus() != AppointmentStatus.CONFIRMED) {
             throw new IllegalStateException("Only confirmed appointments can be checked in.");
@@ -196,10 +196,10 @@ public class AppointmentServiceImpl implements IAppointmentService {
     @Override
     public AppointmentDto assignTechnician(Integer appointmentId, Integer technicianId) {
         Appointment appointment = appointmentRepository.findById(appointmentId)
-                .orElseThrow(() -> new EntityNotFoundException("Appointment not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Appointment not found"));
 
         User technician = userRepository.findById(technicianId)
-                .orElseThrow(() -> new EntityNotFoundException("Technician not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Technician not found"));
 
         // kiem tra appointment da checkin
         if (appointment.getStatus() != AppointmentStatus.CHECKED_IN) {
@@ -230,23 +230,28 @@ public class AppointmentServiceImpl implements IAppointmentService {
     }
 
     @Override
-    public List<AppointmentDto> getAppointmentByTechinician(Integer technicianId) {
+    public List<AppointmentDto> getAppointmentByTechinician(String username) {
+        User tech = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("Technician not found with username: " + username));
+
         return appointmentRepository
-                .findByAssignedTechnician_UserId(technicianId)
-                .stream().map(this::toDtoFull).collect(Collectors.toList());
+                .findByAssignedTechnician_UserId(tech.getUserId())
+                .stream()
+                .map(this::toDtoFull)
+                .collect(Collectors.toList());
     }
 
     // dat lich hen cho customer
     @Override
     public AppointmentDto createAppointmentForCustomer(String username, AppointmentRequest request) {
         User customer = userRepository.findByUsername(username)
-                .orElseThrow(() -> new EntityNotFoundException("Customer not found with username: " + username));
+                .orElseThrow(() -> new ResourceNotFoundException("Customer not found with username: " + username));
 
         Vehicle vehicle = vehicleRepository.findById(request.getVehicleId())
-                .orElseThrow(() -> new EntityNotFoundException("Vehicle not found with ID: " + request.getVehicleId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Vehicle not found with ID: " + request.getVehicleId()));
 
         ServiceCenter center = centerRepository.findById(request.getCenterId())
-                .orElseThrow(() -> new EntityNotFoundException(
+                .orElseThrow(() -> new ResourceNotFoundException(
                         "Service Center not found with ID: " + request.getCenterId()));
 
         // Security Check: Đảm bảo khách hàng chỉ đặt lịch cho xe của chính mình.
@@ -258,7 +263,7 @@ public class AppointmentServiceImpl implements IAppointmentService {
         CustomerPackageContract contract = null;
         if (request.getContractId() != null) {
             contract = contractRepository.findById(request.getContractId())
-                    .orElseThrow(() -> new EntityNotFoundException(
+                    .orElseThrow(() -> new ResourceNotFoundException(
                             "Contract not found with id: " + request.getContractId()));
             // kiem tra contract thuoc ve khach hang
             if (!contract.getUser().getUserId().equals(customer.getUserId())) {
@@ -291,10 +296,10 @@ public class AppointmentServiceImpl implements IAppointmentService {
     @Override
     public AppointmentDto cancelAppointmentForCustomer(Integer appointmentId, String username) {
         User customer = userRepository.findByUsername(username)
-                .orElseThrow(() -> new EntityNotFoundException("Customer not found with username: " + username));
+                .orElseThrow(() -> new ResourceNotFoundException("Customer not found with username: " + username));
 
         Appointment appointment = appointmentRepository.findById(appointmentId)
-                .orElseThrow(() -> new EntityNotFoundException("Appointment not found with ID: " + appointmentId));
+                .orElseThrow(() -> new ResourceNotFoundException("Appointment not found with ID: " + appointmentId));
 
         // Security Check: Đảm bảo khách hàng chỉ hủy lịch hẹn của chính mình.
         if (!appointment.getCustomer().getUserId().equals(customer.getUserId())) {

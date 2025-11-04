@@ -42,6 +42,6 @@ public interface IAppointmentService {
     AppointmentDto cancelAppointmentForCustomer(Integer appointmentId, String username);
 
     // Methods for Technician
-    List<AppointmentDto> getAppointmentByTechinician(Integer technicianId);
+    List<AppointmentDto> getAppointmentByTechinician(String username);
 
 }
