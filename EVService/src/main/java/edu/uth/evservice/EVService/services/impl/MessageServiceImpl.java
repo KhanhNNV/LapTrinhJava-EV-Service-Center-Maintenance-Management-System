@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import edu.uth.evservice.EVService.model.enums.ConversationStatus;
+import edu.uth.evservice.EVService.model.enums.Role;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import edu.uth.evservice.EVService.dto.MessageDto;
@@ -76,40 +78,80 @@ public class MessageServiceImpl implements IMessageService {
 //        Message saved = messageRepository.save(m);
 //        return toDto(saved);
 //    }
-    @Override
-    public MessageDto createMessage(CreateMessageRequest request, String username) {
-        // Tim nguoi gui tin nhan
-        User sender = userRepository.findByUsername(username)
-                .orElseThrow(() -> new EntityNotFoundException("User (Sender) not found with id: " + request.getSenderId()));
-        Conversation conversation; // Tao bien de chua phong chat
-        // KiemTra tin nhan
-        if(request.getConversationId() == null) {
-            //Tin nhan dau tien se tao phong chat moi
-            Conversation newConversation = Conversation.builder()
-                    .customerConversation(sender) // gan nguoi gui la Khach hang
-                    .staffConversation(null)
-                    .status(ConversationStatus.NEW) // voi trang thai NEW
-                    .topic("Yêu câù help:" + sender.getFullName())
-                    .startTime(LocalDate.now())
-                    .build();
-            conversation = conversationRepository.save(newConversation);
-        }else {
-            // Tin nhan trong phong chat da co
-            conversation = conversationRepository.findById(request.getConversationId())
-                    .orElseThrow(() -> new EntityNotFoundException
-                            ("Conversation not found with id: " + request.getConversationId()));
+@Override
+@Transactional // Đảm bảo tất cả các bước (kiểm tra, cập nhật, tạo) là một giao dịch
+public MessageDto createMessage(CreateMessageRequest request, String username) {
+    // 1. TÌM NGƯỜI GỬI BẰNG USERNAME TỪ JWT (An toàn)
+    User sender = userRepository.findByUsername(username)
+            .orElseThrow(() -> new EntityNotFoundException("User (Sender) not found with username: " + username));
+
+    Conversation conversation; // Chuẩn bị "phòng chat"
+
+    // 2. KIỂM TRA ID CUỘC TRÒ CHUYỆN
+    if (request.getConversationId() == null) {
+        // === TRƯỜNG HỢP 1: TIN NHẮN MỚI (TẠO PHÒNG CHAT MỚI) ===
+
+        // Chỉ khách hàng mới được tạo phòng chat mới
+        if (sender.getRole() != Role.CUSTOMER) {
+            throw new SecurityException("Only customers can create a new conversation.");
         }
-        // Tao va luu tin nhan
-        Message newMessage = Message.builder()
-                .user(sender)
-                .content(request.getContent())
-                .conversation(conversation)
-                .timestamp(LocalDateTime.now())
-                .isRead(false)
+
+        Conversation newConversation = Conversation.builder()
+                .customerConversation(sender)
+                .staffConversation(null)
+                .status(ConversationStatus.NEW)
+                .topic("Yêu cầu hỗ trợ mới từ " + sender.getFullName())
+                .startTime(LocalDate.now()) // Dùng LocalDateTime
                 .build();
-        Message savedMessage = messageRepository.save(newMessage);
-        return toDto(savedMessage);
+
+        conversation = conversationRepository.save(newConversation);
+
+    } else {
+        // === TRƯỜNG HỢP 2: TIN NHẮN VÀO PHÒNG CHAT ĐÃ CÓ ===
+        conversation = conversationRepository.findById(request.getConversationId())
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Conversation not found with id: " + request.getConversationId()));
+
+        // Lấy thông tin người chủ phòng chat và nhân viên phụ trách
+        User customer = conversation.getCustomerConversation();
+        User assignedStaff = conversation.getStaffConversation();
+
+        // === LOGIC BẢO MẬT MỚI ===
+        // 3. KIỂM TRA QUYỀN GỬI TIN NHẮN
+
+        // A. Kiểm tra xem người gửi có phải là khách hàng chủ phòng chat không
+        boolean isCustomer = customer.getUsername().equals(username);
+
+        // B. Kiểm tra xem người gửi có phải là nhân viên đã được gán không
+        boolean isAssignedStaff = (assignedStaff != null) &&
+                (assignedStaff.getUsername().equals(username));
+
+        // NẾU KHÔNG PHẢI CẢ HAI, TỪ CHỐI!
+        if (!isCustomer && !isAssignedStaff) {
+            throw new SecurityException("You are not authorized to send messages to this conversation.");
+        }
+
+        // === LOGIC MỚI: TỰ ĐỘNG "MỞ LẠI" CUỘC TRÒ CHUYỆN ===
+        if (conversation.getStatus() == ConversationStatus.CLOSED) {
+            // (isCustomer || isAssignedStaff) đã được kiểm tra ở trên, nên ai gửi ở đây đều hợp lệ
+            conversation.setStatus(ConversationStatus.IN_PROGRESS);
+            conversation = conversationRepository.save(conversation);
+        }
     }
+
+    // 5. TẠO VÀ LƯU TIN NHẮN MỚI
+    Message newMessage = Message.builder()
+            .user(sender)
+            .content(request.getContent())
+            .conversation(conversation)
+            .timestamp(LocalDateTime.now())
+            .isRead(false)
+            .build();
+
+    Message savedMessage = messageRepository.save(newMessage);
+
+    return toDto(savedMessage);
+}
 
     @Override
     public MessageDto updateMessage(Integer id, CreateMessageRequest request) {
