@@ -56,32 +56,10 @@ public class MessageServiceImpl implements IMessageService {
                 .map(this::toDto)
                 .collect(Collectors.toList());
     }
-
-//    @Override
-//    public MessageDto createMessage(CreateMessageRequest request) {
-//        Conversation conversation = conversationRepository.findById(request.getConversationId())
-//                .orElseThrow(() -> new EntityNotFoundException(
-//                        "Conversation not found with id: " + request.getConversationId()));
-//        Message m = new Message();
-//        // resolve sender user
-//        if (request.getSenderId() == null) {
-//            throw new IllegalArgumentException("senderId is required");
-//        }
-//        User sender = userRepository.findById(request.getSenderId())
-//                .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + request.getSenderId()));
-//        m.setUser(sender);
-//        m.setIsRead(request.getIsRead() != null ? request.getIsRead() : Boolean.FALSE);
-//        m.setContent(request.getContent());
-//        m.setConversation(conversation);
-//        m.setTimestamp(request.getTimestamp() != null ? request.getTimestamp() : LocalDateTime.now());
-//
-//        Message saved = messageRepository.save(m);
-//        return toDto(saved);
-//    }
 @Override
 @Transactional // Đảm bảo tất cả các bước (kiểm tra, cập nhật, tạo) là một giao dịch
 public MessageDto createMessage(CreateMessageRequest request, String username) {
-    // 1. TÌM NGƯỜI GỬI BẰNG USERNAME TỪ JWT (An toàn)
+    // 1. TÌM NGƯỜI GỬI BẰNG USERNAME TỪ JWT
     User sender = userRepository.findByUsername(username)
             .orElseThrow(() -> new EntityNotFoundException("User (Sender) not found with username: " + username));
 
@@ -90,20 +68,16 @@ public MessageDto createMessage(CreateMessageRequest request, String username) {
     // 2. KIỂM TRA ID CUỘC TRÒ CHUYỆN
     if (request.getConversationId() == null) {
         // === TRƯỜNG HỢP 1: TIN NHẮN MỚI (TẠO PHÒNG CHAT MỚI) ===
-
-        // Chỉ khách hàng mới được tạo phòng chat mới
         if (sender.getRole() != Role.CUSTOMER) {
             throw new SecurityException("Only customers can create a new conversation.");
         }
-
         Conversation newConversation = Conversation.builder()
                 .customerConversation(sender)
                 .staffConversation(null)
                 .status(ConversationStatus.NEW)
                 .topic("Yêu cầu hỗ trợ mới từ " + sender.getFullName())
-                .startTime(LocalDate.now()) // Dùng LocalDateTime
+                .startTime(LocalDate.now()) // <-- Đã sửa lại thành LocalDate.now()
                 .build();
-
         conversation = conversationRepository.save(newConversation);
 
     } else {
@@ -112,29 +86,35 @@ public MessageDto createMessage(CreateMessageRequest request, String username) {
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Conversation not found with id: " + request.getConversationId()));
 
-        // Lấy thông tin người chủ phòng chat và nhân viên phụ trách
         User customer = conversation.getCustomerConversation();
         User assignedStaff = conversation.getStaffConversation();
-
-        // === LOGIC BẢO MẬT MỚI ===
-        // 3. KIỂM TRA QUYỀN GỬI TIN NHẮN
-
-        // A. Kiểm tra xem người gửi có phải là khách hàng chủ phòng chat không
-        boolean isCustomer = customer.getUsername().equals(username);
-
-        // B. Kiểm tra xem người gửi có phải là nhân viên đã được gán không
+        boolean isCustomer = customer.getUsername().equals(sender.getUsername());
         boolean isAssignedStaff = (assignedStaff != null) &&
-                (assignedStaff.getUsername().equals(username));
+                (assignedStaff.getUsername().equals(sender.getUsername()));
 
-        // NẾU KHÔNG PHẢI CẢ HAI, TỪ CHỐI!
-        if (!isCustomer && !isAssignedStaff) {
-            throw new SecurityException("You are not authorized to send messages to this conversation.");
+        // 3. KIỂM TRA QUYỀN GỬI TIN NHẮN
+        if (conversation.getStatus() == ConversationStatus.NEW && !isCustomer) {
+            throw new SecurityException("Staff must claim this conversation before replying.");
+        }
+        if (conversation.getStatus() == ConversationStatus.IN_PROGRESS && !isCustomer && !isAssignedStaff) {
+            throw new SecurityException("This conversation is in progress with another staff member.");
+        }
+        if (conversation.getStatus() == ConversationStatus.CLOSED && !isCustomer && !isAssignedStaff) {
+            throw new SecurityException("You are not authorized to reopen this closed conversation.");
         }
 
-        // === LOGIC MỚI: TỰ ĐỘNG "MỞ LẠI" CUỘC TRÒ CHUYỆN ===
+        // === LOGIC MỚI: TỰ ĐỘNG "MỞ LẠI" (ĐÃ CẬP NHẬT) ===
         if (conversation.getStatus() == ConversationStatus.CLOSED) {
-            // (isCustomer || isAssignedStaff) đã được kiểm tra ở trên, nên ai gửi ở đây đều hợp lệ
-            conversation.setStatus(ConversationStatus.IN_PROGRESS);
+
+            // NẾU LÀ KHÁCH HÀNG NHẮN TIN LẠI
+            if (isCustomer) {
+                conversation.setStatus(ConversationStatus.NEW);   // <-- Chuyển thành NEW
+                conversation.setStaffConversation(null);          // <-- XÓA nhân viên cũ
+            }
+            // NẾU LÀ NHÂN VIÊN CŨ NHẮN TIN LẠI
+            else if (isAssignedStaff) {
+                conversation.setStatus(ConversationStatus.IN_PROGRESS); // Giữ nguyên nhân viên
+            }
             conversation = conversationRepository.save(conversation);
         }
     }
