@@ -119,6 +119,13 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.BAD_REQUEST, "Request body không hợp lệ hoặc bị thiếu.");
     }
 
+    // Lỗi bảo mật chung (khi vi phạm quyền hoặc hành vi không được phép)
+    @ExceptionHandler(SecurityException.class)
+    public ResponseEntity<Object> handleSecurityException(SecurityException ex) {
+        return buildResponse(HttpStatus.FORBIDDEN,
+                ex.getMessage() != null ? ex.getMessage() : "Hành động này không được phép.");
+    }
+
 
     // Lỗi chung (catch-all)
     @ExceptionHandler(Exception.class)
