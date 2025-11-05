@@ -1,6 +1,7 @@
 package edu.uth.evservice.services.impl;
 
 import edu.uth.evservice.dtos.ServicePackageDto;
+import edu.uth.evservice.exception.ResourceNotFoundException;
 import edu.uth.evservice.models.ServicePackage;
 import edu.uth.evservice.repositories.IServicePackageRepository;
 import edu.uth.evservice.requests.ServicePackageRequest;
@@ -28,14 +29,6 @@ public class ServicePackageServiceImpl implements IServicePackageService {
                 .build();
     }
 
-    // Chuyển đổi Request -> Entity
-    // private ServicePackage toEntity(ServicePackageRequest request) {
-    //     return ServicePackage.builder()
-    //             .packageName(request.getPackageName())
-    //             .price(request.getPrice())
-    //             .duration(request.getDuration())
-    //             .build();
-    // }
 
    @Override
     public List<ServicePackageDto> getAllPackages() {
@@ -48,7 +41,7 @@ public class ServicePackageServiceImpl implements IServicePackageService {
     @Override
     public ServicePackageDto getPackageById(Integer packageId) {
         ServicePackage servicePackage = servicePackageRepository.findById(packageId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy gói dịch vụ với ID: " + packageId));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy gói dịch vụ với ID: " + packageId));
         return toDto(servicePackage);
     }
 
@@ -57,7 +50,7 @@ public class ServicePackageServiceImpl implements IServicePackageService {
     public ServicePackageDto createPackage(ServicePackageRequest request) {
         // Sử dụng phương thức kiểm tra 'packageName'
         if (servicePackageRepository.existsByPackageName(request.getPackageName())) {
-            throw new RuntimeException("Tên gói dịch vụ '" + request.getPackageName() + "' đã tồn tại.");
+            throw new ResourceNotFoundException("Tên gói dịch vụ '" + request.getPackageName() + "' đã tồn tại.");
         }
 
         // Tạo Entity từ Request, sử dụng đúng tên trường
@@ -75,7 +68,7 @@ public class ServicePackageServiceImpl implements IServicePackageService {
     @Override
     public void deletePackage(Integer packageId) {
         if (!servicePackageRepository.existsById(packageId)) {
-            throw new RuntimeException("Không tìm thấy gói dịch vụ với ID: " + packageId);
+            throw new ResourceNotFoundException("Không tìm thấy gói dịch vụ với ID: " + packageId);
         }
         servicePackageRepository.deleteById(packageId);
     }
@@ -83,7 +76,7 @@ public class ServicePackageServiceImpl implements IServicePackageService {
     @Override
     public ServicePackageDto updatePackage(Integer packageId, ServicePackageRequest request) {
         ServicePackage existingPackage = servicePackageRepository.findById(packageId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy gói dịch vụ với ID: " + packageId));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy gói dịch vụ với ID: " + packageId));
 
         // Cập nhật các trường từ request
         existingPackage.setPackageName(request.getPackageName());

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import edu.uth.evservice.exception.ResourceNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -30,13 +31,13 @@ public class UserServiceImpl implements IUserService {
         try {
             role = Role.valueOf(request.getRole().toUpperCase());
         } catch (IllegalArgumentException e) {
-            throw new RuntimeException("Role không hợp lệ: " + request.getRole());
+            throw new ResourceNotFoundException("Role không hợp lệ: " + request.getRole());
         }
 
         if (userRepository.existsByUsername(request.getUsername()))
-            throw new RuntimeException("Username đã tồn tại");
+            throw new ResourceNotFoundException("Username đã tồn tại");
         if (userRepository.existsByEmail(request.getEmail()))
-            throw new RuntimeException("Email đã tồn tại");
+            throw new ResourceNotFoundException("Email đã tồn tại");
 
         User user = User.builder()
                 .username(request.getUsername())
@@ -57,7 +58,7 @@ public class UserServiceImpl implements IUserService {
     public UserDto getUserById(Integer id) {
         return userRepository.findById(id)
                 .map(this::mapToDto)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy người dùng"));
     }
 
     @Override
@@ -70,13 +71,13 @@ public class UserServiceImpl implements IUserService {
     @Override
     public UserDto updateUser(Integer id, CreateUserRequest request) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy người dùng"));
 
         if (request.getRole() != null) {
             try {
                 user.setRole(Role.valueOf(request.getRole().toUpperCase()));
             } catch (IllegalArgumentException e) {
-                throw new RuntimeException("Role không hợp lệ: " + request.getRole());
+                throw new ResourceNotFoundException("Role không hợp lệ: " + request.getRole());
             }
         }
         // . Việc đổi mật khẩu sẽ nằm ở file **** (Mốt tính)

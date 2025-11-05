@@ -226,7 +226,7 @@ public class AppointmentServiceImpl implements IAppointmentService {
         appointment.setAssignedTechnician(technician);
         appointment.setStatus(AppointmentStatus.ASSIGNED);
 
-        return toDtoFull(appointmentRepository.save(appointment));
+        return toDto(appointmentRepository.save(appointment));
     }
 
     @Override
@@ -237,7 +237,7 @@ public class AppointmentServiceImpl implements IAppointmentService {
         return appointmentRepository
                 .findByAssignedTechnician_UserId(tech.getUserId())
                 .stream()
-                .map(this::toDtoFull)
+                .map(this::toDto)
                 .collect(Collectors.toList());
     }
 
@@ -331,32 +331,14 @@ public class AppointmentServiceImpl implements IAppointmentService {
                 .note(a.getNote())
                 .customerId(a.getCustomer().getUserId())
                 .customerName(a.getCustomer().getFullName())
+                .staffId(a.getStaff() != null ? a.getStaff().getUserId() : null)
+                .staffName(a.getStaff() != null ? a.getStaff().getFullName() : null)
+                .technicianId(a.getAssignedTechnician() != null ? a.getAssignedTechnician().getUserId() : null)
+                .technicianName(a.getAssignedTechnician() != null ? a.getAssignedTechnician().getFullName() : null)
                 .vehicleId(a.getVehicle().getVehicleId())
                 .centerId(a.getCenter().getCenterId())
-                .contractId(a.getContract().getContractId())
-                .contractName(a.getContract().getContractName())
-                .createdAt(a.getCreatedAt())
-                .updatedAt(a.getUpdatedAt())
-                .build();
-    }
-
-    // Response có tech và staff
-    private AppointmentDto toDtoFull(Appointment a) {
-        return AppointmentDto.builder()
-                .appointmentId(a.getAppointmentId())
-                .appointmentDate(a.getAppointmentDate())
-                .appointmentTime(a.getAppointmentTime())
-                .serviceType(a.getServiceType())
-                .status(a.getStatus().name())
-                .note(a.getNote())
-                .customerId(a.getCustomer().getUserId())
-                .customerName(a.getCustomer().getFullName())
-                .staffId(a.getStaff().getUserId())
-                .staffName(a.getStaff().getFullName())
-                .vehicleId(a.getVehicle().getVehicleId())
-                .centerId(a.getCenter().getCenterId())
-                .technicianId(a.getAssignedTechnician().getUserId())
-                .technicianName(a.getAssignedTechnician().getFullName())
+                .contractId(a.getContract() != null ? a.getContract().getContractId() : null)
+                .contractName(a.getContract() != null ? a.getContract().getContractName() : null)
                 .createdAt(a.getCreatedAt())
                 .updatedAt(a.getUpdatedAt())
                 .build();

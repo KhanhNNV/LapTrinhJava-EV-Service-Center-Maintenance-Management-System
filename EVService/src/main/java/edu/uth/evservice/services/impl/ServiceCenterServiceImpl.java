@@ -24,7 +24,7 @@ public class ServiceCenterServiceImpl implements IServiceCenterService {
     public ServiceCenterDto createServiceCenter(ServiceCenterRequest request) {
         // Kiểm tra xem tên trung tâm đã tồn tại chưa để tránh trùng lặp
         if (serviceCenterRepository.existsByCenterName(request.getCenterName())) {
-            throw new RuntimeException("Tên trung tâm '" + request.getCenterName() + "' đã tồn tại.");
+            throw new ResourceNotFoundException("Tên trung tâm '" + request.getCenterName() + "' đã tồn tại.");
         }
 
         ServiceCenter serviceCenter = ServiceCenter.builder()
@@ -53,7 +53,7 @@ public class ServiceCenterServiceImpl implements IServiceCenterService {
     @Override
     public ServiceCenterDto updateServiceCenter(int centerId, ServiceCenterRequest request) {
         ServiceCenter existingCenter = serviceCenterRepository.findById(centerId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy trung tâm dịch vụ với ID: " + centerId));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy trung tâm dịch vụ với ID: " + centerId));
 
         if (request.getCenterName() != null) {
             existingCenter.setCenterName(request.getCenterName());
@@ -76,7 +76,7 @@ public class ServiceCenterServiceImpl implements IServiceCenterService {
     @Override
     public void deleteServiceCenter(int centerId) {
         if (!serviceCenterRepository.existsById(centerId)) {
-            throw new RuntimeException("Không tìm thấy trung tâm dịch vụ với ID: " + centerId);
+            throw new ResourceNotFoundException("Không tìm thấy trung tâm dịch vụ với ID: " + centerId);
         }
         serviceCenterRepository.deleteById(centerId); // Thành công thì im lặng thất bại thì la lên
     }

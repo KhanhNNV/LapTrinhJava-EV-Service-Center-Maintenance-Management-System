@@ -16,7 +16,6 @@ public class VehicleRequest {
     String brand;
     String licensePlate;
     LocalDate recentMaintenanceDate;
-    Integer userId;
     Integer centerId;
 
     //@NotNull đảm bảo người dùng không để trống trường này.

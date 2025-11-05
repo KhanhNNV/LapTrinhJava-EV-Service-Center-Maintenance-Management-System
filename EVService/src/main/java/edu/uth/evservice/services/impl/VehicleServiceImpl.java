@@ -1,6 +1,7 @@
 package edu.uth.evservice.services.impl;
 
 import edu.uth.evservice.dtos.VehicleDto;
+import edu.uth.evservice.exception.ResourceNotFoundException;
 import edu.uth.evservice.models.ServiceCenter;
 import edu.uth.evservice.models.User;
 import edu.uth.evservice.models.Vehicle;
@@ -23,65 +24,6 @@ public class VehicleServiceImpl implements IVehicleService {
     private final IUserRepository userRepository;
     private final IServiceCenterRepository serviceCenterRepository;
 
-    @Override
-    public List<VehicleDto> getAllVehicles() {
-        return vehicleRepository.findAll()
-                .stream().map(this::toDTO)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public VehicleDto getVehicleById(Integer id) {
-        Vehicle vehicle = vehicleRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Vehicle not found"));
-        return toDTO(vehicle);
-    }
-
-    @Override
-    public List<VehicleDto> getVehiclesByUser(Integer userId) {
-        return vehicleRepository.findByUser_UserId(userId)
-                .stream().map(this::toDTO)
-                .collect(Collectors.toList());
-    }
-
-    // @Override
-    // public VehicleDto createVehicle(VehicleRequest request) {
-    //     User user = userRepository.findById(request.getUserId())
-    //             .orElseThrow(() -> new RuntimeException("User not found"));
-
-    //     ServiceCenter center = serviceCenterRepository.findById(request.getCenterId())
-    //             .orElseThrow(() -> new RuntimeException("Service center not found"));
-
-    //     Vehicle vehicle = Vehicle.builder()
-    //             .model(request.getModel())
-    //             .brand(request.getBrand())
-    //             .licensePlate(request.getLicensePlate())
-    //             .recentMaintenanceDate(request.getRecentMaintenanceDate())
-    //             .user(user)
-    //             .serviceCenter(center)
-    //             .build();
-
-    //     return toDTO(vehicleRepository.save(vehicle));
-    // }
-
-    @Override
-    public VehicleDto updateVehicle(Integer id, VehicleRequest request) {
-        Vehicle vehicle = vehicleRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Vehicle not found"));
-
-        vehicle.setModel(request.getModel());
-        vehicle.setBrand(request.getBrand());
-        vehicle.setLicensePlate(request.getLicensePlate());
-        vehicle.setRecentMaintenanceDate(request.getRecentMaintenanceDate());
-
-        return toDTO(vehicleRepository.save(vehicle));
-    }
-
-    @Override
-    public void deleteVehicle(Integer id) {
-        vehicleRepository.deleteById(id);
-    }
-
     // START: Thêm logic cho phương thức đăng ký xe của customer
     // Lý do: Đây là phương thức an toàn để khách hàng tự đăng ký xe của mình.
     // Công dụng:
@@ -93,7 +35,7 @@ public class VehicleServiceImpl implements IVehicleService {
     public VehicleDto registerVehicle(VehicleRequest request, String customerUsername) {
         // 1. Tìm customer bằng username (an toàn hơn)
         User customer = userRepository.findByUsername(customerUsername)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng: " + customerUsername));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy người dùng: " + customerUsername));
 
         // 2. Kiểm tra biển số xe đã tồn tại
         if (vehicleRepository.existsByLicensePlate(request.getLicensePlate())) {
@@ -105,7 +47,7 @@ public class VehicleServiceImpl implements IVehicleService {
         ServiceCenter center = null;
         if (request.getCenterId() != null) {
             center = serviceCenterRepository.findById(request.getCenterId())
-                    .orElseThrow(() -> new RuntimeException("Không tìm thấy trung tâm dịch vụ"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy trung tâm dịch vụ"));
         }
 
         // 4. Tạo đối tượng Vehicle
@@ -133,6 +75,7 @@ public class VehicleServiceImpl implements IVehicleService {
                 .recentMaintenanceDate(vehicle.getRecentMaintenanceDate())
                 .userId(vehicle.getUser() != null ? vehicle.getUser().getUserId() : null)
                 .centerId(vehicle.getServiceCenter() != null ? vehicle.getServiceCenter().getCenterId() : null)
+                .vehicleType(vehicle.getVehicleType())
                 .build();
     }
 
