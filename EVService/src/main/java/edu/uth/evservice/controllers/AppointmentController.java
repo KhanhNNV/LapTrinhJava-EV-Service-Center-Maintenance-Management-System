@@ -34,7 +34,7 @@ public class AppointmentController {
 
 
         // Customer create appointment
-        @PostMapping("/customer/create")
+        @PostMapping
         @PreAuthorize("hasAnyRole('CUSTOMER')")
         public ResponseEntity<AppointmentDto> createMyAppointment(
                         @RequestBody AppointmentRequest request,
@@ -46,7 +46,7 @@ public class AppointmentController {
         }
 
         // Customer cancel appointment
-        @DeleteMapping("/customer/{appointmentId}/cancel")
+        @DeleteMapping("/{appointmentId}")
         @PreAuthorize("hasAnyRole('CUSTOMER')")
         public ResponseEntity<AppointmentDto> cancelMyAppointment(
                         @PathVariable Integer appointmentId,
@@ -97,7 +97,7 @@ public class AppointmentController {
         }
 
         // KTV xem danh sách LỊCH HẸN (chưa phải công việc) được gán
-        @GetMapping("/technician/appointment")
+        @GetMapping("/technician")
         @PreAuthorize("hasRole('TECHNICIAN')")
         public ResponseEntity<List<AppointmentDto>> getApointmentsByTechnician(Authentication authentication) {
                 List<AppointmentDto> appointments = appointmentService

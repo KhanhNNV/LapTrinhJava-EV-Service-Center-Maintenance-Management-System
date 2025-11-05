@@ -22,13 +22,7 @@ public class VehicleController {
 
     private final IVehicleService vehicleService;
 
-    // START: Tạo API Endpoint đăng ký xe
-    // Lý do: Cung cấp một đường dẫn API để client có thể gửi yêu cầu đăng ký xe.
-    // Công dụng:
-    // - Endpoint: POST /api/v1/vehicles
-    // - Nhận dữ liệu xe từ body của request.
-    // - Lấy username của người dùng đang đăng nhập từ context bảo mật.
-    // - Gọi service để xử lý nghiệp vụ và trả về kết quả.
+    // đăng ký xe đ bảo dưỡng cho customer
     @PostMapping
     public ResponseEntity<VehicleDto> registerVehicleForCustomer(@Valid @RequestBody VehicleRequest request) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();

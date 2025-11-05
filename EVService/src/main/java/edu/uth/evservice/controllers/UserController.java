@@ -16,21 +16,21 @@ public class UserController {
     private final IUserService userService;
 
     // Lấy tất cả user theo role
-    @GetMapping("/admin/{role:[a-zA-Z]+}")
+    @GetMapping("/{role:[a-zA-Z]+}")
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public ResponseEntity<?> getUsersByRole(@PathVariable Role role) {
         return ResponseEntity.ok(userService.getUsersByRole(role));
     }
 
     // Tìm user theo ID
-    @GetMapping("/admin/{id:\\d+}")
+    @GetMapping("/{id:\\d+}")
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public ResponseEntity<?> getUserById(@PathVariable Integer id) {
         return ResponseEntity.ok(userService.getUserById(id));
     }
 
     // Cập nhật user theo ID
-    @PutMapping("/admin/update/{id}")
+    @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> updateUser(@PathVariable Integer id,
                                         @RequestBody CreateUserRequest request) {
@@ -38,7 +38,7 @@ public class UserController {
     }
 
     // Xóa user theo ID
-    @DeleteMapping("/admin/delete/{id}")
+    @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> deleteUser(@PathVariable Integer id) {
         userService.deleteUser(id);
@@ -46,7 +46,7 @@ public class UserController {
     }
 
     // Tạo Technician
-    @PostMapping("/admin/CreateTechnician")
+    @PostMapping("/createTechnician")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> createTechnician(@RequestBody CreateUserRequest request) {
         request.setRole(Role.TECHNICIAN.name());
@@ -54,7 +54,7 @@ public class UserController {
     }
 
     // Tạo Staff
-    @PostMapping("/admin/CreateStaff")
+    @PostMapping("/createStaff")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> createStaff(@RequestBody CreateUserRequest request) {
         request.setRole(Role.STAFF.name());
