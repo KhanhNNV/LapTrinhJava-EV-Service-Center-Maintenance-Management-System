@@ -15,7 +15,7 @@ export default function AuthCallbackPage() {
       
       // 2. Lưu token vào localStorage
       // Đây là bước quan trọng để "duy trì đăng nhập"
-      localStorage.setItem('authToken', token);
+      localStorage.setItem('', token);
 
       // 3. TODO: Cập nhật state (ví dụ: AuthContext)
       // (Bỏ qua bước này nếu bạn chưa dùng Context)

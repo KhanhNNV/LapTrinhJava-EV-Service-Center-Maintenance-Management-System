@@ -66,10 +66,14 @@ const passwordStrength = useMemo(() => {
   let score = 0;
   if (password.length >= 8) score++ 
   else score--;
-  if (hasUppercase ) score++;
-  if (hasLowercase) score++;
-  if (hasNumber) score++;
-  if (hasSpecial) score++;
+  if (hasUppercase ) score++
+  else score--;
+  if (hasLowercase) score++
+  else score--;
+  if (hasNumber) score++
+   else score--;
+  if (hasSpecial) score++
+   else score--;
 //-----------Phân loại mức độ----------------------
   if (score <= 1)
     return {

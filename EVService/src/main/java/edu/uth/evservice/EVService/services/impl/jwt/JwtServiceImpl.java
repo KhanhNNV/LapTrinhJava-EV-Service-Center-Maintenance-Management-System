@@ -57,6 +57,7 @@ public class JwtServiceImpl implements IJwtService{
                 .claim("role", scope)
                 .claim("username", userDetails.getUsername())
                 .claim("email", userDetails.getUser().getEmail())
+                .claim("token_type", "access")
                 .build();
             //~ Tạo đối tượng JWT chứa header + payload
             SignedJWT signedJWT = new SignedJWT(header, claimsSet);
@@ -73,7 +74,7 @@ public class JwtServiceImpl implements IJwtService{
 
     @Override
     //.  Tạo chuỗi JWT Access Token
-    public String generateRefeshToken(Authentication authenication) {
+    public String generateRefreshToken(Authentication authenication) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + refeshTime); //~ THỜI GIAN HIỆN TẠI + KHOẢNG THỜI GIAN ACCESS TỒN TẠI
         CustomerUserDetails userDetails = (CustomerUserDetails) authenication.getPrincipal();
@@ -86,6 +87,7 @@ public class JwtServiceImpl implements IJwtService{
                 .subject(userDetails.getId().toString()) //~email
                 .issueTime(now)
                 .expirationTime(expiryDate)
+                .claim("token_type", "refresh")
                 .build();
             //~ Tạo đối tượng JWT chứa header + payload
             SignedJWT signedJWT = new SignedJWT(header, claimsSet);
@@ -113,6 +115,24 @@ public class JwtServiceImpl implements IJwtService{
         }
         MACVerifier verifier = new MACVerifier(keySecret.getBytes(StandardCharsets.UTF_8));
         return signedJWT.verify(verifier);
+    }
+
+    @Override
+    //. Lấy subject
+    public String getSubject(String token) throws ParseException {
+        //~ Chuyển đổi chuỗi token này sang đối tượng signedJWT để đọc 3 thành phần (header, payload, signature)
+        SignedJWT signedJWT = SignedJWT.parse(token);
+        return signedJWT.getJWTClaimsSet().getSubject();
+    }
+
+    @Override
+    //. Lấy claim
+    public Object getClaim(String token, String claimName) throws ParseException {
+        SignedJWT signedJWT =  SignedJWT.parse(token);
+        return signedJWT.getJWTClaimsSet().getClaim(claimName);
     }   
+
+    
+
 }
 

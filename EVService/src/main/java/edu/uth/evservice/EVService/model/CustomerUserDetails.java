@@ -50,7 +50,7 @@ public class CustomerUserDetails implements UserDetails, OAuth2User{
         return user.getPassword();
     }
     
-    //. Trả về email
+    //. Trả về userName
     @Override
     public String getUsername() {
         return user.getUsername();
