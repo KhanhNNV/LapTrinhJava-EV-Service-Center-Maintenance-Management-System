@@ -62,7 +62,7 @@ public class MessageServiceImpl implements IMessageService {
 public MessageDto createMessage(CreateMessageRequest request, String username) {
     // 1. TÌM NGƯỜI GỬI BẰNG USERNAME TỪ JWT
     User sender = userRepository.findByUsername(username)
-            .orElseThrow(() -> new EntityNotFoundException("User (Sender) not found with username: " + username));
+            .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy người dùng (người gửi) với username: " + username));
 
     Conversation conversation; // Chuẩn bị "phòng chat"
 
@@ -70,7 +70,7 @@ public MessageDto createMessage(CreateMessageRequest request, String username) {
     if (request.getConversationId() == null) {
         // === TRƯỜNG HỢP 1: TIN NHẮN MỚI (TẠO PHÒNG CHAT MỚI) ===
         if (sender.getRole() != Role.CUSTOMER) {
-            throw new SecurityException("Only customers can create a new conversation.");
+            throw new SecurityException("Chỉ khách hàng mới có thể tạo cuộc trò chuyện mới.");
         }
         Conversation newConversation = Conversation.builder()
                 .customerConversation(sender)
@@ -85,7 +85,7 @@ public MessageDto createMessage(CreateMessageRequest request, String username) {
         // === TRƯỜNG HỢP 2: TIN NHẮN VÀO PHÒNG CHAT ĐÃ CÓ ===
         conversation = conversationRepository.findById(request.getConversationId())
                 .orElseThrow(() -> new EntityNotFoundException(
-                        "Conversation not found with id: " + request.getConversationId()));
+                        "Không tìm thấy cuộc trò chuyện có id: " + request.getConversationId()));
 
         User customer = conversation.getCustomerConversation();
         User assignedStaff = conversation.getStaffConversation();
@@ -95,13 +95,13 @@ public MessageDto createMessage(CreateMessageRequest request, String username) {
 
         // 3. KIỂM TRA QUYỀN GỬI TIN NHẮN
         if (conversation.getStatus() == ConversationStatus.NEW && !isCustomer) {
-            throw new SecurityException("Staff must claim this conversation before replying.");
+            throw new SecurityException("Nhân viên phải xác nhận cuộc trò chuyện này trước khi trả lời.");
         }
         if (conversation.getStatus() == ConversationStatus.IN_PROGRESS && !isCustomer && !isAssignedStaff) {
-            throw new SecurityException("This conversation is in progress with another staff member.");
+            throw new SecurityException("Cuộc trò chuyện này đang diễn ra với một nhân viên khác.");
         }
         if (conversation.getStatus() == ConversationStatus.CLOSED && !isCustomer && !isAssignedStaff) {
-            throw new SecurityException("You are not authorized to reopen this closed conversation.");
+            throw new SecurityException("Bạn không được phép mở lại cuộc trò chuyện đã đóng này.");
         }
 
         // === LOGIC MỚI: TỰ ĐỘNG "MỞ LẠI" (ĐÃ CẬP NHẬT) ===

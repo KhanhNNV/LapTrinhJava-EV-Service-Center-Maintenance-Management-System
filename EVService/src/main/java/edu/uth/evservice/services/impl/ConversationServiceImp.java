@@ -107,18 +107,18 @@ public class ConversationServiceImp  implements IConversationService {
     public ConversationDto claimConversation (Integer conversationId , String staffUsername) {
         //Tim cuoc tro chuyen trong database
         Conversation conversation = conversationRepository.findById(conversationId)
-                .orElseThrow(() -> new EntityNotFoundException("Conversation not found with id: " + conversationId));
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy cuộc trò chuyện có id: " + conversationId));
         //  Kiem tra trang thai cuoc tro chuyen
         if(conversation.getStatus() != ConversationStatus.NEW) {
-            throw new IllegalArgumentException("Conversation is not new and cannot be claimed.");
+            throw new IllegalArgumentException("Cuộc trò chuyện này không ở trạng thái MỚI nên không thể nhận.");
         }
         // Kiem tra da co ai nhan cuoc tro chuyen chua
         if (conversation.getStaffConversation() != null) {
-            throw new IllegalArgumentException("Conversation is not new and cannot be claimed.");
+            throw new IllegalArgumentException("Cuộc trò chuyện này đã có nhân viên khác nhận xử lý.");
         }
         // Tim nhan vien xu ly
         User staff = userRepository.findByUsername(staffUsername)
-                .orElseThrow(() -> new EntityNotFoundException("Staff not found with username: " + staffUsername));
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy nhân viên với username: " + staffUsername));
         // Cap nhap thong tin gan nhan vien vao cuoc tro chuyen
         conversation.setStaffConversation(staff);
         conversation.setStatus(ConversationStatus.IN_PROGRESS);
@@ -130,14 +130,14 @@ public class ConversationServiceImp  implements IConversationService {
     public ConversationDto closeConversation(Integer conversationId, String staffUsername) {
         // 1. Tìm cuộc trò chuyện trong database
         Conversation conversation = conversationRepository.findById(conversationId)
-                .orElseThrow(() -> new EntityNotFoundException("Conversation not found with id: " + conversationId));
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy cuộc trò chuyện có id: " + conversationId));
 
         // 2. KIỂM TRA QUYỀN SỞ HỮU - RẤT QUAN TRỌNG
         // Đảm bảo có nhân viên phụ trách và nhân viên đó chính là người đang thực hiện hành động
         if (conversation.getStaffConversation() == null ||
                 !conversation.getStaffConversation().getUsername().equals(staffUsername)) {
             // Nếu không có nhân viên nào, hoặc người đóng không phải là người phụ trách
-            throw new SecurityException("You are not authorized to close this conversation.");
+            throw new SecurityException("Bạn không có quyền đóng cuộc trò chuyện này.");
         }
 
         // 3. Đổi trạng thái sang "Đã đóng"
