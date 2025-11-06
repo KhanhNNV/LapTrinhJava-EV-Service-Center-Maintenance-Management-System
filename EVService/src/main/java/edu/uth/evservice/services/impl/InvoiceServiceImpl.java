@@ -1,0 +1,105 @@
+package edu.uth.evservice.services.impl;
+
+import edu.uth.evservice.dtos.InvoiceDto;
+import edu.uth.evservice.exception.ResourceNotFoundException;
+import edu.uth.evservice.models.Invoice;
+import edu.uth.evservice.models.User;
+import edu.uth.evservice.models.enums.PaymentMethod;
+import edu.uth.evservice.models.enums.PaymentStatus;
+import edu.uth.evservice.models.ServiceTicket;
+import edu.uth.evservice.repositories.IInvoiceRepository;
+import edu.uth.evservice.repositories.IServiceTicketRepository;
+import edu.uth.evservice.repositories.IUserRepository;
+import edu.uth.evservice.requests.CreateInvoiceRequest;
+import edu.uth.evservice.services.IInvoiceService;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Service
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@AllArgsConstructor
+public class InvoiceServiceImpl implements IInvoiceService {
+    final IInvoiceRepository invoiceRepository;
+    final IUserRepository userRepository;
+    final IServiceTicketRepository serviceTicketRepository;
+
+    @Override
+    public List<InvoiceDto> getAllInvoices() {
+        return invoiceRepository.findAll()
+                .stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public InvoiceDto getInvoiceById(Integer id) {
+        return invoiceRepository.findById(id)
+                .map(this::toDto)
+                .orElseThrow(() -> new ResourceNotFoundException("Invoice not found with id: " + id));
+    }
+
+    @Override
+    public InvoiceDto createInvoice(CreateInvoiceRequest request) {
+        User user = userRepository.findById(request.getUserId()).orElseThrow(
+            ()-> new ResourceNotFoundException("Customer not found id: "+ request.getUserId()
+        ));
+
+        ServiceTicket ticket = serviceTicketRepository.findById(request.getTicketId()).orElseThrow(
+            ()-> new ResourceNotFoundException("Ticket not found id: "+ request.getTicketId()
+        ));
+        Invoice invoice = Invoice.builder()
+                .invoiceDate(request.getInvoiceDate())
+                .totalAmount(request.getTotalAmount())
+                .paymentStatus(PaymentStatus.valueOf(request.getPaymentStatus().toUpperCase()))
+                .paymentMethod(PaymentMethod.valueOf(request.getPaymentMethod().toUpperCase()))
+                .user(user)
+                .serviceTicket(ticket)
+                .build();
+
+        Invoice savedInvoice = invoiceRepository.save(invoice);
+        return toDto(savedInvoice);
+    }
+
+    @Override
+    public InvoiceDto updateInvoice(Integer id, CreateInvoiceRequest request) {
+        return invoiceRepository.findById(id)
+                .map(existing -> {
+                    User user = userRepository.findById(request.getUserId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Customer not found with id: " + request.getUserId()));
+                    ServiceTicket ticket = serviceTicketRepository.findById(request.getTicketId())
+                        .orElseThrow(() -> new ResourceNotFoundException("ServiceTicket not found with id: " + request.getTicketId()));
+                    existing.setInvoiceDate(request.getInvoiceDate());
+                    existing.setTotalAmount(request.getTotalAmount());
+                    existing.setPaymentStatus(PaymentStatus.valueOf(request.getPaymentStatus().toUpperCase()));
+                    existing.setPaymentMethod(PaymentMethod.valueOf(request.getPaymentMethod().toUpperCase()));
+                    existing.setUser(user);
+                    existing.setServiceTicket(ticket);
+
+                    Invoice updated = invoiceRepository.save(existing);
+                    return toDto(updated);
+                })
+                .orElseThrow(() -> new ResourceNotFoundException("Invoice not found with id: " + id));
+    }
+    
+
+    @Override
+    public void deleteInvoice(Integer id) {
+        invoiceRepository.deleteById(id);
+    }
+
+    private InvoiceDto toDto(Invoice invoice) {
+        return new InvoiceDto(
+                invoice.getInvoiceId(),
+                invoice.getInvoiceDate(),
+                invoice.getTotalAmount(),
+                invoice.getPaymentStatus().name(),
+                invoice.getPaymentMethod().name(),
+                invoice.getServiceTicket().getTicketId(),
+                invoice.getUser().getUserId()
+        );  
+    }
+}
