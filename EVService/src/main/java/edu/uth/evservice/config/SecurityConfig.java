@@ -72,6 +72,12 @@ public class SecurityConfig {
         return http.build();
     }
 
+    /**
+     * Chuyển JWT thành GrantedAuthority
+     * GrantedAuthority đại diện cho một vai trò (role)
+     * khi gọi api @PreAuthorize("hasRole('ADMIN')") sẽ dùng danh sách GrantedAuthority để kiểm tra
+     *
+     */
     @Bean
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
         JwtGrantedAuthoritiesConverter converter = new JwtGrantedAuthoritiesConverter();

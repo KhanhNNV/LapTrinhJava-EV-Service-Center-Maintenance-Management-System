@@ -7,4 +7,5 @@ public class PartRequest {
     private String partName;
     private Double unitPrice;
     private Double costPrice;
+    private int initialStock;
 }

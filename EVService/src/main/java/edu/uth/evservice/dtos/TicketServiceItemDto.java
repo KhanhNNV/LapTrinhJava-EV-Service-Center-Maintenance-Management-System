@@ -9,8 +9,9 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class TicketServiceItemDto {
-    Integer ticketId;
     Integer itemId;
+    String itemName;
     Integer quantity;
     Double unitPriceAtTimeOfService;
+    Double lineTotal;
 }

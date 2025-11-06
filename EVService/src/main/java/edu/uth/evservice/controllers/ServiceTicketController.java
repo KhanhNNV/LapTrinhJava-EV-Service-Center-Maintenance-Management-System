@@ -100,4 +100,10 @@ public class ServiceTicketController {
         ServiceTicketDto updatedTicket = ticketService.completeWorkOnTicket(ticketId, authentication.getName());
         return ResponseEntity.ok(updatedTicket);
     }
+
+    /**
+     * Tech thêm một DỊCH VỤ (ServiceItem) vào Ticket.
+     * Trả về chi tiết dịch vụ vừa thêm VÀ danh sách phụ tùng được GỢI Ý.
+     */
+
 }

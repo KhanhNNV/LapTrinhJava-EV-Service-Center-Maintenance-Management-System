@@ -8,7 +8,7 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class CreateServiceItemRequest {
+public class ServiceItemRequest {
     String itemName;
     String description;
     Double price;

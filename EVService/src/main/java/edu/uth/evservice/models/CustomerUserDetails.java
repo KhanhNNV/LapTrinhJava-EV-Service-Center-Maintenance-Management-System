@@ -16,7 +16,8 @@ public class CustomerUserDetails implements UserDetails{
     }
 
 
-    //. Trả về quyền được cấp cho người dùng
+    // Trả về quyền được cấp cho người dùng
+    // Ví dụ: GrantedAuthority = ROLE_TECHNICIAN.
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         GrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + user.getRole().name());
