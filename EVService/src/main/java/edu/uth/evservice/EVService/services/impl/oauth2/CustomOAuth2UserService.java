@@ -8,9 +8,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
-    
+
 import edu.uth.evservice.EVService.model.CustomerUserDetails;
 import edu.uth.evservice.EVService.model.User;
 import edu.uth.evservice.EVService.model.enums.Role;
@@ -21,89 +22,73 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-//. Kế thừa từ thằng DefaultOAuth2UserService mặc định của thằng Spring Security
-//~ Mục đích:
-/// Can thiệp giữa bước lấy dữ liệu và trả dữ liệu về
-/// Xữ lý user nếu chưa tồn tại trong database, tự động đăng kí
-/// Gán thêm role,.....
-public class CustomOAuth2UserService extends DefaultOAuth2UserService{
-    private final IUserRepository userRepository;
-    private final IUserService userService;
-    private final PasswordEncoder passwordEncoder;
+/**
+ *- Service này xử lý các provider OAuth2 (như Facebook, GitHub).
+ *- Nó sẽ được "cắm" vào cổng .userService() trong SecurityConfig.
+ */
+public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
+    private final Oauth2UserProcessor userProcessor;
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
-        //~Lấy dữ liệu user từ nhà cung cấp (provider: Google, Faceboook, Github)
+        /**
+        *. 1. 📨 NHẬN userRequest (chứa clientRegistration + accessToken)
+        *.↓
+        *.2. 🔗 GỬI request đến tokenUri của Google:
+        *.POST https://oauth2.googleapis.com/token
+        *.↓  
+        *.3. 🔑 NHẬN access_token từ Google
+        *.↓
+        *.4. 👤 GỬI request đến userInfoUri của Google:
+        *.GET https://www.googleapis.com/oauth2/v3/userinfo
+        *.Header: Authorization: Bearer {access_token}
+        *.↓
+        *.5. 📄 NHẬN JSON user info từ Google:
+        *.{
+        *.    "sub": "123456789",
+        *.    "name": "John Doe", 
+        *.    "email": "john@example.com",
+        *.}
+        *.↓
+        *.6. 🎭 BIẾN ĐỔI thành object OAuth2User
+        *.↓
+        *.7. ✅ TRẢ VỀ cho bạn
+        */
         OAuth2User oAuth2User = super.loadUser(userRequest);
-
-        //~Lấy các thuộc tính 
+        
+        //~ Chuyển đổi thông tin được lấy về từ thằng oAuth2User
         Map<String, Object> attributes = oAuth2User.getAttributes();
-
-        //~Lấy tên nhà cung cấp
-        String provider = userRequest.getClientRegistration().getRegistrationId();//goole, github, facebook
-
+        
+        // ~Lấy tên nhà cung cấp
+        String provider = userRequest.getClientRegistration().getRegistrationId();
+        
         String email;
         String userName;
 
-        //-> Mỗi nhà provider trả về kiểu dữ liệu khác nhau nên phân tách ở đây
-        if (provider.equals("google")){
-            email = (String) attributes.get("email");
-            userName = (String) attributes.get("name");
-        }else if (provider.equals("facebook")){
-            //~Facebook có thể không trả về email nếu người dùng từ chối
+        // -> Mỗi nhà provider trả về kiểu dữ liệu khác nhau nên phân tách ở đây
+        // ~ Phân luồng xử lý: OIDC (như Google) và OAuth2 thuần (như Facebook, GitHub)
+        if (provider.equals("facebook")) {
+            // ~Facebook có thể không trả về email nếu người dùng từ chối
             email = (String) attributes.get("email");
             userName = (String) attributes.get("name");
             if (email == null) {
-                email = attributes.get("id").toString() + "@facebook.com"; 
+                email = attributes.get("id").toString() + "@facebook.com";
             }
-        }else if (provider.equals("github")){
+        } else if (provider.equals("github")) {
             email = (String) attributes.get("email");
-            userName = (String) attributes.get("login"); //! GitHub dùng "login" cho tên
+            userName = (String) attributes.get("login"); // ! GitHub dùng "login" cho tên
             if (email == null) {
-                //~Rất phổ biến với GitHub, người dùng có thể giấu email
-                //~Chúng ta tạo email ảo dựa trên ID của họ
-                email = attributes.get("id").toString() + "@github.com"; 
+                // ~Rất phổ biến với GitHub, người dùng có thể giấu email
+                // ~Chúng ta tạo email ảo dựa trên ID của họ
+                email = attributes.get("id").toString() + "@github.com";
             }
-        }else{
-            throw new OAuth2AuthenticationException("Provider không được hỗ trợ");
+        } else {
+            throw new OAuth2AuthenticationException("Provider không được hỗ trợ: " + provider);
         }
 
-        //~Kiểm tra tài khoản đã tồn tại chưa
-        Optional<User> userOptional = userRepository.findByEmail(email);
+        User user = userProcessor.processUser(email, userName);
 
-        User user;
-
-        if (userOptional.isPresent()){
-            //========ĐĂNG NHẬP NHANH========/
-            user = userOptional.get();
-
-        }else{
-            //========ĐĂNG KÝ NHANH==========/
-            //~Tạo một đối tượng Request
-            CreateUserRequest newUserRequest = new CreateUserRequest();
-            //~Thêm email
-            newUserRequest.setEmail(email);
-            //~Thêm tên người dùng
-            //~ Có 1 người dùng đăng kí username là THONG đi
-            //~ Xong có người thứ 2 đăng kí với email là THONG@GMAIL.COM
-            //~ Vì usename là unique thì phả đổi tên người đăng kí 2 đằng sau 1 cụm ký tự ngẫu nhiên
-            //~ VÍDỤ:  THONG@GMAIL.COM ->THONG_1a2g
-            String username = email.split("@")[0] + "_" + UUID.randomUUID().toString().substring(0, 4);
-            newUserRequest.setUsername(username);
-
-            newUserRequest.setFullName(userName);
-            newUserRequest.setRole(Role.CUSTOMER.name());//-> Mặc định vẫn là Customer
-
-            //~ Tạo mật khẩu ngẫu nhiên (vì trường password là not-null)
-            newUserRequest.setPassword(passwordEncoder.encode("OAUTH_"+ UUID.randomUUID().toString()));
-
-
-            userService.createUser(newUserRequest);
-
-            user = userRepository.findByEmail(email).orElseThrow(
-                () -> new RuntimeException("Khong the tim thay user vua tao. "));
-        }  
-        return new CustomerUserDetails(user, attributes);
+            return new CustomerUserDetails(user, attributes); // <-- Gọi constructor OAuth2
+        }
     }
-}

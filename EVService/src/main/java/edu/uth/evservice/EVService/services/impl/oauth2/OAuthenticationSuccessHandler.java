@@ -34,9 +34,11 @@ public class OAuthenticationSuccessHandler extends SimpleUrlAuthenticationSucces
         
         //~ Tạo accessToken
         String accessToken = jwtService.generateAccessToken(authentication);
+        String refreshToken = jwtService.generateRefreshToken(authentication);
         //~Xây dựng URL để đưa user về phía người dùng
         String targetUrl = UriComponentsBuilder.fromUriString(url)
-                .queryParam("token", accessToken) // Gắn token vào làm query param "token"
+                .queryParam("authToken", accessToken) // Gắn token vào làm query param "token"
+                .queryParam("refreshToken", refreshToken)
                 .build().toUriString();
         //~ Xóa session tạm thời
         clearAuthenticationAttributes(request);

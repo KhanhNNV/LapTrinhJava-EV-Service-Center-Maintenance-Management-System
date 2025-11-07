@@ -19,6 +19,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import edu.uth.evservice.EVService.services.impl.oauth2.CustomOAuth2UserService;
+import edu.uth.evservice.EVService.services.impl.oauth2.CustomOidcUserService;
 import edu.uth.evservice.EVService.services.impl.oauth2.OAuthenticationSuccessHandler;
 import lombok.RequiredArgsConstructor;
 
@@ -35,7 +36,7 @@ public class SecurityConfig {
     private final JwtDecoderConfig jwtDecoderConfig;
     private final OAuthenticationSuccessHandler oAuthenticationSuccessHandler;
     private final CustomOAuth2UserService customOauth2UserService;
-    
+    private final CustomOidcUserService customOidcUserService;
 
     //. Đây là interface của Spring mục đích là để xác thực thông tin đăng nhập 
     //. 
@@ -99,7 +100,8 @@ public class SecurityConfig {
            .oauth2Login(oauth2 -> oauth2
                 //~Chỉ định service để tìm/tạo user
                 .userInfoEndpoint(userInfo -> userInfo
-                    .userService(customOauth2UserService) 
+                    .oidcUserService(customOidcUserService) // <--Dùng cho Google
+                    .userService(customOauth2UserService) // <-- Dùng cho Facebook, GitHub
                 )
                 //~ Chỉ định handler để tạo JWT và redirect về React
                 .successHandler(oAuthenticationSuccessHandler) 

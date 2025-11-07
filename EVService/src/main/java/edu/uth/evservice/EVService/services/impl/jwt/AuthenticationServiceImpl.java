@@ -44,7 +44,7 @@ public class AuthenticationServiceImpl implements IAuthenticaionService {
         //~ Này viết ra để kiểm tra lỗi
         Authentication authFromContext = SecurityContextHolder.getContext().getAuthentication();
         if (authFromContext != null && authFromContext.isAuthenticated()) {
-            System.out.println("Người dùng '" + authentication.getName() + "' vừa đăng nhập thành công.");
+            System.out.println("Nguoi dung '" + authentication.getName() + "' vua dang nhap thanh cong.");
         }
         //~ Tạo accessToken và refeshToken
         String accessToken = jwtService.generateAccessToken(authentication);

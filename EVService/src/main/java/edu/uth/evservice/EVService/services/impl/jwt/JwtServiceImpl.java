@@ -36,6 +36,18 @@ public class JwtServiceImpl implements IJwtService{
     @Value("${app.key.secret}")
     private String keySecret;//~Private key dành để kiểm tra xác thực
 
+    //. Hàm "help" phân loại CustomerUserDetial từ Authentication
+    private CustomerUserDetails getCustomerUserDetails(Authentication authentication) {
+        Object principal = authentication.getPrincipal();
+
+        if (principal instanceof CustomerUserDetails) {
+            return (CustomerUserDetails) principal;
+        } else {
+
+             throw new IllegalStateException("Principal KHONG PHAI LA CustomerUserDetails, ma la: " + principal.getClass().getName());
+        }
+    }
+
     @Override
     //.  Tạo chuỗi JWT Access Token 
     public String generateAccessToken(Authentication authenication) {
@@ -44,7 +56,7 @@ public class JwtServiceImpl implements IJwtService{
                         .collect(Collectors.joining(" ")); //~ Một list danh danh sách quyền 
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + accessTime); //~ THỜI GIAN HIỆN TẠI + KHOẢNG THỜI GIAN ACCESS TỒN TẠI
-        CustomerUserDetails userDetails = (CustomerUserDetails) authenication.getPrincipal();
+        CustomerUserDetails userDetails = getCustomerUserDetails(authenication);
         try{
             //~ Tạo header + sử dụng thuật toán HS512
             JWSHeader header = new JWSHeader (JWSAlgorithm.HS512);
@@ -77,7 +89,7 @@ public class JwtServiceImpl implements IJwtService{
     public String generateRefreshToken(Authentication authenication) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + refeshTime); //~ THỜI GIAN HIỆN TẠI + KHOẢNG THỜI GIAN ACCESS TỒN TẠI
-        CustomerUserDetails userDetails = (CustomerUserDetails) authenication.getPrincipal();
+        CustomerUserDetails userDetails = getCustomerUserDetails(authenication);
         try{
             //~ Tạo header + sử dụng thuật toán HS512
             JWSHeader header = new JWSHeader (JWSAlgorithm.HS512);
