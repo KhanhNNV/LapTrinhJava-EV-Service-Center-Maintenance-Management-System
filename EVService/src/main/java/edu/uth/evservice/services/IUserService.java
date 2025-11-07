@@ -22,6 +22,6 @@ public interface IUserService {
     Optional<User> findByUsername(String username);
 
     Optional<User> findByEmail(String email);
-    List<UserDto> getUsersByRole(Role role); // Phân role user sử dụng cho crud admincontroller
+    List<UserDto> getUsersByRole(Role role); // Phân role user sử dụng cho crud Admin
 
 }
