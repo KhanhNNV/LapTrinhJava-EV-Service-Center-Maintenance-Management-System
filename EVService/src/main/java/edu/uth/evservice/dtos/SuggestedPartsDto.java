@@ -13,5 +13,5 @@ import java.util.List;
 @AllArgsConstructor
 public class SuggestedPartsDto {
     private TicketServiceItemDto serviceItemAdded;
-    private List<PartDto> suggestedParts;
+    private List<ServiceTicketPartDto> suggestedParts;
 }

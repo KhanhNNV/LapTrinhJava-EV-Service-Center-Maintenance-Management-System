@@ -9,7 +9,6 @@ import edu.uth.evservice.models.TicketPart;
 import edu.uth.evservice.models.TicketPartId;
 
 public interface ITicketPartRepository extends JpaRepository<TicketPart, TicketPartId> {
-    List<TicketPart> findByServiceTicket_TicketId(Integer ticketId);
-    Optional<TicketPart> findByServiceTicket_TicketIdAndPart_PartId(Integer ticketId, Integer partId);
+
 
 }

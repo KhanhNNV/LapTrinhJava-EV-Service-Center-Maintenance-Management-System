@@ -10,6 +10,8 @@ public interface IServiceItemService {
     ServiceItemDto getServiceItemById(Integer id);
     ServiceItemDto createServiceItem(ServiceItemRequest request);
     ServiceItemDto updateServiceItem(Integer id, ServiceItemRequest request);
+    void deleteServiceItem(Integer id);
+
 
     ServiceItemDto addSuggestion(Integer itemId, Integer partId, int quantity);
     void removeSuggestion(Integer itemId, Integer partId);

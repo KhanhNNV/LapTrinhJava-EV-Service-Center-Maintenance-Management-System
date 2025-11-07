@@ -9,5 +9,6 @@ import edu.uth.evservice.models.Inventory;
 
 public interface IInventoryRepository extends JpaRepository<Inventory, Integer> {
     Optional<Inventory> findByPart_PartId(Integer partId);
+    Optional<Inventory> findByServiceCenter_CenterId(Integer id);
 
 }

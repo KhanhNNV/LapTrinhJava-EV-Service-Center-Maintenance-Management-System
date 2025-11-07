@@ -2,6 +2,11 @@ package edu.uth.evservice.controllers;
 
 import java.util.List;
 
+import edu.uth.evservice.dtos.SuggestedPartsDto;
+import edu.uth.evservice.dtos.TicketPartDto;
+import edu.uth.evservice.requests.AddServiceItemRequest;
+import edu.uth.evservice.requests.TicketPartRequest;
+import edu.uth.evservice.requests.UpdatePartQuantityRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -105,5 +110,53 @@ public class ServiceTicketController {
      * Tech thêm một DỊCH VỤ (ServiceItem) vào Ticket.
      * Trả về chi tiết dịch vụ vừa thêm VÀ danh sách phụ tùng được GỢI Ý.
      */
+    @PostMapping("/{ticketId}/service-items")
+    @PreAuthorize("hasRole('TECHNICIAN')")
+    public ResponseEntity<SuggestedPartsDto> addServiceItemtoTicket(
+            @PathVariable Integer ticketId,
+            @RequestBody AddServiceItemRequest request,
+            Authentication authentication) {
+
+        SuggestedPartsDto response = ticketService.addServiceItemToTicket(ticketId,request,authentication.getName());
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
+
+    /**
+     * Tech xóa một DỊCH VỤ (ServiceItem) khỏi Ticket.
+     */
+    @DeleteMapping("/{ticketId}/service-items/{itemId}")
+    @PreAuthorize("hasRole('TECHNICIAN')")
+    public ResponseEntity<Void> removeServiceItemFromTicket(
+            @PathVariable Integer ticketId,
+            @PathVariable Integer itemId,
+            Authentication authentication) {
+
+        ticketService.removeServiceItemFromTicket(ticketId, itemId, authentication.getName());
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Tech CẬP NHẬT SỐ LƯỢNG (Thêm/Sửa/Xóa) của một PHỤ TÙNG trên Ticket.
+     * - Thêm mới: quantity > 0 (khi chưa có)
+     * - Sửa: quantity > 0 (khi đã có)
+     * - Xóa: quantity = 0
+     * * API này sẽ tự động TÍNH TOÁN chênh lệch và cập nhật KHO.
+     */
+    @PutMapping("/{ticketId}/parts")
+    @PreAuthorize("hasRole('TECHNICIAN')")
+    public ResponseEntity<TicketPartDto> updatePartOnTicket(
+            @PathVariable Integer ticketId,
+            @RequestBody UpdatePartQuantityRequest request, // Dùng DTO mới
+            Authentication authentication) {
+
+        TicketPartDto updatedPart = ticketService.updatePartOnTicket(
+                ticketId,
+                request,
+                authentication.getName());
+
+        // Trả về DTO của part, ngay cả khi số lượng là 0
+        return ResponseEntity.ok(updatedPart);
+    }
+
 
 }
