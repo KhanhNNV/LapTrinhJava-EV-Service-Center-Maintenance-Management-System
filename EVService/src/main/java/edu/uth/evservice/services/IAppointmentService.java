@@ -20,9 +20,10 @@ public interface IAppointmentService {
 
     List<AppointmentDto> getByStaff(Integer staffId);
 
+    // lay lich hen theo status
+    List<AppointmentDto> getAppointmentsByStatus(String status, boolean isUserAccepted);
+
     // --- LOGIC MỚI CHO WORKFLOW ---
-    // AppointmentDto assignTechnicianAndConfirm(Integer appointmentId, Integer
-    // technicianId, String staffUserName);
 
     // confirm cho khach hang
     AppointmentDto confirmForCustomer(Integer appointmentId, String staffUserName);

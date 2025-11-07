@@ -32,6 +32,17 @@ public class AppointmentController {
         private final IAppointmentService appointmentService;
         private final IUserService userService;
 
+        // lay danh sach lich hen theo trang thai (admin/staff)
+        @GetMapping("/status/{status}")
+        @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+        public ResponseEntity<List<AppointmentDto>> getAppointmentsByStatus(@PathVariable String status,
+                        Authentication authentication) {
+                User currentUser = userService.findByUsername(authentication.getName())
+                                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy người dùng."));
+                boolean isAdmin = currentUser.getRole().name().equals("ADMIN");
+                boolean isStaff = currentUser.getRole().name().equals("STAFF");
+                return ResponseEntity.ok(appointmentService.getAppointmentsByStatus(status, isAdmin || isStaff));
+        }
 
         // Customer create appointment
         @PostMapping
@@ -56,7 +67,6 @@ public class AppointmentController {
                 return ResponseEntity.ok(canceledAppointment);
         }
 
-
         // Staff xac nhan lich hen
         @PutMapping("/{appointmentId}/confirmForCustomer")
         @PreAuthorize("hasAnyRole('STAFF')")
@@ -73,7 +83,7 @@ public class AppointmentController {
         public ResponseEntity<AppointmentDto> checkIn(@PathVariable Integer appointmentId,
                         Authentication authentication) {
                 User currentUser = userService.findByUsername(authentication.getName())
-                                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+                                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy người dùng."));
                 boolean isAdmin = currentUser.getRole().name().equals("ADMIN");
                 boolean isStaff = currentUser.getRole().name().equals("STAFF");
 
