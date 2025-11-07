@@ -22,5 +22,11 @@ public interface IUserRepository extends JpaRepository<User, Integer> {
 
     boolean existsByUsername(String username);
     List<User> findByRole(Role role);// Phân role user sử dụng cho crud admincontroller
+    //Tìm kiếm bằng username hoặc fullname
+    List<User> findByUsernameContainingIgnoreCase(String username);
+
+    List<User> findByFullNameContainingIgnoreCase(String fullName);
+
+    List<User> findByUsernameContainingIgnoreCaseOrFullNameContainingIgnoreCase(String username, String fullName);
 
 }

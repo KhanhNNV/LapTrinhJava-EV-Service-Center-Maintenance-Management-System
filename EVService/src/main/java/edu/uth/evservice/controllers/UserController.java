@@ -14,6 +14,13 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final IUserService userService;
+    // Tìm kiếm user theo username hoặc fullName
+    @GetMapping("/search")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+    public ResponseEntity<?> searchUsers(@RequestParam(required = false) String username,
+                                         @RequestParam(required = false) String fullName) {
+        return ResponseEntity.ok(userService.searchUsers(username, fullName));
+    }
 
     // Lấy tất cả user theo role
     @GetMapping("/{role:[a-zA-Z]+}")

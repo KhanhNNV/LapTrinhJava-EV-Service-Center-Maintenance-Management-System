@@ -151,4 +151,26 @@ public class UserServiceImpl implements IUserService {
                 .role(user.getRole())
                 .build();
     }
+    @Override
+    public List<UserDto> searchUsers(String username, String fullName) {
+        List<User> users;
+
+        if (username != null && !username.isEmpty() && fullName != null && !fullName.isEmpty()) {
+            users = userRepository.findByUsernameContainingIgnoreCaseOrFullNameContainingIgnoreCase(username, fullName);
+        } else if (username != null && !username.isEmpty()) {
+            users = userRepository.findByUsernameContainingIgnoreCase(username);
+        } else if (fullName != null && !fullName.isEmpty()) {
+            users = userRepository.findByFullNameContainingIgnoreCase(fullName);
+        } else {
+            users = userRepository.findAll();
+        }
+        if (users.isEmpty()) {
+            throw new ResourceNotFoundException("Không tìm thấy người dùng phù hợp với tiêu chí tìm kiếm.");
+        }
+
+        return users.stream()
+                .map(this::mapToDto)
+                .collect(Collectors.toList());
+    }
+
 }

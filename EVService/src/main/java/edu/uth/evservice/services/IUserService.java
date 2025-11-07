@@ -23,5 +23,6 @@ public interface IUserService {
 
     Optional<User> findByEmail(String email);
     List<UserDto> getUsersByRole(Role role); // Phân role user sử dụng cho crud Admin
+    List<UserDto> searchUsers(String username, String fullName);//Tìm kiếm user bằng username hoặc fullname
 
 }
