@@ -3,7 +3,7 @@ import apiClient from '../../../services/api';
 //. Gửi yêu cầu đăng nhập đến server.
 export const login = (username, password) => {
   return apiClient.post('/auth/login', {
-    username: username,
+    usernameOrEmail: username,
     password: password,
   });
 };

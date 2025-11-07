@@ -53,7 +53,7 @@ export const useAuthForm = () => {
     // Lưu accesstoken và refreshtoken vào localstrorage
     localStorage.setItem("authToken", token.accessToken);
     localStorage.setItem("refreshToken", token.refreshToken);
-    navigate("/dashboard", { replace: true });
+    window.location.href = "/dashboard";
   };
 
   //~ Hàm cung cấp đường dẫn cho login social
@@ -61,8 +61,12 @@ export const useAuthForm = () => {
     if (provider === "Google") {
       window.location.href = `${API_URL}/oauth2/authorization/google`;
     }
-
-    //! CÒN THIẾU FACEBOOK VÀ GITHUB
+    if (provider === "GitHub") {
+      window.location.href = `${API_URL}/oauth2/authorization/github`;
+    }
+    if (provider === "Facebook") {
+      window.location.href = `${API_URL}/oauth2/authorization/facebook`;
+    }
   };
 
   const switchToLogin = () => {
@@ -94,15 +98,10 @@ export const useAuthForm = () => {
     }
     try {
       const response = await authService.login(loginEmail, loginPassword);
-      if (response.accessToken) {
+      const tokenData = response.data;
+      if (tokenData && tokenData.accessToken) {
         //~ Gọi từ thằng auth/hooks/useAuthForm.js
-        handleLoginSuccess(response); // Trả về cả object data
-      } else {
-        setLoginErrors({ general: "Lỗi không nhận được token." });
-      }
-      const { accessToken } = response.data;
-      if (accessToken) {
-        handleLoginSuccess(accessToken);
+        handleLoginSuccess(tokenData); // Trả về cả object data
       } else {
         setLoginErrors({ general: "Lỗi không nhận được token." });
       }
@@ -205,7 +204,7 @@ export const useAuthForm = () => {
         const errorMessage = error.response.data.message || error.response.data;
         if (errorMessage.includes('Username đã tồn tại')) {
           setRegErrors(prev => ({ ...prev, username: 'Tên đăng nhập này đã tồn tại' }));
-        } else if (errorMessage.includes('Email đã tồn tại')) {
+        } else if (errorMessage.includes(' tồn tại')) {
           setRegErrors(prev => ({ ...prev, email: 'Email này đã tồn tại' }));
         } else {
           alert(`Đăng ký thất bại: ${errorMessage}`);
@@ -242,9 +241,9 @@ export const useAuthForm = () => {
     regEmail,
     setRegEmail,
     regPassword,
-    setPassword,
+    setRegPassword,
     regConfirm,
-    setConfirm,
+    setRegConfirm,
     regPhoneNumber,
     setRegPhoneNumber,
     regAddress,

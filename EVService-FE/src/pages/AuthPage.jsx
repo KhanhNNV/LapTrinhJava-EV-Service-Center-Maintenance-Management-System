@@ -8,9 +8,9 @@ import OtpStep from '../features/auth/components/OtpStep';
 import RegisterFormInfo from '../features/auth/components/RegisterFormInfo';
 import RegisterSuccessStep from '../features/auth/components/RegisterSuccessStep';
 import styles from './AuthPage.module.css';
-// Import formStyles để dùng textCenter
-import formStyles from '../features/auth/components/formStyles.module.css';
 
+import formStyles from '../features/auth/components/formStyles.module.css';
+import { useAuthForm } from '../features/auth/hooks/useAuthForm';
 export default function AuthPage() {
     const {
         tab,
@@ -28,9 +28,9 @@ export default function AuthPage() {
         regEmail,
         setRegEmail,
         regPassword,
-        setPassword,
+        setRegPassword,
         regConfirm,
-        setConfirm,
+        setRegConfirm,
         regPhoneNumber,
         setRegPhoneNumber, // (Đổi tên từ setPhone)
         regAddress,

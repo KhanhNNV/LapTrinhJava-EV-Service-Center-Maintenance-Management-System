@@ -29,8 +29,8 @@ const apiClient = axios.create({
 
 apiClient.interceptors.request.use(
   (config) => {
-    //~ So sánh xem thử URL có phải là /auth/refresh không?
-    if (config.url?.includes("/auth/refresh")){
+    //~ So sánh xem thử URL có phải là /auth/refresh/login/refresh không?
+    if (config.url?.includes("/auth")){
       return config;
     }
     //~ Lấy token từ LocalStorage

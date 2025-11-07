@@ -8,15 +8,13 @@ export default function AuthCallbackPage() {
 
   useEffect(() => {
     // 1. Đọc token từ URL (ví dụ: ?token=eyJ...)
-    const token = searchParams.get('token');
-
-    if (token) {
-      console.log('Đã nhận được token:', token);
-      
+    const authToken = searchParams.get('authToken');
+    const refreshToken = searchParams.get('refreshToken')
+    if (authToken) {
       // 2. Lưu token vào localStorage
       // Đây là bước quan trọng để "duy trì đăng nhập"
-      localStorage.setItem('', token);
-
+      localStorage.setItem('authToken', authToken);
+      localStorage.setItem('refreshToken', refreshToken);
       // 3. TODO: Cập nhật state (ví dụ: AuthContext)
       // (Bỏ qua bước này nếu bạn chưa dùng Context)
       // auth.login(token); 
@@ -24,7 +22,7 @@ export default function AuthCallbackPage() {
       // 4. Chuyển hướng người dùng đến trang Dashboard
       // Dùng 'replace: true' để người dùng không thể bấm "Back" quay lại trang này
       navigate('/dashboard', { replace: true });
-
+      window.location.reload();
     } else {
       // 5. Nếu không có token, đây là lỗi. Chuyển về trang đăng nhập.
       console.error('Không tìm thấy token trong URL callback.');
