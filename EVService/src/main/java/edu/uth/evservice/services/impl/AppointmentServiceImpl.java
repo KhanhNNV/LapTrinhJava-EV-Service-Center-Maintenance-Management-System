@@ -13,13 +13,16 @@ import edu.uth.evservice.exception.ResourceNotFoundException;
 import edu.uth.evservice.models.Appointment;
 import edu.uth.evservice.models.CustomerPackageContract;
 import edu.uth.evservice.models.ServiceCenter;
+import edu.uth.evservice.models.TechnicianCertificate;
 import edu.uth.evservice.models.User;
 import edu.uth.evservice.models.Vehicle;
 import edu.uth.evservice.models.enums.AppointmentStatus;
+import edu.uth.evservice.models.enums.CertificateType;
 import edu.uth.evservice.models.enums.ContractStatus;
 import edu.uth.evservice.repositories.IAppointmentRepository;
 import edu.uth.evservice.repositories.ICustomerPackageContractRepository;
 import edu.uth.evservice.repositories.IServiceCenterRepository;
+import edu.uth.evservice.repositories.ITechnicianCertificateRepository;
 import edu.uth.evservice.repositories.IUserRepository;
 import edu.uth.evservice.repositories.IVehicleRepository;
 import edu.uth.evservice.requests.AppointmentRequest;
@@ -35,6 +38,7 @@ public class AppointmentServiceImpl implements IAppointmentService {
     private final IVehicleRepository vehicleRepository;
     private final IServiceCenterRepository centerRepository;
     private final ICustomerPackageContractRepository contractRepository;
+    private final ITechnicianCertificateRepository technicianCertificateRepository;
 
     // lay tat ca lich hen danh cho admin
     @Override
@@ -149,7 +153,7 @@ public class AppointmentServiceImpl implements IAppointmentService {
             throw new IllegalStateException("Lịch hẹn đã được xác nhận từ trước.");
         }
 
-        if (appointment.getStatus() != AppointmentStatus.CHECKED_IN) {
+        if (appointment.getStatus() == AppointmentStatus.CHECKED_IN) {
             throw new IllegalStateException("Lịch hẹn đã được checked-in.");
         }
 
@@ -189,9 +193,33 @@ public class AppointmentServiceImpl implements IAppointmentService {
                 .orElseThrow(
                         () -> new ResourceNotFoundException("Không tìm thấy kỹ thuật viên với ID: " + technicianId));
 
-        // kiem tra appointment da checked-in
-        if (appointment.getStatus() != AppointmentStatus.CHECKED_IN) {
-            throw new IllegalStateException("Chỉ có thể giao việc cho kỹ thuật viên khi khách đã check-in.");
+        // KIỂM TRA CHỨNG CHỈ
+        // 1. Xác định loại chứng chỉ yêu cầu dựa trên loại xe
+        Vehicle vehicle = appointment.getVehicle();
+        CertificateType requiredType;
+        switch (vehicle.getVehicleType()) {
+            case ELECTRIC_CAR:
+                requiredType = CertificateType.ELECTRIC_CAR_REPAIR;
+                break;
+            case ELECTRIC_MOTORBIKE:
+                requiredType = CertificateType.ELECTRIC_MOTORBIKE_REPAIR;
+                break;
+            default:
+                throw new IllegalStateException("Loại xe không được hỗ trợ để chỉ định: " + vehicle.getVehicleType());
+        }
+        // 2. Lấy tất cả chứng chỉ mà Technician đang có (còn hiệu lực)
+        List<TechnicianCertificate> techCertificates = technicianCertificateRepository
+                .findByTechnician_UserId(technicianId);
+
+        // 3. Kiểm tra xem KTV có chứng chỉ phù hợp không
+        boolean isQualified = techCertificates.stream()
+                .filter(tc -> tc.getExpiryDate().isAfter(LocalDate.now())) // Chỉ xét chứng chỉ còn hạn
+                .map(tc -> tc.getCertificate().getCertificateType()) // Lấy ra loại của từng chứng chỉ
+                .anyMatch(certType -> certType.equals(requiredType)); // Tìm xem có cái nào khớp không
+
+        if (!isQualified) {
+            throw new IllegalArgumentException(
+                    "Nhiệm vụ không thành công: Kỹ thuật viên được chọn không có chứng chỉ phù hợp để bảo dưỡng loại xe này");
         }
 
         // Kiểm tra KTV có đang bận (có lịch IN_PROGRESS trong ngày) không
@@ -209,6 +237,11 @@ public class AppointmentServiceImpl implements IAppointmentService {
                 .size() > 3;
         if (isBusy) {
             throw new IllegalStateException("Kỹ thuật viên đã nhận tối đa 3 lịch hẹn trong ngày.");
+        }
+
+        // kiem tra appointment da checked-in
+        if (appointment.getStatus() != AppointmentStatus.CHECKED_IN) {
+            throw new IllegalStateException("Chỉ có thể giao việc cho kỹ thuật viên khi khách đã check-in.");
         }
 
         appointment.setAssignedTechnician(technician);
