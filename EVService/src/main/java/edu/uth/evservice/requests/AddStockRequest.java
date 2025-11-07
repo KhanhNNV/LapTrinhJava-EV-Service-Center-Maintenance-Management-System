@@ -5,6 +5,11 @@ import lombok.Data;
 
 @Data
 public class AddStockRequest {
+    private Integer partId;
+
+    private Integer centerId;
+
     @Min(1)
-    private int quantityToAdd; // Số lượng thêm vào kho
+    private int quantityToAdd;
+
 }

@@ -2,6 +2,9 @@ package edu.uth.evservice.controllers;
 
 import java.util.List;
 
+import edu.uth.evservice.requests.AddStockRequest;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -28,39 +31,15 @@ import lombok.experimental.FieldDefaults;
 public class InventoryController {
     private final IInventoryService inventoryService;
 
-    @GetMapping
-    public List<InventoryDto> getInventories() {
-        return inventoryService.getAllInventories();
-    }
 
-    @GetMapping("/{id}")
-    public InventoryDto getInventoryById(@PathVariable Integer id) {
-        return inventoryService.getInventoryById(id);
-    }
+    // Nhập thêm hàng vào kho cho một trung tâm cụ thể.
+    @PostMapping("/add-stock")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<InventoryDto> addStock(
+            @RequestBody AddStockRequest request) {
 
-    @GetMapping("/part/{partId}")
-    public List<InventoryDto> getByPart(@PathVariable Integer partId) {
-        return inventoryService.getInventoriesByPartId(partId);
-    }
-
-    @GetMapping("/service_centers/{centerId}")
-    public List<InventoryDto> getByCenter(@PathVariable Integer centerId) {
-        return inventoryService.getInventoriesByCenterId(centerId);
-    }
-
-    @PostMapping
-    public InventoryDto createInventory(@Validated @RequestBody InventoryRequest request) {
-        return inventoryService.createInventory(request);
-    }
-
-    @PutMapping("/{id}")
-    public InventoryDto updateInventory(@PathVariable Integer id, @Validated @RequestBody InventoryRequest inventory) {
-        return inventoryService.updateInventory(id, inventory);
-    }
-
-    @DeleteMapping("/{id}")
-    public void deleteInventory(@PathVariable Integer id) {
-        inventoryService.deleteInventory(id);
+        InventoryDto updatedInventory = inventoryService.addStock(request);
+        return ResponseEntity.ok(updatedInventory);
     }
 
 }

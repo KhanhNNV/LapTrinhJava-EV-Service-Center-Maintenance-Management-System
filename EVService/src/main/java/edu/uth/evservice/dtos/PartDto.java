@@ -10,5 +10,4 @@ public class PartDto {
     private Integer partId;
     private String partName;
     private Double unitPrice;
-    private int  quantityInStock;
 }

@@ -229,7 +229,7 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
 
                     //Lấy tồn kho
                     int stock = inventoryRepo.findByPart_PartId(part.getPartId())
-                            .map(Inventory::getQuantity).orElse(0L).intValue();
+                            .map(Inventory::getQuantity).orElse(0);
                     return toSuggestedDto(part, suggestedQty, stock);
                 }).collect(Collectors.toList());
 
