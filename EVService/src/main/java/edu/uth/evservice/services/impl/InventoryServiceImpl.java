@@ -35,26 +35,25 @@ public class InventoryServiceImpl implements IInventoryService {
             throw new IllegalArgumentException("Số lượng không được âm.");
         }
 
-        // 1. Tìm các đối tượng liên quan
         Part part = partRepository.findById(request.getPartId())
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy phụ tùng:" + request.getPartId()));
 
         ServiceCenter center = serviceCenterRepository.findById(request.getCenterId())
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy trung tâm: " + request.getCenterId()));
 
-        // 2. Tìm hoặc Tạo mới bản ghi Inventory
+        // Tạo mới Inventory nếu chưa thêm vào lần nào
         Inventory inventory = inventoryRepository.findByPart_PartIdAndServiceCenter(part.getPartId(), center)
                 .orElseGet(() ->
                         Inventory.builder()
                                 .part(part)
                                 .serviceCenter(center)
                                 .quantity(0)
-                                .minQuantity(5L) // Set mặc định
+                                .minQuantity(5L)
                                 .createdAt(LocalDate.now())
                                 .build()
                 );
 
-        // 3. Cộng thêm vào kho
+        // Cộng thêm vào kho
         inventory.setQuantity(inventory.getQuantity() + request.getQuantityToAdd());
         inventory.setUpdatedAt(LocalDate.now());
         Inventory savedInventory = inventoryRepository.save(inventory);
@@ -62,7 +61,6 @@ public class InventoryServiceImpl implements IInventoryService {
         return toDto(savedInventory);
     }
 
-    // Hàm helper để convert
     private InventoryDto toDto(Inventory inv) {
         return InventoryDto.builder()
                 .inventoryId(inv.getInventoryId())

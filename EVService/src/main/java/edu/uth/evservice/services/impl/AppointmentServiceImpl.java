@@ -162,7 +162,7 @@ public class AppointmentServiceImpl implements IAppointmentService {
             throw new IllegalStateException("Appointment is already confirmed.");
         }
 
-        if (appointment.getStatus() != AppointmentStatus.CHECKED_IN) {
+        if (appointment.getStatus() == AppointmentStatus.CHECKED_IN) {
             throw new IllegalStateException("Appointment is already checked-in");
         }
 

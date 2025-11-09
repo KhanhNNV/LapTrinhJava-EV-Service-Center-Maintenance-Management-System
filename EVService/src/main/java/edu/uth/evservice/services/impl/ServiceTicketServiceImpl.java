@@ -200,6 +200,8 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
     public SuggestedPartsDto addServiceItemToTicket(Integer ticketId, AddServiceItemRequest request, String username) {
         ServiceTicket ticket = getTicketAndVerifyStatus(ticketId, username);
 
+        ServiceCenter techCenter =getCenterFromUsername(username);
+
         ServiceItem item = serviceItemRepo.findById(request.getItemId()).orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy hạng mục dịch vụ này"));
 
         if(ticketServiceItemRepository.existsById(new TicketServiceItemId(ticketId,request.getItemId()))) {
@@ -228,8 +230,9 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
                     int suggestedQty = suggestion.getQuantity();
 
                     //Lấy tồn kho
-                    int stock = inventoryRepo.findByPart_PartId(part.getPartId())
+                    int stock = inventoryRepo.findByPart_PartIdAndServiceCenter(part.getPartId(), techCenter)
                             .map(Inventory::getQuantity).orElse(0);
+
                     return toSuggestedDto(part, suggestedQty, stock);
                 }).collect(Collectors.toList());
 
@@ -255,8 +258,8 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
 
     /**
      * Cập nhật số lượng của một Part trên Ticket nếu tech ko muốn lấy số lượng như gợi ý.
-     * 1. Lấy số lượng Tech muốn (newQuantity)
-     * 2. Lấy số lượng đang có trên ticket (currentQuantity)
+     * 1. Lấy số lượng Tech muốn
+     * 2. Lấy số lượng đang có trên ticket
      * 3. Tính chênh lệch (delta = newQuantity - currentQuantity)
      * 4. Kiểm tra kho xem có đủ cho (delta) không
      * 5. Cập nhật kho (trừ hoặc cộng trả lại kho)
@@ -264,7 +267,6 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
      */
     @Override
     public TicketPartDto updatePartOnTicket(Integer ticketId, UpdatePartQuantityRequest request, String username) {
-        // 1. Xác thực và lấy ticket
         ServiceTicket ticket = getTicketAndVerifyStatus(ticketId, username);
 
         Part part = partRepo.findById(request.getPartId())
@@ -277,12 +279,12 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
 
         TicketPartId id = new TicketPartId(ticketId, request.getPartId());
 
-        // 2. Lấy số lượng hiện tại
+        // Lấy số lượng hiện tại
         int currentQuantity = ticketPartRepo.findById(id)
                 .map(TicketPart::getQuantity)
                 .orElse(0);
 
-        // 3. Tính toán chênh lệch (delta)
+        // Tính toán chênh lệch (delta)
         int delta = newQuantity - currentQuantity;
 
         if (delta == 0 && currentQuantity == 0) {
@@ -290,16 +292,15 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
         }
 
         if (delta == 0) {
-            // Không có gì thay đổi, trả về DTO hiện tại
             return toDto(ticketPartRepo.findById(id).get());
         }
 
-        // 4. Xử lý KHO (Inventory)
-        Inventory inventory = inventoryRepo.findByPart_PartId(request.getPartId())
+        ServiceCenter techCenter =getCenterFromUsername(username);
+
+        Inventory inventory = inventoryRepo.findByPart_PartIdAndServiceCenter(request.getPartId(), techCenter)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy hàng tồn kho cho phụ tùng này"));
 
         if (delta > 0) {
-            // Cần lấy THÊM hàng
             if (inventory.getQuantity() < delta) {
                 throw new IllegalStateException("Không đủ hàng cho phụ tùng này: " + part.getPartName() +
                         ". Yêu cầu: " + delta +
@@ -307,20 +308,16 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
             }
         }
 
-        // 5. Cập nhật kho (delta có thể âm, nghĩa là trả hàng vào kho)
+        // Cập nhật kho (delta có thể âm, nghĩa là trả hàng vào kho)
         inventory.setQuantity(inventory.getQuantity() - delta);
         inventoryRepo.save(inventory);
 
-        // 6. Cập nhật TicketPart
         if (newQuantity == 0) {
-            // Xóa khỏi ticket
-            if (currentQuantity > 0) { // Chỉ xóa nếu nó thực sự tồn tại
+            if (currentQuantity > 0) {
                 ticketPartRepo.deleteById(id);
             }
-            // Trả về DTO với số lượng 0
             return buildZeroQuantityPartDto(part);
         } else {
-            // Cập nhật hoặc tạo mới
             TicketPart ticketPart = ticketPartRepo.findById(id)
                     .orElseGet(() -> TicketPart.builder() // Tạo mới nếu chưa có
                             .id(id)
@@ -337,7 +334,7 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
 
 
 
-    //Lấy ticket và kiểm tra trạng thái, nếu là in progress mới được thêm item và part
+    // Lấy ticket và kiểm tra trạng thái, nếu là in progress mới được thêm item và part
     private ServiceTicket getTicketAndVerifyStatus(Integer ticketId, String username) {
         verifyTicketOwnership(username, ticketId);
         ServiceTicket ticket = ticketRepo.findById(ticketId)
@@ -442,5 +439,16 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
                 })
                 .sorted(Comparator.comparingLong(TechnicianPerformanceDto::getTotalTickets).reversed()) // sắp giảm dần theo số vé
                 .collect(Collectors.toList());
+    }
+
+    // lấy trung tâm của tech
+    private ServiceCenter getCenterFromUsername(String username) {
+        User currentUser = userRepo.findByUsername(username)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+        ServiceCenter center = currentUser.getServiceCenter();
+        if (center == null) {
+            throw new IllegalStateException("Technician is not associated with any service center.");
+        }
+        return center;
     }
 }

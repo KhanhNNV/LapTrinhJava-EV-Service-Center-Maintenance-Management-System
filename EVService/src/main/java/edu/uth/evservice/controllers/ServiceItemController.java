@@ -24,7 +24,8 @@ public class ServiceItemController {
 
     IServiceItemService serviceItemService;
 
-    // CRUD cho ServiceItem
+    // --- CRUD cho ServiceItem ---
+
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ServiceItemDto> createServiceItem(@RequestBody ServiceItemRequest serviceItemRequest) {
@@ -45,9 +46,10 @@ public class ServiceItemController {
         return new ResponseEntity<>(newItem,HttpStatus.OK);
     }
 
-    // Quản lý Gợi ý (ServiceItemPart)
+    // --- Quản lý Gợi ý (ServiceItemPart) ---
 
     @PostMapping("/{itemId}/suggest-part")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ServiceItemDto> addSuggestedPart(
             @PathVariable Integer itemId,
             @RequestBody AddSuggestedPartRequest request) {
@@ -57,6 +59,7 @@ public class ServiceItemController {
     }
 
     @DeleteMapping("/{itemId}/suggest-part/{partId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> removeSuggestedPart(
             @PathVariable Integer itemId,
             @PathVariable Integer partId) {
