@@ -1,43 +1,50 @@
-//package edu.uth.evservice.controllers;
-//
-//import edu.uth.evservice.dtos.InvoiceDto;
-//import edu.uth.evservice.requests.CreateInvoiceRequest;
-//import edu.uth.evservice.services.IInvoiceService;
-//import lombok.*;
-//import lombok.experimental.FieldDefaults;
-//import org.springframework.web.bind.annotation.*;
-//
-//import java.util.List;
-//
-//@RestController
-//@RequestMapping("/invoices")
-//@AllArgsConstructor
-//@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-//public class InvoiceController {
-//    IInvoiceService invoiceService;
-//
-//    @GetMapping
-//    public List<InvoiceDto> getInvoices() {
-//        return invoiceService.getAllInvoices();
-//    }
-//
-//    @GetMapping("/{id}")
-//    public InvoiceDto getInvoiceById(@PathVariable Integer id) {
-//        return invoiceService.getInvoiceById(id);
-//    }
-//
-//    @PostMapping
-//    public InvoiceDto createInvoice(@RequestBody CreateInvoiceRequest request) {
-//        return invoiceService.createInvoice(request);
-//    }
-//
-//    @PutMapping("/{id}")
-//    public InvoiceDto updateInvoice(@PathVariable Integer id, @RequestBody CreateInvoiceRequest request) {
-//        return invoiceService.updateInvoice(id, request);
-//    }
-//
-//    @DeleteMapping("/{id}")
-//    public void deleteInvoice(@PathVariable Integer id) {
-//        invoiceService.deleteInvoice(id);
-//    }
-//}
+package edu.uth.evservice.controllers;
+
+import edu.uth.evservice.dtos.InvoiceDto;
+import edu.uth.evservice.requests.CreateInvoiceRequest;
+import edu.uth.evservice.services.IInvoiceService;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/invoices")
+@AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+public class InvoiceController {
+    IInvoiceService invoiceService;
+
+    // Tech tạo hóa đơn đã completed
+    @PostMapping("/{ticketId}")
+    @PreAuthorize("hasAnyRole('TECHNICAN','ADMIN')")
+    public ResponseEntity<InvoiceDto> createInvoice(@PathVariable Integer ticketId, Authentication authentication){
+        InvoiceDto invoiceDto = invoiceService.createInvoiceForTicket(ticketId, authentication.getName());
+        return new ResponseEntity<>(invoiceDto, HttpStatus.OK);
+    }
+
+    @GetMapping("/{ticketId}")
+    @PreAuthorize("hasAnyRole('TECHNICIAN', 'ADMIN', 'CUSTOMER')")
+    public ResponseEntity<InvoiceDto> getInvoiceByTicketId(
+            @PathVariable Integer ticketId) {
+
+        InvoiceDto invoice = invoiceService.getInvoiceByTicketId(ticketId);
+        return ResponseEntity.ok(invoice);
+    }
+
+    @PutMapping("/{invoiceId}/status")
+    @PreAuthorize("hasAnyRole('ADMIN')")
+    public ResponseEntity<InvoiceDto> updatePaymentStatus(
+            @PathVariable Integer invoiceId,
+            @RequestParam String status) {
+
+        InvoiceDto updatedInvoiceDto = invoiceService.updatePaymentStatus(invoiceId, status);
+
+        return ResponseEntity.ok(updatedInvoiceDto);
+    }
+}

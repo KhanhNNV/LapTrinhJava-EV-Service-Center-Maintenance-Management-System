@@ -24,6 +24,6 @@ public class ServiceTicketDto {
 
     private Integer appointmentId;
     private Integer technicianId;
-    private List<Integer> ticketServiceItemIds;
-    private List<Integer> ticketPartIds;
+    private List<TicketServiceItemDto> items;
+    private List<TicketPartDto> parts;
 }

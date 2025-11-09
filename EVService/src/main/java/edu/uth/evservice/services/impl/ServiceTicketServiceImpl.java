@@ -48,7 +48,7 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
     public ServiceTicketDto getTicketById(Integer id) {
         return ticketRepo.findById(id)
                 .map(this::toDto)
-                .orElseThrow(() -> new RuntimeException("Ticket not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy phiếu dịch vụ"));
     }
 
     @Override
@@ -353,6 +353,17 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
     private ServiceTicketDto toDto(ServiceTicket ticket) {
         if (ticket == null)
             return null;
+
+        List<TicketServiceItemDto> itemDtos = ticketServiceItemRepository
+                .findByServiceTicket_TicketId(ticket.getTicketId()).stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
+
+        List<TicketPartDto> partDtos = ticketPartRepo
+                .findByTicket_TicketId(ticket.getTicketId()).stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
+
         return ServiceTicketDto.builder()
                 .ticketId(ticket.getTicketId())
                 .startTime(ticket.getStartTime())
@@ -361,6 +372,8 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
                 .notes(ticket.getNotes())
                 .appointmentId(ticket.getAppointment().getAppointmentId())
                 .technicianId(ticket.getTechnician().getUserId())
+                .items(itemDtos)
+                .parts(partDtos)
                 .build();
     }
 
