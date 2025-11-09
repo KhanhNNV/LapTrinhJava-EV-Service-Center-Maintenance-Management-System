@@ -24,10 +24,16 @@ public class UserController {
 
     // Lấy tất cả user theo role
     @GetMapping("/{role:[a-zA-Z]+}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
-    public ResponseEntity<?> getUsersByRole(@PathVariable Role role) {
-        return ResponseEntity.ok(userService.getUsersByRole(role));
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> getUsersByRole(@PathVariable String role) {
+        try {
+            Role userRole = Role.valueOf(role.toUpperCase()); //Chuyển sang Enum
+            return ResponseEntity.ok(userService.getUsersByRole(userRole));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body("Role không hợp lệ: " + role);
+        }
     }
+
 
     // Tìm user theo ID
     @GetMapping("/{id:\\d+}")
