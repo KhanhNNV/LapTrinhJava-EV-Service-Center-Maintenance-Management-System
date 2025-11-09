@@ -22,7 +22,7 @@ public class InvoiceController {
 
     // Tech tạo hóa đơn đã completed
     @PostMapping("/{ticketId}")
-    @PreAuthorize("hasAnyRole('TECHNICAN','ADMIN')")
+    @PreAuthorize("hasAnyRole('TECHNICIAN','ADMIN')")
     public ResponseEntity<InvoiceDto> createInvoice(@PathVariable Integer ticketId, Authentication authentication){
         InvoiceDto invoiceDto = invoiceService.createInvoiceForTicket(ticketId, authentication.getName());
         return new ResponseEntity<>(invoiceDto, HttpStatus.OK);

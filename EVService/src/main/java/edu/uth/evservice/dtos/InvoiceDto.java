@@ -1,5 +1,6 @@
 package edu.uth.evservice.dtos;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
