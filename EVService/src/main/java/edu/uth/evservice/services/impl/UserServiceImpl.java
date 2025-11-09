@@ -97,8 +97,8 @@ public class UserServiceImpl implements IUserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("Không tìm thấy người dùng với ID: " + id));
 
-        // Kiểm tra role hợp lệ (nếu có)
-        if (request.getRole() != null) {
+        // Kiểm tra role hợp lệ nếu có
+        if (request.getRole() != null && !request.getRole().isBlank()) {
             try {
                 user.setRole(Role.valueOf(request.getRole().toUpperCase()));
             } catch (IllegalArgumentException e) {
@@ -106,25 +106,54 @@ public class UserServiceImpl implements IUserService {
             }
         }
 
-        // Kiểm tra dữ liệu thay đổi hợp lệ
-        if (request.getFullName() == null || request.getFullName().isBlank()) {
-            throw new IllegalArgumentException("Họ tên không được để trống");
+        // Kiểm tra username trùng (nếu có cập nhật)
+        if (request.getUsername() != null && !request.getUsername().isBlank()) {
+            if (!request.getUsername().equals(user.getUsername()) &&
+                    userRepository.existsByUsername(request.getUsername())) {
+                throw new DuplicateResourceException("Username đã tồn tại: " + request.getUsername());
+            }
+            user.setUsername(request.getUsername());
         }
 
-        if (request.getPhoneNumber() == null || request.getPhoneNumber().isBlank()) {
-            throw new IllegalArgumentException("Số điện thoại không được để trống");
+        // Kiểm tra email trùng (nếu có cập nhật)
+        if (request.getEmail() != null && !request.getEmail().isBlank()) {
+            if (!request.getEmail().equals(user.getEmail()) &&
+                    userRepository.existsByEmail(request.getEmail())) {
+                throw new DuplicateResourceException("Email đã tồn tại: " + request.getEmail());
+            }
+            user.setEmail(request.getEmail());
         }
 
-        user.setFullName(request.getFullName());
-        user.setPhoneNumber(request.getPhoneNumber());
-        user.setAddress(request.getAddress());
-        // Cập nhật centerId nếu có
+        // Kiểm tra số điện thoại trùng (nếu có cập nhật)
+        if (request.getPhoneNumber() != null && !request.getPhoneNumber().isBlank()) {
+            if (!request.getPhoneNumber().equals(user.getPhoneNumber()) &&
+                    userRepository.existsByPhoneNumber(request.getPhoneNumber())) {
+                throw new DuplicateResourceException("Số điện thoại đã tồn tại: " + request.getPhoneNumber());
+            }
+            user.setPhoneNumber(request.getPhoneNumber());
+        }
+
+        // Cập nhật các trường khác
+        if (request.getFullName() != null && !request.getFullName().isBlank()) {
+            user.setFullName(request.getFullName());
+        }
+
+        if (request.getAddress() != null && !request.getAddress().isBlank()) {
+            user.setAddress(request.getAddress());
+        }
+
+        if (request.getPassword() != null && !request.getPassword().isBlank()) {
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
+        }
+
+        // Nếu có centerId thì kiểm tra và cập nhật
         if (request.getCenterId() != null) {
             ServiceCenter center = serviceCenterRepository.findById(request.getCenterId())
                     .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy Service Center với ID: " + request.getCenterId()));
             user.setServiceCenter(center);
         }
 
+        // Lưu và trả về
         return mapToDto(userRepository.save(user));
     }
 
