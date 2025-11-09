@@ -6,8 +6,10 @@ import java.util.stream.Collectors;
 
 import edu.uth.evservice.dtos.UserDto;
 import edu.uth.evservice.exception.*;
+import edu.uth.evservice.models.ServiceCenter;
 import edu.uth.evservice.models.User;
 import edu.uth.evservice.models.enums.Role;
+import edu.uth.evservice.repositories.IServiceCenterRepository;
 import edu.uth.evservice.repositories.IUserRepository;
 import edu.uth.evservice.requests.CreateUserRequest;
 import edu.uth.evservice.services.IUserService;
@@ -24,7 +26,7 @@ public class UserServiceImpl implements IUserService {
 
     IUserRepository userRepository;
     PasswordEncoder passwordEncoder;
-
+    IServiceCenterRepository serviceCenterRepository;
     @Override
     public UserDto createUser(CreateUserRequest request) {
         // Kiểm tra role hợp lệ
@@ -48,7 +50,15 @@ public class UserServiceImpl implements IUserService {
         if (request.getPassword() == null || request.getPassword().isBlank()) {
             throw new IllegalArgumentException("Mật khẩu không được để trống");
         }
-
+        //Kiểm tra centerID (Chỉ bắt buộc đối với Staff và Technician)
+        ServiceCenter center = null;
+        if (role == Role.STAFF || role == Role.TECHNICIAN) {
+            if (request.getCenterId() == null) {
+                throw new IllegalArgumentException("Staff và Technician bắt buộc phải có centerId.");
+            }
+            center = serviceCenterRepository.findById(request.getCenterId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy Service Center với ID: " + request.getCenterId()));
+        }
         User user = User.builder()
                 .username(request.getUsername())
                 .fullName(request.getFullName())
@@ -57,6 +67,7 @@ public class UserServiceImpl implements IUserService {
                 .phoneNumber(request.getPhoneNumber())
                 .address(request.getAddress())
                 .role(role)
+                .serviceCenter(center)
                 .build();
 
         userRepository.save(user);
@@ -107,6 +118,12 @@ public class UserServiceImpl implements IUserService {
         user.setFullName(request.getFullName());
         user.setPhoneNumber(request.getPhoneNumber());
         user.setAddress(request.getAddress());
+        // Cập nhật centerId nếu có
+        if (request.getCenterId() != null) {
+            ServiceCenter center = serviceCenterRepository.findById(request.getCenterId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy Service Center với ID: " + request.getCenterId()));
+            user.setServiceCenter(center);
+        }
 
         return mapToDto(userRepository.save(user));
     }
