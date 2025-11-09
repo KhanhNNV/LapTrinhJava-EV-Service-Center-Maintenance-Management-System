@@ -24,10 +24,9 @@ import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
 @RestController
-@RequestMapping("/inventories")
+@RequestMapping("/api/inventories")
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-@CrossOrigin(origins = "http://localhost:3000")
 public class InventoryController {
     private final IInventoryService inventoryService;
 

@@ -31,9 +31,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.Collections;
 
-/**
- * REST API controller cho ServiceTicket
- */
+
 @RestController
 @RequestMapping("/api/service-tickets")
 @RequiredArgsConstructor
@@ -41,33 +39,6 @@ public class ServiceTicketController {
 
     private final IServiceTicketService ticketService;
 
-    @GetMapping
-    public ResponseEntity<List<ServiceTicketDto>> getAll() {
-        return ResponseEntity.ok(ticketService.getAllTickets());
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<ServiceTicketDto> getById(@PathVariable int id) {
-        return ResponseEntity.ok(ticketService.getTicketById(id));
-    }
-
-    @PostMapping
-    public ResponseEntity<ServiceTicketDto> create(@RequestBody ServiceTicketRequest request) {
-        ServiceTicketDto dto = ticketService.createTicket(request);
-        return ResponseEntity.ok(dto);
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<ServiceTicketDto> update(@PathVariable int id, @RequestBody ServiceTicketRequest request) {
-        ServiceTicketDto dto = ticketService.updateTicket(id, request);
-        return ResponseEntity.ok(dto);
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable int id) {
-        ticketService.deleteTicket(id);
-        return ResponseEntity.ok().build();
-    }
     // Báo cáo hiệu suất làm việc của technician
     @GetMapping("/performance")
     @PreAuthorize("hasRole('ADMIN')")
@@ -107,8 +78,8 @@ public class ServiceTicketController {
     }
 
     /**
-     * Tech thêm một DỊCH VỤ (ServiceItem) vào Ticket.
-     * Trả về chi tiết dịch vụ vừa thêm VÀ danh sách phụ tùng được GỢI Ý.
+     * Tech thêm một ServiceItem vào Ticket.
+     * Trả về chi tiết dịch vụ vừa thêm VÀ danh sách phụ tùng được gợi ý (bảng serviceItemPart).
      */
     @PostMapping("/{ticketId}/service-items")
     @PreAuthorize("hasRole('TECHNICIAN')")
@@ -122,7 +93,7 @@ public class ServiceTicketController {
     }
 
     /**
-     * Tech xóa một DỊCH VỤ (ServiceItem) khỏi Ticket.
+     * Tech xóa một ServiceItem khỏi Ticket.
      */
     @DeleteMapping("/{ticketId}/service-items/{itemId}")
     @PreAuthorize("hasRole('TECHNICIAN')")
@@ -136,11 +107,10 @@ public class ServiceTicketController {
     }
 
     /**
-     * Tech CẬP NHẬT SỐ LƯỢNG (Thêm/Sửa/Xóa) của một PHỤ TÙNG trên Ticket.
+     * Tech cập nhập số lượng(nếu ko lấy số lượng từ gợi ý khi thêm item) (Thêm/Sửa/Xóa) của một phụ tùng trên Ticket.
      * - Thêm mới: quantity > 0 (khi chưa có)
      * - Sửa: quantity > 0 (khi đã có)
      * - Xóa: quantity = 0
-     * * API này sẽ tự động TÍNH TOÁN chênh lệch và cập nhật KHO.
      */
     @PutMapping("/{ticketId}/parts")
     @PreAuthorize("hasRole('TECHNICIAN')")
@@ -154,7 +124,6 @@ public class ServiceTicketController {
                 request,
                 authentication.getName());
 
-        // Trả về DTO của part, ngay cả khi số lượng là 0
         return ResponseEntity.ok(updatedPart);
     }
 
