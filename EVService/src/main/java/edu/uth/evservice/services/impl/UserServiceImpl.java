@@ -35,28 +35,28 @@ public class UserServiceImpl implements IUserService {
         try {
             role = Role.valueOf(request.getRole().toUpperCase());
         } catch (IllegalArgumentException e) {
-            throw new RuntimeException("Role không hợp lệ: " + request.getRole());
+            throw new IllegalArgumentException("Role không hợp lệ: " + request.getRole());
         }
 
         // Kiểm tra trùng username/email
         if (userRepository.existsByUsername(request.getUsername())) {
-            throw new RuntimeException("Username đã tồn tại");
+            throw new IllegalStateException("Username đã tồn tại");
         }
 
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email đã tồn tại");
+            throw new IllegalStateException("Email đã tồn tại");
         }
 
-        // Kiểm tra dữ liệu đầu vào
+        // Kiểm tra mật khẩu
         if (request.getPassword() == null || request.getPassword().isBlank()) {
-            throw new RuntimeException("Mật khẩu không được để trống");
+            throw new IllegalArgumentException("Mật khẩu không được để trống");
         }
 
-        // Kiểm tra centerID (Chỉ bắt buộc đối với Staff và Technician)
+        // Kiểm tra centerId (chỉ với Staff và Technician)
         ServiceCenter center = null;
         if (role == Role.STAFF || role == Role.TECHNICIAN) {
             if (request.getCenterId() == null) {
-                throw new RuntimeException("Staff và Technician bắt buộc phải có centerId.");
+                throw new IllegalArgumentException("Staff và Technician bắt buộc phải có centerId.");
             }
             center = serviceCenterRepository.findById(request.getCenterId())
                     .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy Service Center với ID: " + request.getCenterId()));
@@ -100,43 +100,43 @@ public class UserServiceImpl implements IUserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy người dùng với ID: " + id));
 
-        // Kiểm tra role hợp lệ nếu có
+        // Cập nhật role nếu có
         if (request.getRole() != null && !request.getRole().isBlank()) {
             try {
                 user.setRole(Role.valueOf(request.getRole().toUpperCase()));
             } catch (IllegalArgumentException e) {
-                throw new RuntimeException("Role không hợp lệ: " + request.getRole());
+                throw new IllegalArgumentException("Role không hợp lệ: " + request.getRole());
             }
         }
 
-        // Kiểm tra username trùng (nếu có cập nhật)
+        // Username
         if (request.getUsername() != null && !request.getUsername().isBlank()) {
             if (!request.getUsername().equals(user.getUsername()) &&
                     userRepository.existsByUsername(request.getUsername())) {
-                throw new RuntimeException("Username đã tồn tại: " + request.getUsername());
+                throw new IllegalStateException("Username đã tồn tại: " + request.getUsername());
             }
             user.setUsername(request.getUsername());
         }
 
-        // Kiểm tra email trùng (nếu có cập nhật)
+        // Email
         if (request.getEmail() != null && !request.getEmail().isBlank()) {
             if (!request.getEmail().equals(user.getEmail()) &&
                     userRepository.existsByEmail(request.getEmail())) {
-                throw new RuntimeException("Email đã tồn tại: " + request.getEmail());
+                throw new IllegalStateException("Email đã tồn tại: " + request.getEmail());
             }
             user.setEmail(request.getEmail());
         }
 
-        // Kiểm tra số điện thoại trùng (nếu có cập nhật)
+        // Phone
         if (request.getPhoneNumber() != null && !request.getPhoneNumber().isBlank()) {
             if (!request.getPhoneNumber().equals(user.getPhoneNumber()) &&
                     userRepository.existsByPhoneNumber(request.getPhoneNumber())) {
-                throw new RuntimeException("Số điện thoại đã tồn tại: " + request.getPhoneNumber());
+                throw new IllegalStateException("Số điện thoại đã tồn tại: " + request.getPhoneNumber());
             }
             user.setPhoneNumber(request.getPhoneNumber());
         }
 
-        // Cập nhật các trường khác
+        // Thông tin khác
         if (request.getFullName() != null && !request.getFullName().isBlank()) {
             user.setFullName(request.getFullName());
         }
@@ -149,7 +149,7 @@ public class UserServiceImpl implements IUserService {
             user.setPassword(passwordEncoder.encode(request.getPassword()));
         }
 
-        // Nếu có centerId thì kiểm tra và cập nhật
+        // Cập nhật center nếu có
         if (request.getCenterId() != null) {
             ServiceCenter center = serviceCenterRepository.findById(request.getCenterId())
                     .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy Service Center với ID: " + request.getCenterId()));
@@ -188,34 +188,18 @@ public class UserServiceImpl implements IUserService {
                 .collect(Collectors.toList());
     }
 
-    private UserDto mapToDto(User user) {
-        return UserDto.builder()
-                .userId(user.getUserId())
-                .username(user.getUsername())
-                .fullName(user.getFullName())
-                .email(user.getEmail())
-                .phoneNumber(user.getPhoneNumber())
-                .address(user.getAddress())
-                .role(user.getRole())
-                .build();
-    }
-
     @Override
     public List<UserDto> searchUsers(String username, String fullName) {
-        // Chuẩn hóa tham số đầu vào
-        String nameParam = (username != null && !username.trim().isEmpty()) ? username.trim() : null;
-        String fullNameParam = (fullName != null && !fullName.trim().isEmpty()) ? fullName.trim() : null;
-
         List<User> users;
 
-        if (nameParam != null && fullNameParam != null) {
-            users = userRepository.findByUsernameContainingIgnoreCaseOrFullNameContainingIgnoreCase(nameParam, fullNameParam);
-        } else if (nameParam != null) {
-            users = userRepository.findByUsernameContainingIgnoreCase(nameParam);
-        } else if (fullNameParam != null) {
-            users = userRepository.findByFullNameContainingIgnoreCase(fullNameParam);
+        if (username != null && !username.isEmpty() && fullName != null && !fullName.isEmpty()) {
+            users = userRepository.findByUsernameContainingIgnoreCaseOrFullNameContainingIgnoreCase(username, fullName);
+        } else if (username != null && !username.isEmpty()) {
+            users = userRepository.findByUsernameContainingIgnoreCase(username);
+        } else if (fullName != null && !fullName.isEmpty()) {
+            users = userRepository.findByFullNameContainingIgnoreCase(fullName);
         } else {
-            throw new ResourceNotFoundException("Vui lòng nhập ít nhất một tiêu chí tìm kiếm (username hoặc fullName).");
+            users = userRepository.findAll();
         }
 
         if (users.isEmpty()) {
@@ -227,4 +211,15 @@ public class UserServiceImpl implements IUserService {
                 .collect(Collectors.toList());
     }
 
+    private UserDto mapToDto(User user) {
+        return UserDto.builder()
+                .userId(user.getUserId())
+                .username(user.getUsername())
+                .fullName(user.getFullName())
+                .email(user.getEmail())
+                .phoneNumber(user.getPhoneNumber())
+                .address(user.getAddress())
+                .role(user.getRole())
+                .build();
+    }
 }
