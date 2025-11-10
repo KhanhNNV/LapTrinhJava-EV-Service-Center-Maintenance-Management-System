@@ -5,7 +5,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import edu.uth.evservice.dtos.UserDto;
-import edu.uth.evservice.exception.*;
+import edu.uth.evservice.exception.ResourceNotFoundException;
 import edu.uth.evservice.models.ServiceCenter;
 import edu.uth.evservice.models.User;
 import edu.uth.evservice.models.enums.Role;
@@ -27,6 +27,7 @@ public class UserServiceImpl implements IUserService {
     IUserRepository userRepository;
     PasswordEncoder passwordEncoder;
     IServiceCenterRepository serviceCenterRepository;
+
     @Override
     public UserDto createUser(CreateUserRequest request) {
         // Kiểm tra role hợp lệ
@@ -34,31 +35,33 @@ public class UserServiceImpl implements IUserService {
         try {
             role = Role.valueOf(request.getRole().toUpperCase());
         } catch (IllegalArgumentException e) {
-            throw new InvalidRoleException("Role không hợp lệ: " + request.getRole());
+            throw new RuntimeException("Role không hợp lệ: " + request.getRole());
         }
 
         // Kiểm tra trùng username/email
         if (userRepository.existsByUsername(request.getUsername())) {
-            throw new DuplicateResourceException("Username đã tồn tại");
+            throw new RuntimeException("Username đã tồn tại");
         }
 
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new DuplicateResourceException("Email đã tồn tại");
+            throw new RuntimeException("Email đã tồn tại");
         }
 
         // Kiểm tra dữ liệu đầu vào
         if (request.getPassword() == null || request.getPassword().isBlank()) {
-            throw new IllegalArgumentException("Mật khẩu không được để trống");
+            throw new RuntimeException("Mật khẩu không được để trống");
         }
-        //Kiểm tra centerID (Chỉ bắt buộc đối với Staff và Technician)
+
+        // Kiểm tra centerID (Chỉ bắt buộc đối với Staff và Technician)
         ServiceCenter center = null;
         if (role == Role.STAFF || role == Role.TECHNICIAN) {
             if (request.getCenterId() == null) {
-                throw new IllegalArgumentException("Staff và Technician bắt buộc phải có centerId.");
+                throw new RuntimeException("Staff và Technician bắt buộc phải có centerId.");
             }
             center = serviceCenterRepository.findById(request.getCenterId())
                     .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy Service Center với ID: " + request.getCenterId()));
         }
+
         User user = User.builder()
                 .username(request.getUsername())
                 .fullName(request.getFullName())
@@ -78,7 +81,7 @@ public class UserServiceImpl implements IUserService {
     public UserDto getUserById(Integer id) {
         return userRepository.findById(id)
                 .map(this::mapToDto)
-                .orElseThrow(() -> new UserNotFoundException("Không tìm thấy người dùng với ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy người dùng với ID: " + id));
     }
 
     @Override
@@ -95,14 +98,14 @@ public class UserServiceImpl implements IUserService {
     @Override
     public UserDto updateUser(Integer id, CreateUserRequest request) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException("Không tìm thấy người dùng với ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy người dùng với ID: " + id));
 
         // Kiểm tra role hợp lệ nếu có
         if (request.getRole() != null && !request.getRole().isBlank()) {
             try {
                 user.setRole(Role.valueOf(request.getRole().toUpperCase()));
             } catch (IllegalArgumentException e) {
-                throw new InvalidRoleException("Role không hợp lệ: " + request.getRole());
+                throw new RuntimeException("Role không hợp lệ: " + request.getRole());
             }
         }
 
@@ -110,7 +113,7 @@ public class UserServiceImpl implements IUserService {
         if (request.getUsername() != null && !request.getUsername().isBlank()) {
             if (!request.getUsername().equals(user.getUsername()) &&
                     userRepository.existsByUsername(request.getUsername())) {
-                throw new DuplicateResourceException("Username đã tồn tại: " + request.getUsername());
+                throw new RuntimeException("Username đã tồn tại: " + request.getUsername());
             }
             user.setUsername(request.getUsername());
         }
@@ -119,7 +122,7 @@ public class UserServiceImpl implements IUserService {
         if (request.getEmail() != null && !request.getEmail().isBlank()) {
             if (!request.getEmail().equals(user.getEmail()) &&
                     userRepository.existsByEmail(request.getEmail())) {
-                throw new DuplicateResourceException("Email đã tồn tại: " + request.getEmail());
+                throw new RuntimeException("Email đã tồn tại: " + request.getEmail());
             }
             user.setEmail(request.getEmail());
         }
@@ -128,7 +131,7 @@ public class UserServiceImpl implements IUserService {
         if (request.getPhoneNumber() != null && !request.getPhoneNumber().isBlank()) {
             if (!request.getPhoneNumber().equals(user.getPhoneNumber()) &&
                     userRepository.existsByPhoneNumber(request.getPhoneNumber())) {
-                throw new DuplicateResourceException("Số điện thoại đã tồn tại: " + request.getPhoneNumber());
+                throw new RuntimeException("Số điện thoại đã tồn tại: " + request.getPhoneNumber());
             }
             user.setPhoneNumber(request.getPhoneNumber());
         }
@@ -153,14 +156,13 @@ public class UserServiceImpl implements IUserService {
             user.setServiceCenter(center);
         }
 
-        // Lưu và trả về
         return mapToDto(userRepository.save(user));
     }
 
     @Override
     public void deleteUser(Integer id) {
         if (!userRepository.existsById(id)) {
-            throw new UserNotFoundException("Không thể xóa — người dùng không tồn tại với ID: " + id);
+            throw new ResourceNotFoundException("Không thể xóa — người dùng không tồn tại với ID: " + id);
         }
         userRepository.deleteById(id);
     }
@@ -197,19 +199,25 @@ public class UserServiceImpl implements IUserService {
                 .role(user.getRole())
                 .build();
     }
+
     @Override
     public List<UserDto> searchUsers(String username, String fullName) {
+        // Chuẩn hóa tham số đầu vào
+        String nameParam = (username != null && !username.trim().isEmpty()) ? username.trim() : null;
+        String fullNameParam = (fullName != null && !fullName.trim().isEmpty()) ? fullName.trim() : null;
+
         List<User> users;
 
-        if (username != null && !username.isEmpty() && fullName != null && !fullName.isEmpty()) {
-            users = userRepository.findByUsernameContainingIgnoreCaseOrFullNameContainingIgnoreCase(username, fullName);
-        } else if (username != null && !username.isEmpty()) {
-            users = userRepository.findByUsernameContainingIgnoreCase(username);
-        } else if (fullName != null && !fullName.isEmpty()) {
-            users = userRepository.findByFullNameContainingIgnoreCase(fullName);
+        if (nameParam != null && fullNameParam != null) {
+            users = userRepository.findByUsernameContainingIgnoreCaseOrFullNameContainingIgnoreCase(nameParam, fullNameParam);
+        } else if (nameParam != null) {
+            users = userRepository.findByUsernameContainingIgnoreCase(nameParam);
+        } else if (fullNameParam != null) {
+            users = userRepository.findByFullNameContainingIgnoreCase(fullNameParam);
         } else {
-            users = userRepository.findAll();
+            throw new ResourceNotFoundException("Vui lòng nhập ít nhất một tiêu chí tìm kiếm (username hoặc fullName).");
         }
+
         if (users.isEmpty()) {
             throw new ResourceNotFoundException("Không tìm thấy người dùng phù hợp với tiêu chí tìm kiếm.");
         }
