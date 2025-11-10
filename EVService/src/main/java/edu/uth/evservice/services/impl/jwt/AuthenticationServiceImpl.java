@@ -43,12 +43,12 @@ public class AuthenticationServiceImpl implements IAuthenticaionService {
         //~ Này viết ra để kiểm tra lỗi
         Authentication authFromContext = SecurityContextHolder.getContext().getAuthentication();
         if (authFromContext != null && authFromContext.isAuthenticated()) {
-            System.out.println("Nguoi dung '" + authentication.getName() + "' vua dang nhap thanh cong.");
+            System.out.println("Người dùng '" + authentication.getName() + "' vừa đăng nhập thành công.");
         }
         //~ Tạo accessToken và refeshToken
         String accessToken = jwtService.generateAccessToken(authentication);
         String refreshToken = jwtService.generateRefreshToken(authentication);
-    
+
         return new JwtDto(accessToken,refreshToken);
     }
     public UserDto registerRequest(RegisterRequest registerRequest){
@@ -70,7 +70,7 @@ public class AuthenticationServiceImpl implements IAuthenticaionService {
 
     //. Tạo mới thằng accessToken khi còn refeshToken
     public JwtDto refreshToken (RefreshTokenRequest refeshTokenRequest){
-        try{             
+        try{
             String refreshToken = refeshTokenRequest.getRefreshToken();
 
             //~ Kiểm tra refesh token hợp lệ không
@@ -92,11 +92,11 @@ public class AuthenticationServiceImpl implements IAuthenticaionService {
 
             //~ Tải userDetail
             UserDetails userDetails = userDetailsService.loadUserByUsername(user.getUsername());
-            
+
             //~ Tạo đối tượng authentication với không password
             Authentication authentication = new UsernamePasswordAuthenticationToken(
-                userDetails, 
-                null, 
+                userDetails,
+                null,
                 userDetails.getAuthorities()
             );
 

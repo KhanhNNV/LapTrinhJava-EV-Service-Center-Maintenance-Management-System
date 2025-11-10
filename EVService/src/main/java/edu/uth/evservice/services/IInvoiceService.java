@@ -6,9 +6,9 @@ import edu.uth.evservice.requests.CreateInvoiceRequest;
 import java.util.List;
 
 public interface IInvoiceService {
-    List<InvoiceDto> getAllInvoices();
-    InvoiceDto getInvoiceById(Integer id);
-    InvoiceDto createInvoice(CreateInvoiceRequest request);
-    InvoiceDto updateInvoice(Integer id, CreateInvoiceRequest request);
-    void deleteInvoice(Integer id);
+    InvoiceDto createInvoiceForTicket(Integer ticketId, String username);
+
+    InvoiceDto getInvoiceByTicketId(Integer ticketId);
+
+    InvoiceDto updatePaymentStatus(Integer invoiceId, String newStatus);
 }

@@ -53,7 +53,7 @@ public class CustomerUserDetails implements UserDetails, OidcUser{
 
 
     //===================Phương thức UserDetails ===========================
-    
+
     //. Trả về quyền được cấp cho người dùng
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -66,15 +66,15 @@ public class CustomerUserDetails implements UserDetails, OidcUser{
     public String getPassword() {
         return user.getPassword();
     }
-    
+
     //. Trả về userName
     @Override
     public String getUsername() {
         return user.getUsername();
     }
-        
+
     //===================Phương thức Oauthe2User và OdicUser===========================
-    
+
     @Override
     public Map<String, Object> getAttributes() {
         return this.attributes;

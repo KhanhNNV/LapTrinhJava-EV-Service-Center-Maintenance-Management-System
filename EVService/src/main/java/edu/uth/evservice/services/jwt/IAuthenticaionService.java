@@ -10,4 +10,4 @@ public interface IAuthenticaionService {
     public JwtDto loginRequest (LoginRequest loginRequest);
     public UserDto registerRequest(RegisterRequest registerRequest); 
     public JwtDto refreshToken (RefreshTokenRequest refeshTokenRequest);
-} 
+}

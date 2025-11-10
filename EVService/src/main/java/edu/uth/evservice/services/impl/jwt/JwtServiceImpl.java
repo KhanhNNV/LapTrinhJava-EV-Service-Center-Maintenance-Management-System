@@ -52,9 +52,11 @@ public class JwtServiceImpl implements IJwtService {
     @Override
     // . Tạo chuỗi JWT Access Token
     public String generateAccessToken(Authentication authenication) {
+        //Spring lấy danh sách các GrantedAuthority này từ Authentication object
+        // ví dụ: scope = "ROLE_TECHNICIAN"
         String scope = authenication.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.joining(" ")); // ~ Một list danh danh sách quyền
+                        .map(GrantedAuthority::getAuthority)
+                        .collect(Collectors.joining(" ")); //~ Một list danh danh sách quyền
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + accessTime); // ~ THỜI GIAN HIỆN TẠI + KHOẢNG THỜI GIAN ACCESS TỒN
                                                                 // TẠI

@@ -28,7 +28,7 @@ import lombok.RequiredArgsConstructor;
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
-@RequiredArgsConstructor 
+@RequiredArgsConstructor
 public class SecurityConfig {
 
 
@@ -48,7 +48,7 @@ public class SecurityConfig {
     //. Cơ chế COR(Cross-Origin Resource Sharing)
     //~ Giải thích: Với nguyên tắc của ALL trình duyệt, chỉ cung câp cùng nguồn:
     //~ origin = protocol + domain + port
-    //~ vì chúng server port 8081 còn client port 5173 => != port 
+    //~ vì chúng server port 8081 còn client port 5173 => != port
     //~ cách khắc phục viết hàm CORS:
 	@Bean
 	public CorsConfigurationSource corsConfigurationSource() {
@@ -62,7 +62,7 @@ public class SecurityConfig {
         //~ Cho phép trình duyệt gửi kèm thông tin xác thực (credentials) như cookie hoặc JWT header trong request
         configuration.setAllowCredentials(true);
 
-        //~ Đăng ký config trên cho toàn bộ API 
+        //~ Đăng ký config trên cho toàn bộ API
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		source.registerCorsConfiguration("/**", configuration);
 		return source;
@@ -104,7 +104,7 @@ public class SecurityConfig {
                     .userService(customOauth2UserService) // <-- Dùng cho Facebook, GitHub
                 )
                 //~ Chỉ định handler để tạo JWT và redirect về React
-                .successHandler(oAuthenticationSuccessHandler) 
+                .successHandler(oAuthenticationSuccessHandler)
             )
             //~Vì dùng JWT nên việc lưu session ở phía server là không cần thiết
             //~Chế độ STATELESS (Không trạng thái) nhưng sử dụng login.register social nên cũng cần sài tí thằng session
@@ -112,6 +112,12 @@ public class SecurityConfig {
         return http.build();
     }
 
+    /**
+     * Chuyển JWT thành GrantedAuthority
+     * GrantedAuthority đại diện cho một vai trò (role)
+     * khi gọi api @PreAuthorize("hasRole('ADMIN')") sẽ dùng danh sách GrantedAuthority để kiểm tra
+     *
+     */
     @Bean
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
         JwtGrantedAuthoritiesConverter converter = new JwtGrantedAuthoritiesConverter();
