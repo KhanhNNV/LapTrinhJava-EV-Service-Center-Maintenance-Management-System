@@ -17,15 +17,10 @@ public interface IAppointmentRepository extends JpaRepository<Appointment, Integ
 
     List<Appointment> findByAssignedTechnician_UserId(Integer userId);
 
-    // @Query("SELECT a FROM Appointment a JOIN a.serviceTickets st " +
-    // "WHERE st.technician.id = :technicianId " +
-    // "AND a.serviceType = 'SHIFT_ASSIGNMENT' " +
-    // "AND a.appointmentDate BETWEEN :startDate AND :endDate")
-    // List<Appointment> findSchedulesByTechnicianIdAndDateRange(
-    // @Param("technicianId") Integer technicianId,
-    // @Param("startDate") LocalDate startDate,
-    // @Param("endDate") LocalDate endDate);
+    List<Appointment> findByStatus(AppointmentStatus status);
 
     List<Appointment> findByAssignedTechnician_UserIdAndStatus(Integer technicianId, AppointmentStatus status);
-    List<Appointment> findByAssignedTechnician_UserIdAndAppointmentDate(Integer technicianId, LocalDate appointmentDate);
+
+    List<Appointment> findByAssignedTechnician_UserIdAndAppointmentDate(Integer technicianId,
+            LocalDate appointmentDate);
 }

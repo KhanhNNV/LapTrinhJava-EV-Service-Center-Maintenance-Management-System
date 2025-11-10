@@ -1,11 +1,26 @@
 package edu.uth.evservice.models;
 
-import jakarta.persistence.*;
-import lombok.*;
-import lombok.experimental.FieldDefaults;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import edu.uth.evservice.models.enums.CertificateType;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.FieldDefaults;
 
 @Entity
 @Table(name = "certificates")
@@ -33,6 +48,10 @@ public class Certificate {
 
     @Column(name = "validity_period", nullable = false)
     Integer validityPeriod; // thời hạn (ví dụ 5 năm là 1825)
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "certificate_type", nullable = false)
+    private CertificateType certificateType;
 
     @Builder.Default
     @OneToMany(mappedBy = "certificate", cascade = CascadeType.ALL, orphanRemoval = true)
