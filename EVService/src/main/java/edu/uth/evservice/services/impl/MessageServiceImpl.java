@@ -1,9 +1,14 @@
 package edu.uth.evservice.services.impl;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+
+import edu.uth.evservice.models.enums.ConversationStatus;
+import edu.uth.evservice.models.enums.Role;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import edu.uth.evservice.dtos.MessageDto;
@@ -52,28 +57,82 @@ public class MessageServiceImpl implements IMessageService {
                 .map(this::toDto)
                 .collect(Collectors.toList());
     }
+@Override
+@Transactional // Đảm bảo tất cả các bước (kiểm tra, cập nhật, tạo) là một giao dịch
+public MessageDto createMessage(CreateMessageRequest request, String username) {
+    // 1. TÌM NGƯỜI GỬI BẰNG USERNAME TỪ JWT
+    User sender = userRepository.findByUsername(username)
+            .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy người dùng (người gửi) với username: " + username));
 
-    @Override
-    public MessageDto createMessage(CreateMessageRequest request) {
-        Conversation conversation = conversationRepository.findById(request.getConversationId())
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "Conversation not found with id: " + request.getConversationId()));
-        Message m = new Message();
-        // resolve sender user
-        if (request.getSenderId() == null) {
-            throw new IllegalArgumentException("senderId is required");
+    Conversation conversation; // Chuẩn bị "phòng chat"
+
+    // 2. KIỂM TRA ID CUỘC TRÒ CHUYỆN
+    if (request.getConversationId() == null) {
+        // === TRƯỜNG HỢP 1: TIN NHẮN MỚI (TẠO PHÒNG CHAT MỚI) ===
+        if (sender.getRole() != Role.CUSTOMER) {
+            throw new SecurityException("Chỉ khách hàng mới có thể tạo cuộc trò chuyện mới.");
         }
-        User sender = userRepository.findById(request.getSenderId())
-                .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + request.getSenderId()));
-        m.setUser(sender);
-        m.setIsRead(request.getIsRead() != null ? request.getIsRead() : Boolean.FALSE);
-        m.setContent(request.getContent());
-        m.setConversation(conversation);
-        m.setTimestamp(request.getTimestamp() != null ? request.getTimestamp() : LocalDateTime.now());
+        Conversation newConversation = Conversation.builder()
+                .customerConversation(sender)
+                .staffConversation(null)
+                .status(ConversationStatus.NEW)
+                .topic("Yêu cầu hỗ trợ mới từ " + sender.getFullName())
+                .startTime(LocalDate.now()) // <-- Đã sửa lại thành LocalDate.now()
+                .build();
+        conversation = conversationRepository.save(newConversation);
 
-        Message saved = messageRepository.save(m);
-        return toDto(saved);
+    } else {
+        // === TRƯỜNG HỢP 2: TIN NHẮN VÀO PHÒNG CHAT ĐÃ CÓ ===
+        conversation = conversationRepository.findById(request.getConversationId())
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Không tìm thấy cuộc trò chuyện có id: " + request.getConversationId()));
+
+        User customer = conversation.getCustomerConversation();
+        User assignedStaff = conversation.getStaffConversation();
+        boolean isCustomer = customer.getUsername().equals(sender.getUsername());
+        boolean isAssignedStaff = (assignedStaff != null) &&
+                (assignedStaff.getUsername().equals(sender.getUsername()));
+
+        // 3. KIỂM TRA QUYỀN GỬI TIN NHẮN
+        if (conversation.getStatus() == ConversationStatus.NEW && !isCustomer) {
+            throw new SecurityException("Nhân viên phải xác nhận cuộc trò chuyện này trước khi trả lời.");
+        }
+        if (conversation.getStatus() == ConversationStatus.IN_PROGRESS && !isCustomer && !isAssignedStaff) {
+            throw new SecurityException("Cuộc trò chuyện này đang diễn ra với một nhân viên khác.");
+        }
+        if (conversation.getStatus() == ConversationStatus.CLOSED && !isCustomer && !isAssignedStaff) {
+            throw new SecurityException("Bạn không được phép mở lại cuộc trò chuyện đã đóng này.");
+        }
+
+        // === LOGIC MỚI: TỰ ĐỘNG "MỞ LẠI" (ĐÃ CẬP NHẬT) ===
+        if (conversation.getStatus() == ConversationStatus.CLOSED) {
+
+            // NẾU LÀ KHÁCH HÀNG NHẮN TIN LẠI
+            if (isCustomer) {
+                conversation.setStatus(ConversationStatus.NEW);   // <-- Chuyển thành NEW
+                conversation.setStaffConversation(null);          // <-- XÓA nhân viên cũ
+            }
+            // NẾU LÀ NHÂN VIÊN CŨ NHẮN TIN LẠI
+            else if (isAssignedStaff) {
+                conversation.setStatus(ConversationStatus.IN_PROGRESS); // Giữ nguyên nhân viên
+            }
+            conversation = conversationRepository.save(conversation);
+        }
     }
+
+    // 5. TẠO VÀ LƯU TIN NHẮN MỚI
+    Message newMessage = Message.builder()
+            .user(sender)
+            .content(request.getContent())
+            .conversation(conversation)
+            .timestamp(LocalDateTime.now())
+            .isRead(false)
+            .build();
+
+    Message savedMessage = messageRepository.save(newMessage);
+
+    return toDto(savedMessage);
+}
 
     @Override
     public MessageDto updateMessage(Integer id, CreateMessageRequest request) {

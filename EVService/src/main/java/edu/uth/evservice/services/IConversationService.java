@@ -11,4 +11,6 @@ public interface IConversationService {
     ConversationDto createConversation(CreateConversationRequest request);
     ConversationDto updateConversation(Integer id, CreateConversationRequest request);
     void deleteConversation(Integer id);
+    ConversationDto claimConversation(Integer id , String staffUsername);
+    ConversationDto closeConversation(Integer conversationId, String staffUsername);
 }
