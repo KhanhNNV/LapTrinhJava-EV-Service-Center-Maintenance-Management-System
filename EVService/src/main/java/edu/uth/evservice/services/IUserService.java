@@ -9,6 +9,7 @@ import edu.uth.evservice.models.enums.Role;
 import edu.uth.evservice.requests.CreateUserRequest;
 
 public interface IUserService {
+
     UserDto createUser(CreateUserRequest request);
 
     UserDto getUserById(Integer id);

@@ -28,7 +28,7 @@ public class Conversation {
     @Enumerated(EnumType.STRING)
     ConversationStatus status;
 
-    @Column(name = "topic", nullable = false, length = 255)
+    @Column(name = "topic", nullable = false, length = 100)
     private String topic;
 
     @Column(name = "start_time", nullable = false)
