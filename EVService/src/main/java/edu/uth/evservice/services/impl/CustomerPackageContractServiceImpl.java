@@ -11,10 +11,11 @@ import edu.uth.evservice.repositories.IUserRepository;
 import edu.uth.evservice.repositories.IServicePackageRepository;
 import edu.uth.evservice.requests.CustomerPackageContractRequest;
 import edu.uth.evservice.services.ICustomerPackageContractService;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -22,95 +23,102 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CustomerPackageContractServiceImpl implements ICustomerPackageContractService {
 
-    private final ICustomerPackageContractRepository contractRepository;
-    private final IUserRepository  userRepository;
+private final ICustomerPackageContractRepository contractRepository;
+    private final IUserRepository userRepository;
     private final IServicePackageRepository packageRepository;
 
-    private CustomerPackageContractDto toDto(CustomerPackageContract contract) {
-        return CustomerPackageContractDto.builder()
-                .contractId(contract.getContractId())
-                .customerId(contract.getUser().getUserId())
-                .customerName(contract.getUser().getFullName())
-                .packageId(contract.getServicePackage().getPackageId())
-                .packageName(contract.getServicePackage().getPackageName())
-                .startDate(contract.getStartDate())
-                .endDate(contract.getEndDate())
-                .status(contract.getStatus().name())
-                .build();
-    }
-
     @Override
-    public List<CustomerPackageContractDto> getAllContracts() {
-        return contractRepository.findAll().stream()
-                .map(this::toDto)
-                .collect(Collectors.toList());
-    }
+    @Transactional
+    public CustomerPackageContractDto purchasePackage(CustomerPackageContractRequest request,
+                    String customerUsername) {
 
-    @Override
-    public CustomerPackageContractDto getContractById(Integer id) {
-        return contractRepository.findById(id)
-                .map(this::toDto)
-                .orElseThrow(() -> new RuntimeException("Contract not found with id: " + id));
-    }
+        // 1. Tìm khách hàng (User) từ username trong token
+        User customer = userRepository.findByUsername(customerUsername)
+                        .orElseThrow(() -> new RuntimeException("Không tìm thấy khách hàng."));
 
-    @Override
-    public List<CustomerPackageContractDto> getContractsByCustomerId(Integer userId) {
-        return contractRepository.findByUser_UserId(userId).stream()
-                .map(this::toDto)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public CustomerPackageContractDto createContract(CustomerPackageContractRequest request) {
-
-        User customer = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new RuntimeException("Customer not found with id: " + request.getUserId()));
+        // 2. Tìm gói dịch vụ (ServicePackage) mà khách muốn mua
         ServicePackage servicePackage = packageRepository.findById(request.getPackageId())
-                .orElseThrow(() -> new RuntimeException("ServicePackage not found with id: " + request.getPackageId()));
+                        .orElseThrow(() -> new RuntimeException(
+                                        "Không tìm thấy gói dịch vụ với ID: " + request.getPackageId()));
 
-
-        CustomerPackageContract contract = CustomerPackageContract.builder()
-                .user(customer)
-                .servicePackage(servicePackage)
-                .startDate(request.getStartDate())
-                .endDate(request.getStartDate().plusDays(servicePackage.getDuration()))
-                .status(ContractStatus.valueOf(request.getStatus().toUpperCase()))
-                .build();
-
-
-        CustomerPackageContract savedContract = contractRepository.save(contract);
-        return toDto(savedContract);
-    }
-
-    @Override
-    public CustomerPackageContractDto updateContract(Integer id, CustomerPackageContractRequest request) {
-        // Tìm hợp đồng hiện có
-        CustomerPackageContract existingContract = contractRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Contract not found with id: " + id));
-
-        // Tìm kiếm các entity liên quan (nếu có sự thay đổi)
-        User user = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new RuntimeException("Customer not found with id: " + request.getUserId()));
-        ServicePackage servicePackage = packageRepository.findById(request.getPackageId())
-                .orElseThrow(() -> new RuntimeException("ServicePackage not found with id: " + request.getPackageId()));
-
-        // Cập nhật thông tin cho hợp đồng
-        existingContract.setUser(user);
-        existingContract.setServicePackage(servicePackage);
-        existingContract.setStartDate(request.getStartDate());
-        existingContract.setEndDate(request.getStartDate().plusDays(servicePackage.getDuration()));
-        existingContract.setStatus((ContractStatus.valueOf(request.getStatus().toUpperCase())));
-
-        // Lưu thay đổi và trả về DTO
-        CustomerPackageContract updatedContract = contractRepository.save(existingContract);
-        return toDto(updatedContract);
-    }
-
-    @Override
-    public void deleteContract(Integer id) {
-        if (!contractRepository.existsById(id)) {
-            throw new RuntimeException("Contract not found with id: " + id);
+        // 3. Kiểm tra logic: Khách hàng đã mua gói này và còn 'ACTIVE' không?
+        boolean alreadyActive = contractRepository.existsByUser_UsernameAndServicePackage_PackageIdAndStatus(
+                        customerUsername,
+                        request.getPackageId(),
+                        ContractStatus.ACTIVE);
+        if (alreadyActive) {
+                throw new RuntimeException("Bạn đã mua gói dịch vụ này và nó vẫn còn đang hoạt động.");
         }
-        contractRepository.deleteById(id);
+
+        // 4. Tính toán ngày
+        LocalDate startDate = LocalDate.now();
+        LocalDate endDate = startDate.plusMonths(servicePackage.getDuration());
+
+        // 5. Tạo hợp đồng mới
+        CustomerPackageContract newContract = CustomerPackageContract.builder()
+                        .user(customer)
+                        .servicePackage(servicePackage)
+                        .contractName("Gói " + servicePackage.getPackageName() + " cho "
+                                        + customer.getUsername()) // Tự động tạo tên
+                        .startDate(startDate)
+                        .endDate(endDate)
+                        .status(ContractStatus.ACTIVE)
+                        .build();
+
+        CustomerPackageContract savedContract = contractRepository.save(newContract);
+
+        // (Bước 6: Tương lai sẽ gọi service tạo hóa đơn ở đây)
+
+        return toDTO(savedContract);
+    }
+
+    @Override
+    public List<CustomerPackageContractDto> getMyContracts(String customerUsername) {
+        return contractRepository.findByUser_Username(customerUsername)
+                        .stream()
+                        .map(this::toDTO)
+                        .collect(Collectors.toList());
+    }
+
+    @Override
+    public CustomerPackageContractDto getMyContractById(Integer contractId, String customerUsername) {
+        CustomerPackageContract contract = contractRepository
+                        .findByContractIdAndUser_Username(contractId, customerUsername)
+                        .orElseThrow(() -> new RuntimeException(
+                                        "Không tìm thấy hợp đồng hoặc bạn không có quyền xem."));
+        return toDTO(contract);
+    }
+
+    @Override
+    @Transactional
+    public CustomerPackageContractDto cancelMyContract(Integer contractId, String customerUsername) {
+        CustomerPackageContract contract = contractRepository
+                        .findByContractIdAndUser_Username(contractId, customerUsername)
+                        .orElseThrow(() -> new RuntimeException(
+                                        "Không tìm thấy hợp đồng hoặc bạn không có quyền hủy."));
+
+        if (contract.getStatus() != ContractStatus.ACTIVE) {
+                throw new RuntimeException("Chỉ có thể hủy các hợp đồng đang ở trạng thái ACTIVE.");
+        }
+
+        contract.setStatus(ContractStatus.CANCELLED);
+
+        CustomerPackageContract cancelledContract = contractRepository.save(contract);
+        return toDTO(cancelledContract);
+    }
+
+    // --- HÀM HELPER CHUYỂN ĐỔI SANG DTO ---
+    private CustomerPackageContractDto toDTO(CustomerPackageContract contract) {
+        // Map dữ liệu từ Entity sang DTO
+        return CustomerPackageContractDto.builder()
+                        .contractId(contract.getContractId())
+                        .customerId(contract.getUser().getUserId())
+                        .customerName(contract.getUser().getFullName())
+                        .packageId(contract.getServicePackage().getPackageId())
+                        .packageName(contract.getServicePackage().getPackageName())
+                        .startDate(contract.getStartDate())
+                        .endDate(contract.getEndDate())
+                        .status(contract.getStatus().name()) // Chuyển Enum sang String
+                        .build();
     }
 }
