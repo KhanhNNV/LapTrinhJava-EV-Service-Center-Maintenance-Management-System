@@ -5,7 +5,7 @@ import edu.uth.evservice.dtos.InvoiceDto;
 
 
 public interface IInvoiceService {
-    InvoiceDto createInvoiceForTicket(Integer ticketId, Integer technicianId);
+    InvoiceDto createInvoiceForTicket(Integer ticketId, Integer staffId);
 
     InvoiceDto getInvoiceByTicketId(Integer ticketId);
 

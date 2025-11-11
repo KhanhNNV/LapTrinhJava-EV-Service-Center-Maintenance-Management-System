@@ -19,12 +19,12 @@ import java.util.List;
 public class InvoiceController {
     IInvoiceService invoiceService;
 
-    // Tech tạo hóa đơn đã completed
+    // staff tạo hóa đơn đã completed
     @PostMapping("/{ticketId}")
-    @PreAuthorize("hasAnyRole('TECHNICIAN','ADMIN')")
+    @PreAuthorize("hasAnyRole('STAFF','ADMIN')")
     public ResponseEntity<InvoiceDto> createInvoice(@PathVariable Integer ticketId, Authentication authentication){
-        Integer technicianId = Integer.getInteger(authentication.getName());
-        InvoiceDto invoiceDto = invoiceService.createInvoiceForTicket(ticketId, technicianId);
+        Integer staffId = Integer.parseInt(authentication.getName());
+        InvoiceDto invoiceDto = invoiceService.createInvoiceForTicket(ticketId, staffId);
         return new ResponseEntity<>(invoiceDto, HttpStatus.OK);
     }
 

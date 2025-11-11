@@ -32,11 +32,11 @@ public class InvoiceServiceImpl implements IInvoiceService {
 
 
     @Override
-    public InvoiceDto createInvoiceForTicket(Integer ticketId, Integer technicianId) {
+    public InvoiceDto createInvoiceForTicket(Integer ticketId, Integer staffId) {
         // Kiểm tra đầu vào
         ServiceTicket serviceTicket = serviceTicketRepo.findById(ticketId).orElseThrow(()->new ResourceNotFoundException("Không tìm thấy phiếu dịch vụ"));
 
-        User technician = userRepo.findById(technicianId)
+        User staff = userRepo.findById(staffId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy user đang tạo hóa đơn"));
 
         if(serviceTicket.getStatus() != ServiceTicketStatus.COMPLETED){
@@ -72,7 +72,7 @@ public class InvoiceServiceImpl implements IInvoiceService {
                 .user(customer)
                 .build();
         Invoice save=invoiceRepo.save(invoice);
-        return toDto(save, serviceItems, parts, subtotalItems, subtotalParts,technician);
+        return toDto(save, serviceItems, parts, subtotalItems, subtotalParts,staff);
 
     }
 
@@ -123,7 +123,7 @@ public class InvoiceServiceImpl implements IInvoiceService {
                              List<TicketPart> parts,
                              double serviceTotal,
                              double partTotal,
-                             User technician) {
+                             User staff) {
 
         if (invoice == null) return null;
 
@@ -152,7 +152,7 @@ public class InvoiceServiceImpl implements IInvoiceService {
                 .customerPhone(customer.getPhoneNumber())
 
                 // Thông tin kỹ thuật viên
-                .technicianName(technician != null ? technician.getFullName() : "N/A")
+                .technicianName(staff != null ? staff.getFullName() : "N/A")
 
                 // Chi tiết dịch vụ và phụ tùng
                 .serviceItems(itemDtos)
