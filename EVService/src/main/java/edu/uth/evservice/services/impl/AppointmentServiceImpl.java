@@ -5,6 +5,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import edu.uth.evservice.requests.NotificationRequest;
+import edu.uth.evservice.services.INotificationService;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +27,7 @@ import edu.uth.evservice.requests.AppointmentRequest;
 import edu.uth.evservice.services.IAppointmentService;
 import edu.uth.evservice.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -35,6 +38,9 @@ public class AppointmentServiceImpl implements IAppointmentService {
     private final IVehicleRepository vehicleRepository;
     private final IServiceCenterRepository centerRepository;
     private final ICustomerPackageContractRepository contractRepository;
+    //
+    private final INotificationService notificationService;
+
 
     @Override
     public List<AppointmentDto> getAllAppointments() {
@@ -148,6 +154,7 @@ public class AppointmentServiceImpl implements IAppointmentService {
 
     // confirm cho khach hang
     @Override
+    @Transactional
     public AppointmentDto confirmForCustomer(Integer appointmentId, String staffUsername) {
         Appointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Appointment not found"));
@@ -162,12 +169,25 @@ public class AppointmentServiceImpl implements IAppointmentService {
             throw new IllegalStateException("Appointment is already confirmed.");
         }
 
-        if (appointment.getStatus() != AppointmentStatus.CHECKED_IN) {
-            throw new IllegalStateException("Appointment is already checked-in");
+//        if (appointment.getStatus() != AppointmentStatus.CHECKED_IN) {
+//            throw new IllegalStateException("Appointment is already checked-in");
+//        }
+        if (appointment.getStatus() != AppointmentStatus.PENDING) {
+            throw new IllegalStateException("Chỉ có thể xác nhận các lịch hẹn đang ở trạng thái 'PENDING'.");
         }
 
         appointment.setStaff(staff);
         appointment.setStatus(AppointmentStatus.CONFIRMED);
+        //
+        Appointment savedAppointment = appointmentRepository.save(appointment);
+        // === 5. PHẦN CODE MỚI THÊM VÀO (Gửi thông báo) ===
+        NotificationRequest customerNoti = new NotificationRequest();
+        customerNoti.setUserId(savedAppointment.getCustomer().getUserId()); // ID người nhận (Khách hàng)
+        customerNoti.setTitle("Lịch hẹn của bạn đã được xác nhận!");
+        customerNoti.setMessage("Lịch hẹn #" + savedAppointment.getAppointmentId() +
+                " của bạn đã được nhân viên của chúng tôi xác nhận.");
+
+        notificationService.createNotification(customerNoti); // Gửi đi
 
         // có tech và staff
         return toDto(appointmentRepository.save(appointment));
@@ -189,6 +209,7 @@ public class AppointmentServiceImpl implements IAppointmentService {
 
         appointment.setStatus(AppointmentStatus.CHECKED_IN);
         appointment.setUpdatedAt(LocalDateTime.now());
+
         return toDto(appointmentRepository.save(appointment));
     }
 
@@ -225,7 +246,15 @@ public class AppointmentServiceImpl implements IAppointmentService {
 
         appointment.setAssignedTechnician(technician);
         appointment.setStatus(AppointmentStatus.ASSIGNED);
+        // gui thong bao cho tech khi đc giao việc
+        Appointment savedAppointment = appointmentRepository.save(appointment);
+        NotificationRequest techNoti = new NotificationRequest();
+        techNoti.setUserId(technicianId);
+        techNoti.setTitle("Bạn có cuộc hẹn mới!");
+        techNoti.setMessage("Bạn vừa được gán lịch hẹn #" + savedAppointment.getAppointmentId() +
+                " vào lúc " + savedAppointment.getAppointmentTime() + " ngày " + savedAppointment.getAppointmentDate());
 
+        notificationService.createNotification(techNoti); // gui di
         return toDto(appointmentRepository.save(appointment));
     }
 
