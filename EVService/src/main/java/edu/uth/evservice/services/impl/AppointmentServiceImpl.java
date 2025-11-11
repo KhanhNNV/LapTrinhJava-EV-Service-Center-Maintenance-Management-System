@@ -2,12 +2,17 @@ package edu.uth.evservice.services.impl;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
 import edu.uth.evservice.dtos.AppointmentDto;
+import edu.uth.evservice.dtos.TechnicianWithCertificateDto;
 import edu.uth.evservice.exception.ResourceNotFoundException;
 import edu.uth.evservice.models.Appointment;
 import edu.uth.evservice.models.CustomerPackageContract;
@@ -175,6 +180,58 @@ public class AppointmentServiceImpl implements IAppointmentService {
         return toDto(appointmentRepository.save(appointment));
     }
 
+    // lay danh sach tech goi y cho lich hen theo certificate
+    @Override
+    public List<TechnicianWithCertificateDto> getSuggestedTechniciansForAppointment(Integer appointmentId) {
+        // 1. Lấy appointment + kiểm tra trạng thái
+        Appointment appointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy lịch hẹn ID: " + appointmentId));
+
+        if (appointment.getStatus() != AppointmentStatus.CHECKED_IN) {
+            throw new IllegalStateException("Chỉ có thể gợi ý kỹ thuật viên khi lịch hẹn đã check-in.");
+        }
+
+        // 2. Xác định loại chứng chỉ cần
+        Vehicle vehicle = appointment.getVehicle();
+        CertificateType requiredType = switch (vehicle.getVehicleType()) {
+            case ELECTRIC_CAR -> CertificateType.ELECTRIC_CAR_REPAIR;
+            case ELECTRIC_MOTORBIKE -> CertificateType.ELECTRIC_MOTORBIKE_REPAIR;
+            default -> throw new IllegalArgumentException("Loại xe không hỗ trợ: " + vehicle.getVehicleType());
+        };
+
+        // 3. Lấy chứng chỉ còn hạn
+        LocalDate today = LocalDate.now();
+        List<TechnicianCertificate> validCerts = technicianCertificateRepository
+                .findByCertificate_CertificateTypeAndExpiryDateAfter(requiredType, today);
+
+        // 4. Nhóm KTV + lấy hạn xa nhất (dùng Map + merge)
+        Map<User, LocalDate> techExpiryMap = new HashMap<>();
+        for (TechnicianCertificate tc : validCerts) {
+            User tech = tc.getTechnician();
+            LocalDate expiry = tc.getExpiryDate();
+            techExpiryMap.merge(tech, expiry, (old, newE) -> old.isAfter(newE) ? old : newE);
+        }
+
+        // 5. Chuyển thành DTO
+        List<TechnicianWithCertificateDto> result = new ArrayList<>();
+        for (Map.Entry<User, LocalDate> e : techExpiryMap.entrySet()) {
+            User tech = e.getKey();
+            result.add(TechnicianWithCertificateDto.builder()
+                    .userId(tech.getUserId())
+                    .fullName(tech.getFullName())
+                    .phoneNumber(tech.getPhoneNumber())
+                    .expiryDate(e.getValue())
+                    .build());
+        }
+
+        // 6. Sắp xếp theo hạn xa trước
+        result.sort(Comparator.comparing(
+                TechnicianWithCertificateDto::getExpiryDate,
+                Comparator.nullsLast(Comparator.reverseOrder())));
+
+        return result;
+    }
+
     // giao lich cho technician
     @Override
     public AppointmentDto assignTechnician(Integer appointmentId, Integer technicianId) {
@@ -185,29 +242,9 @@ public class AppointmentServiceImpl implements IAppointmentService {
                 .orElseThrow(
                         () -> new ResourceNotFoundException("Không tìm thấy kỹ thuật viên với ID: " + technicianId));
 
-        // KIỂM TRA CHỨNG CHỈ
-        // 1. Xác định loại chứng chỉ yêu cầu dựa trên loại xe
-        Vehicle vehicle = appointment.getVehicle();
-        CertificateType requiredType;
-        switch (vehicle.getVehicleType()) {
-            case ELECTRIC_CAR:
-                requiredType = CertificateType.ELECTRIC_CAR_REPAIR;
-                break;
-            case ELECTRIC_MOTORBIKE:
-                requiredType = CertificateType.ELECTRIC_MOTORBIKE_REPAIR;
-                break;
-            default:
-                throw new IllegalStateException("Loại xe không được hỗ trợ để chỉ định: " + vehicle.getVehicleType());
-        }
-        // 2. Lấy tất cả chứng chỉ mà Technician đang có (còn hiệu lực)
-        List<TechnicianCertificate> techCertificates = technicianCertificateRepository
-                .findByTechnician_UserId(technicianId);
-
-        // 3. Kiểm tra xem KTV có chứng chỉ phù hợp không
-        boolean isQualified = techCertificates.stream()
-                .filter(tc -> tc.getExpiryDate().isAfter(LocalDate.now())) // Chỉ xét chứng chỉ còn hạn
-                .map(tc -> tc.getCertificate().getCertificateType()) // Lấy ra loại của từng chứng chỉ
-                .anyMatch(certType -> certType.equals(requiredType)); // Tìm xem có cái nào khớp không
+        // Kiểm tra KTV có chứng chỉ phù hợp với loại xe không
+        List<TechnicianWithCertificateDto> suggested = getSuggestedTechniciansForAppointment(appointmentId);
+        boolean isQualified = suggested.stream().anyMatch(t -> t.getUserId().equals(technicianId));
 
         if (!isQualified) {
             throw new IllegalArgumentException(
@@ -246,7 +283,8 @@ public class AppointmentServiceImpl implements IAppointmentService {
     public List<AppointmentDto> getAppointmentByTechinician(Integer technicianId) {
         User tech = userRepository.findById(technicianId)
                 .orElseThrow(
-                        () -> new ResourceNotFoundException("Không tìm thấy kỹ thuật viên với username : " + technicianId));
+                        () -> new ResourceNotFoundException(
+                                "Không tìm thấy kỹ thuật viên với username : " + technicianId));
 
         return appointmentRepository
                 .findByAssignedTechnician_UserId(tech.getUserId())
