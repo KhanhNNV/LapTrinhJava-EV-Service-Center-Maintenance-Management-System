@@ -13,4 +13,5 @@ public interface ITechnicianCertificateRepository
         extends JpaRepository<TechnicianCertificate, TechnicianCertificateId> {
     // Tìm tất cả chứng chỉ của một kỹ thuật viên
     List<TechnicianCertificate> findByTechnician_UserId(Integer technicianId);
+    List<TechnicianCertificate> findByTechnician_Username(String username);
 }

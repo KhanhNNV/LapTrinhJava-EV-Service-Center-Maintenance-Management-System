@@ -17,65 +17,62 @@ public class CertificateServiceImpl implements ICertificateService {
     private final ICertificateRepository certificateRepository;
 
     @Override
-    public List<CertificateDto> getAllCertificates() {
-        return certificateRepository.findAll().stream()
-                .map(this::toDto)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public CertificateDto getCertificateById(Integer id) {
-        Certificate certificate = certificateRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Certificate not found with id: " + id)); // Thay bằng ResourceNotFoundException
-        return toDto(certificate);
-    }
-
-    @Override
     public CertificateDto createCertificate(CertificateRequest request) {
-        certificateRepository.findByCertificateName(request.getCertificateName()).ifPresent(c -> {
-            throw new IllegalArgumentException("Certificate with name '" + request.getCertificateName() + "' already exists.");
-        });
-
-        Certificate newCertificate = Certificate.builder()
+        if (certificateRepository.existsByCertificateName(request.getCertificateName())) {
+            throw new RuntimeException("Tên chứng chỉ đã tồn tại.");
+        }
+        
+        Certificate cert = Certificate.builder()
                 .certificateName(request.getCertificateName())
                 .issuingOrganization(request.getIssuingOrganization())
                 .description(request.getDescription())
                 .validityPeriod(request.getValidityPeriod())
                 .build();
-
-        Certificate savedCertificate = certificateRepository.save(newCertificate);
-        return toDto(savedCertificate);
+        
+        return toDTO(certificateRepository.save(cert));
     }
 
     @Override
     public CertificateDto updateCertificate(Integer id, CertificateRequest request) {
-        Certificate existingCertificate = certificateRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Certificate not found with id: " + id));
+        Certificate existingCert = certificateRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy chứng chỉ với ID: " + id));
 
-        existingCertificate.setCertificateName(request.getCertificateName());
-        existingCertificate.setIssuingOrganization(request.getIssuingOrganization());
-        existingCertificate.setDescription(request.getDescription());
-        existingCertificate.setValidityPeriod(request.getValidityPeriod());
-
-        Certificate updatedCertificate = certificateRepository.save(existingCertificate);
-        return toDto(updatedCertificate);
+        existingCert.setCertificateName(request.getCertificateName());
+        existingCert.setIssuingOrganization(request.getIssuingOrganization());
+        existingCert.setDescription(request.getDescription());
+        existingCert.setValidityPeriod(request.getValidityPeriod());
+        
+        return toDTO(certificateRepository.save(existingCert));
     }
 
     @Override
     public void deleteCertificate(Integer id) {
         if (!certificateRepository.existsById(id)) {
-            throw new RuntimeException("Certificate not found with id: " + id);
+            throw new RuntimeException("Không tìm thấy chứng chỉ với ID: " + id);
         }
         certificateRepository.deleteById(id);
     }
 
-    private CertificateDto toDto(Certificate certificate) {
+    @Override
+    public List<CertificateDto> getAllCertificates() {
+        return certificateRepository.findAll().stream().map(this::toDTO).collect(Collectors.toList());
+    }
+
+    @Override
+    public CertificateDto getCertificateById(Integer id) {
+        Certificate cert = certificateRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy chứng chỉ với ID: " + id));
+        return toDTO(cert);
+    }
+
+    // --- HÀM HELPER ---
+    private CertificateDto toDTO(Certificate cert) {
         return CertificateDto.builder()
-                .certificateId(certificate.getCertificateId())
-                .certificateName(certificate.getCertificateName())
-                .issuingOrganization(certificate.getIssuingOrganization())
-                .description(certificate.getDescription())
-                .validityPeriod(certificate.getValidityPeriod())
+                .certificateId(cert.getCertificateId())
+                .certificateName(cert.getCertificateName())
+                .issuingOrganization(cert.getIssuingOrganization())
+                .description(cert.getDescription())
+                .validityPeriod(cert.getValidityPeriod())
                 .build();
     }
 }
