@@ -27,6 +27,4 @@ public class ServiceItemPart {
     @Column(nullable=false)
     private Integer quantity;
 
-    @Column(name = "unit_price_at_time_of_service", nullable = false)
-    private Double unitPriceAtTimeOfService;
 }

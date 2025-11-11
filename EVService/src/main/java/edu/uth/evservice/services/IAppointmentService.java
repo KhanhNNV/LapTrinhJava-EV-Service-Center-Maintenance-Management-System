@@ -21,15 +21,15 @@ public interface IAppointmentService {
     List<AppointmentDto> getByStaff(Integer staffId);
 
     // lay lich hen theo status
-    List<AppointmentDto> getAppointmentsByStatus(String status, boolean isUserAccepted);
+    List<AppointmentDto> getAppointmentsByStatus(String status);
 
     // --- LOGIC MỚI CHO WORKFLOW ---
 
     // confirm cho khach hang
-    AppointmentDto confirmForCustomer(Integer appointmentId, String staffUserName);
+    AppointmentDto confirmForCustomer(Integer appointmentId,Integer staffId);
 
     // check-in chi can xac nhan role admin, staff
-    AppointmentDto checkInAppointment(Integer appointmentId, boolean isUserAccepted);
+    AppointmentDto checkInAppointment(Integer appointmentId);
 
     // phan cong appointment cho tech
     AppointmentDto assignTechnician(Integer appointmentId, Integer technicianId);
@@ -38,11 +38,11 @@ public interface IAppointmentService {
     // appoint da checkin
 
     // Methods for Customer
-    AppointmentDto createAppointmentForCustomer(String username, AppointmentRequest request);
+    AppointmentDto createAppointmentForCustomer(Integer username, AppointmentRequest request);
 
-    AppointmentDto cancelAppointmentForCustomer(Integer appointmentId, String username);
+    AppointmentDto cancelAppointmentForCustomer(Integer appointmentId, Integer customerId);
 
     // Methods for Technician
-    List<AppointmentDto> getAppointmentByTechinician(String username);
+    List<AppointmentDto> getAppointmentByTechinician(Integer technicianId);
 
 }

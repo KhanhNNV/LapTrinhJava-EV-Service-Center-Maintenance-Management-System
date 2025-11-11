@@ -12,6 +12,7 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @Table(name = "inventories")
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@Builder
 public class Inventory {
 
     @Id
@@ -20,7 +21,7 @@ public class Inventory {
     private Integer inventoryId;
 
     @Column(name = "quantity", nullable = false)
-    private Long quantity;
+    private int quantity;
 
     @Column(name = "min_quantity", nullable = false)
     private Long minQuantity;

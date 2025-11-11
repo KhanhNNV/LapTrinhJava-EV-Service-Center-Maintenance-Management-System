@@ -46,8 +46,8 @@ public class ConversationController {
     @PutMapping("/{id}/claim")
     @PreAuthorize("hasAnyRole('STAFF','ADMIN')") // Chỉ STAFF hoặc ADMIN mới được dùng
     public ResponseEntity<ConversationDto> claimConversation(@PathVariable Integer id, Authentication authentication) {
-        String username = authentication.getName(); // Lấy username của nhân viên đang đăng nhập từ JWT
-        ConversationDto updatedConversation = conversationService.claimConversation(id, username);// Gọi service để thực hiện logic
+        Integer staffId = Integer.parseInt(authentication.getName()); // Lấy username của nhân viên đang đăng nhập từ JWT
+        ConversationDto updatedConversation = conversationService.claimConversation(id, staffId);// Gọi service để thực hiện logic
         return ResponseEntity.ok(updatedConversation);
     }
     // === ENDPOINT MỚI ĐỂ ĐÓNG CUỘC TRÒ CHUYỆN ===
@@ -57,8 +57,8 @@ public class ConversationController {
             @PathVariable Integer id,
             Authentication authentication) {
 
-        String staffUsername = authentication.getName();
-        ConversationDto updatedConversation = conversationService.closeConversation(id, staffUsername);
+        Integer staffId = Integer.parseInt(authentication.getName());
+        ConversationDto updatedConversation = conversationService.closeConversation(id, staffId);
 
         return ResponseEntity.ok(updatedConversation);
     }

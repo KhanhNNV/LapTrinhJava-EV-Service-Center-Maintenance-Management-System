@@ -12,7 +12,7 @@ public interface IMessageService {
 
     List<MessageDto> getMessagesByConversation(Integer conversationId);
 
-    MessageDto createMessage(CreateMessageRequest request, String username);
+    MessageDto createMessage(CreateMessageRequest request, Integer customerId);
 
     MessageDto updateMessage(Integer id, CreateMessageRequest request);
 

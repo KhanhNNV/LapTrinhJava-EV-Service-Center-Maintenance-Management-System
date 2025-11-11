@@ -27,15 +27,15 @@ public class VehicleServiceImpl implements IVehicleService {
     // START: Thêm logic cho phương thức đăng ký xe của customer
     // Lý do: Đây là phương thức an toàn để khách hàng tự đăng ký xe của mình.
     // Công dụng:
-    // 1. Sử dụng `customerUsername` lấy từ token (đã được xác thực) để xác định chủ xe, thay vì `userId` từ request.
+    // 1. Sử dụng `customerId` lấy từ token (đã được xác thực) để xác định chủ xe, thay vì `userId` từ request.
     // 2. Kiểm tra xem biển số xe đã tồn tại trong hệ thống hay chưa.
     // 3. Xử lý logic gán xe cho một trung tâm dịch vụ nếu có.
     // 4. Lưu xe vào CSDL và trả về thông tin chi tiết (DTO).
     @Override
-    public VehicleDto registerVehicle(VehicleRequest request, String customerUsername) {
-        // 1. Tìm customer bằng username (an toàn hơn)
-        User customer = userRepository.findByUsername(customerUsername)
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy người dùng: " + customerUsername));
+    public VehicleDto registerVehicle(VehicleRequest request, Integer customerId){
+        // 1. Tìm customer bằng customerId (an toàn hơn)
+        User customer = userRepository.findById(customerId) 
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy người dùng: " + customerId));
 
         // 2. Kiểm tra biển số xe đã tồn tại
         if (vehicleRepository.existsByLicensePlate(request.getLicensePlate())) {

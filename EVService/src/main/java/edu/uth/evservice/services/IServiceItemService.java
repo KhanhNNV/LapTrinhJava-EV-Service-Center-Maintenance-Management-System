@@ -1,14 +1,18 @@
 package edu.uth.evservice.services;
 
 import edu.uth.evservice.dtos.ServiceItemDto;
-import edu.uth.evservice.requests.CreateServiceItemRequest;
+import edu.uth.evservice.requests.ServiceItemRequest;
 
 import java.util.List;
 
 public interface IServiceItemService {
     List<ServiceItemDto> getAllServiceItems();
     ServiceItemDto getServiceItemById(Integer id);
-    ServiceItemDto createServiceItem(CreateServiceItemRequest request);
-    ServiceItemDto updateServiceItem(Integer id, CreateServiceItemRequest request);
+    ServiceItemDto createServiceItem(ServiceItemRequest request);
+    ServiceItemDto updateServiceItem(Integer id, ServiceItemRequest request);
     void deleteServiceItem(Integer id);
+
+
+    ServiceItemDto addSuggestion(Integer itemId, Integer partId, int quantity);
+    void removeSuggestion(Integer itemId, Integer partId);
 }

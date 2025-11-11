@@ -1,9 +1,15 @@
 package edu.uth.evservice.services.impl;
 
 import edu.uth.evservice.dtos.ServiceItemDto;
+import edu.uth.evservice.exception.ResourceNotFoundException;
+import edu.uth.evservice.models.Part;
 import edu.uth.evservice.models.ServiceItem;
+import edu.uth.evservice.models.ServiceItemPart;
+import edu.uth.evservice.models.ServiceItemPartId;
+import edu.uth.evservice.repositories.IPartRepository;
+import edu.uth.evservice.repositories.IServiceItemPartRepository;
 import edu.uth.evservice.repositories.IServiceItemRepository;
-import edu.uth.evservice.requests.CreateServiceItemRequest;
+import edu.uth.evservice.requests.ServiceItemRequest;
 import edu.uth.evservice.services.IServiceItemService;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -18,6 +24,33 @@ import java.util.stream.Collectors;
 public class ServiceItemService implements IServiceItemService {
 
     IServiceItemRepository serviceItemRepository;
+    IPartRepository partRepository;
+    private final IServiceItemPartRepository suggestionRepo;
+
+    @Override
+    public ServiceItemDto addSuggestion(Integer itemId, Integer partId, int quantity) {
+        ServiceItem item = serviceItemRepository.findById(itemId).orElseThrow(()-> new ResourceNotFoundException("Không tìm thấy hạng mục dịch vụ này")) ;
+
+        Part part = partRepository.findById(partId).orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy phụ tùng này"));
+
+        ServiceItemPart suggestion = ServiceItemPart.builder()
+                .id(new ServiceItemPartId(itemId,partId))
+                .serviceItem(item)
+                .part(part)
+                .quantity(quantity)
+                .build();
+        suggestionRepo.save(suggestion);
+        return toDto(item);
+    }
+
+    @Override
+    public void removeSuggestion(Integer itemId, Integer partId) {
+        ServiceItemPartId id = new ServiceItemPartId(itemId, partId);
+        if (!suggestionRepo.existsById(id)) {
+            throw new ResourceNotFoundException("Gợi ý không tồn tại");
+        }
+        suggestionRepo.deleteById(id);
+    }
 
     @Override
     public List<ServiceItemDto> getAllServiceItems() {
@@ -35,7 +68,7 @@ public class ServiceItemService implements IServiceItemService {
     }
 
     @Override
-    public ServiceItemDto createServiceItem(CreateServiceItemRequest request) {
+    public ServiceItemDto createServiceItem(ServiceItemRequest request) {
         ServiceItem item = new ServiceItem();
         item.setItemName(request.getItemName());
         item.setDescription(request.getDescription());
@@ -46,7 +79,7 @@ public class ServiceItemService implements IServiceItemService {
     }
 
     @Override
-    public ServiceItemDto updateServiceItem(Integer id, CreateServiceItemRequest request) {
+    public ServiceItemDto updateServiceItem(Integer id, ServiceItemRequest request) {
         return serviceItemRepository.findById(id)
                 .map(existing -> {
                     existing.setItemName(request.getItemName());

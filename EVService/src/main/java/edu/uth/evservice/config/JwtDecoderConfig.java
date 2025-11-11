@@ -36,6 +36,11 @@ public class JwtDecoderConfig implements JwtDecoder{
             if(!jwtService.verifyToken(token)){
                 throw new RuntimeException("Invalid token");
             }
+            //~Kiểm tra xem đây CÓ ĐÚNG LÀ Access Token không
+            String tokenType = (String) jwtService.getClaim(token, "token_type");
+            if (!"access".equals(tokenType)) {
+                throw new JwtException("Token khong hop le, Day la refresh token.");
+            }
             //~Khởi tạo NimbusJwtDecoder nếu chưa có
             if(Objects.isNull(nimbusJwtDecoder)){
                 //~Khởi tạo khóa bí mật để xác thực token

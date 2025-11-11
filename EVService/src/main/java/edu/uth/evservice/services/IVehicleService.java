@@ -5,9 +5,9 @@ import edu.uth.evservice.requests.VehicleRequest;
 import java.util.List;
 
 public interface IVehicleService {
+    VehicleDto registerVehicle(VehicleRequest request, Integer customerId);
     // Đăng ký
-    VehicleDto registerVehicle(VehicleRequest request, String customerUsername);
-    
+
     // Lấy danh sách xe CỦA TÔI (customer)
     List<VehicleDto> getMyVehicles(String customerUsername);
 

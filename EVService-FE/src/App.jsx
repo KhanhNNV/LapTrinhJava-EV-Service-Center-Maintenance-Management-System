@@ -2,11 +2,14 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import AuthPage from './pages/AuthPage';
 import DashboardPage from './pages/DashboardPage';
+// (MỚI) Import trang callback
+import AuthCallbackPage from './pages/AuthCallBackPage'; 
 // import NotFoundPage from './pages/NotFoundPage'; // Sẽ tạo sau
 
 function App() {
-  // Giả sử bạn có state hoặc context để kiểm tra đăng nhập
-  const isAuthenticated = false; // Tạm thời để false
+  // (THAY ĐỔI) Chúng ta sẽ kiểm tra đăng nhập bằng localStorage
+  // Dấu !! biến giá trị (hoặc null) thành boolean (true/false)
+  const isAuthenticated = !!localStorage.getItem('authToken'); 
 
   return (
     <Router>
@@ -15,6 +18,12 @@ function App() {
         <Route
           path="/auth"
           element={!isAuthenticated ? <AuthPage /> : <Navigate to="/dashboard" replace />}
+        />
+
+        {/* (MỚI) Route cho trang Callback để "hứng" token */}
+        <Route
+          path="/auth/callback"
+          element={<AuthCallbackPage />}
         />
 
         {/* Route cho trang dashboard (yêu cầu đăng nhập) */}

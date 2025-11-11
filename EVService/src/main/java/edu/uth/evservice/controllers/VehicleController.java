@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,11 +30,11 @@ public class VehicleController {
 
     // đăng ký xe đ bảo dưỡng cho customer
     @PostMapping
-    public ResponseEntity<VehicleDto> registerVehicleForCustomer(@Valid @RequestBody VehicleRequest request) {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+    public ResponseEntity<VehicleDto> registerVehicleForCustomer(@Valid @RequestBody VehicleRequest request,Authentication authentication) {
+        Integer customerId = Integer.parseInt(authentication.getName());
 
         // Gọi phương thức mới, an toàn hơn
-        VehicleDto createdVehicle = vehicleService.registerVehicle(request, username);
+        VehicleDto createdVehicle = vehicleService.registerVehicle(request, customerId);
 
         return new ResponseEntity<>(createdVehicle, HttpStatus.CREATED);
     }
