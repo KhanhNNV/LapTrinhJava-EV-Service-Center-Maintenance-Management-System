@@ -1,7 +1,6 @@
 package edu.uth.evservice.controllers;
 
 import edu.uth.evservice.dtos.InvoiceDto;
-import edu.uth.evservice.requests.CreateInvoiceRequest;
 import edu.uth.evservice.services.IInvoiceService;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -24,7 +23,8 @@ public class InvoiceController {
     @PostMapping("/{ticketId}")
     @PreAuthorize("hasAnyRole('TECHNICIAN','ADMIN')")
     public ResponseEntity<InvoiceDto> createInvoice(@PathVariable Integer ticketId, Authentication authentication){
-        InvoiceDto invoiceDto = invoiceService.createInvoiceForTicket(ticketId, authentication.getName());
+        Integer technicianId = Integer.getInteger(authentication.getName());
+        InvoiceDto invoiceDto = invoiceService.createInvoiceForTicket(ticketId, technicianId);
         return new ResponseEntity<>(invoiceDto, HttpStatus.OK);
     }
 

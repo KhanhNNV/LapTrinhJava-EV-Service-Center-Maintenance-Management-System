@@ -104,7 +104,7 @@ public class ConversationServiceImp  implements IConversationService {
     }
     @Override
     @Transactional
-    public ConversationDto claimConversation (Integer conversationId , String staffUsername) {
+    public ConversationDto claimConversation (Integer conversationId , Integer staffId) {
         //Tim cuoc tro chuyen trong database
         Conversation conversation = conversationRepository.findById(conversationId)
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy cuộc trò chuyện có id: " + conversationId));
@@ -117,8 +117,8 @@ public class ConversationServiceImp  implements IConversationService {
             throw new IllegalArgumentException("Cuộc trò chuyện này đã có nhân viên khác nhận xử lý.");
         }
         // Tim nhan vien xu ly
-        User staff = userRepository.findByUsername(staffUsername)
-                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy nhân viên với username: " + staffUsername));
+        User staff = userRepository.findById(staffId)
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy nhân viên với username: " + staffId));
         // Cap nhap thong tin gan nhan vien vao cuoc tro chuyen
         conversation.setStaffConversation(staff);
         conversation.setStatus(ConversationStatus.IN_PROGRESS);
@@ -127,7 +127,7 @@ public class ConversationServiceImp  implements IConversationService {
     }
     @Override
     @Transactional
-    public ConversationDto closeConversation(Integer conversationId, String staffUsername) {
+    public ConversationDto closeConversation(Integer conversationId, Integer staffId) {
         // 1. Tìm cuộc trò chuyện trong database
         Conversation conversation = conversationRepository.findById(conversationId)
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy cuộc trò chuyện có id: " + conversationId));
@@ -135,7 +135,7 @@ public class ConversationServiceImp  implements IConversationService {
         // 2. KIỂM TRA QUYỀN SỞ HỮU - RẤT QUAN TRỌNG
         // Đảm bảo có nhân viên phụ trách và nhân viên đó chính là người đang thực hiện hành động
         if (conversation.getStaffConversation() == null ||
-                !conversation.getStaffConversation().getUsername().equals(staffUsername)) {
+                !conversation.getStaffConversation().getUserId().equals(staffId)) {
             // Nếu không có nhân viên nào, hoặc người đóng không phải là người phụ trách
             throw new SecurityException("Bạn không có quyền đóng cuộc trò chuyện này.");
         }

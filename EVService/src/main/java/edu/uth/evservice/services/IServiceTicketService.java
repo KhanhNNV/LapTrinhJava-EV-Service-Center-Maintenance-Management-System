@@ -7,9 +7,7 @@ import edu.uth.evservice.dtos.ServiceTicketDto;
 import edu.uth.evservice.dtos.SuggestedPartsDto;
 import edu.uth.evservice.dtos.TechnicianPerformanceDto;
 import edu.uth.evservice.dtos.TicketPartDto;
-import edu.uth.evservice.models.ServiceTicket;
 import edu.uth.evservice.models.enums.ServiceTicketStatus;
-import edu.uth.evservice.requests.AddPartRequest;
 import edu.uth.evservice.requests.AddServiceItemRequest;
 import edu.uth.evservice.requests.ServiceTicketRequest;
 import edu.uth.evservice.requests.UpdatePartQuantityRequest;
@@ -29,28 +27,28 @@ public interface IServiceTicketService {
     void deleteTicket(Integer id);
 
     // --- LOGIC MỚI CHO WORKFLOW ---
-    ServiceTicketDto createTicketFromAppointment(Integer appointmentId, String technicianUsername);
+    ServiceTicketDto createTicketFromAppointment(Integer appointmentId, Integer technicianId);
 
-    ServiceTicketDto completeWorkOnTicket(Integer ticketId, String username);
+    ServiceTicketDto completeWorkOnTicket(Integer ticketId, Integer technicianId);
 
-    void verifyTicketOwnership(String username, Integer ticketId);
+    void verifyTicketOwnership(Integer technicianId, Integer ticketId);
 
     List<ServiceTicketDto> getTicketsByTechnicianId(Integer technicianId);
 
     // Optimized update methods
-    ServiceTicketDto updateTicketStatus(Integer ticketId, String username, ServiceTicketStatus newStatus);
+    ServiceTicketDto updateTicketStatus(Integer ticketId, Integer technicianId, ServiceTicketStatus newStatus);
 
-    ServiceTicketDto updateTicketNotes(Integer ticketId, String username, String newNotes);
+    ServiceTicketDto updateTicketNotes(Integer ticketId, Integer technicianId, String newNotes);
     // --- BÁO CÁO HIỆU SUẤT KỸ THUẬT VIÊN ---
     List<TechnicianPerformanceDto> calculateTechnicianPerformance(LocalDateTime startDate, LocalDateTime endDate);
 
 
     // Thêm item và part vào ticket
 
-    SuggestedPartsDto addServiceItemToTicket(Integer ticketId, AddServiceItemRequest request, String username);
+    SuggestedPartsDto addServiceItemToTicket(Integer ticketId, AddServiceItemRequest request, Integer technicianId);
 
-    void removeServiceItemFromTicket(Integer ticketId, Integer itemId, String username);
+    void removeServiceItemFromTicket(Integer ticketId, Integer itemId, Integer technicianId);
 
-    TicketPartDto updatePartOnTicket(Integer ticketId, UpdatePartQuantityRequest request, String username);
+    TicketPartDto updatePartOnTicket(Integer ticketId, UpdatePartQuantityRequest request, Integer technicianId);
 
 }

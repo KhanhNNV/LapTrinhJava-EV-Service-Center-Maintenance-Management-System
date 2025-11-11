@@ -32,11 +32,11 @@ public class InvoiceServiceImpl implements IInvoiceService {
 
 
     @Override
-    public InvoiceDto createInvoiceForTicket(Integer ticketId, String username) {
+    public InvoiceDto createInvoiceForTicket(Integer ticketId, Integer technicianId) {
         // Kiểm tra đầu vào
         ServiceTicket serviceTicket = serviceTicketRepo.findById(ticketId).orElseThrow(()->new ResourceNotFoundException("Không tìm thấy phiếu dịch vụ"));
 
-        User technician = userRepo.findByUsername(username)
+        User technician = userRepo.findById(technicianId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy user đang tạo hóa đơn"));
 
         if(serviceTicket.getStatus() != ServiceTicketStatus.COMPLETED){

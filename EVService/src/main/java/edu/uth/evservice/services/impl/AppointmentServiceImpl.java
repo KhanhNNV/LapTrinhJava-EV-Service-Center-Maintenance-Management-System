@@ -5,7 +5,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import edu.uth.evservice.dtos.AppointmentDto;
@@ -119,10 +118,7 @@ public class AppointmentServiceImpl implements IAppointmentService {
 
     // lay lich hen theo status (admin/staff)
     @Override
-    public List<AppointmentDto> getAppointmentsByStatus(String status, boolean isUserAccepted) {
-        if (!isUserAccepted) {
-            throw new AccessDeniedException("Bạn không có quyền xem danh sách lịch hẹn theo trạng thái.");
-        }
+    public List<AppointmentDto> getAppointmentsByStatus(String status) {
         AppointmentStatus appointmentStatus;
         try {
             appointmentStatus = AppointmentStatus.valueOf(status.toUpperCase());
@@ -138,12 +134,12 @@ public class AppointmentServiceImpl implements IAppointmentService {
 
     // confirm cho khach hang
     @Override
-    public AppointmentDto confirmForCustomer(Integer appointmentId, String staffUsername) {
+    public AppointmentDto confirmForCustomer(Integer appointmentId, Integer staffId) {
         Appointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy lịch hẹn với ID: " + appointmentId));
-        User staff = userRepository.findByUsername(staffUsername)
+        User staff = userRepository.findById(staffId)
                 .orElseThrow(
-                        () -> new ResourceNotFoundException("Không tìm thấy nhân viên với username: " + staffUsername));
+                        () -> new ResourceNotFoundException("Không tìm thấy nhân viên với username: " + staffId));
 
         // kiem tra neu appointment da bi huy hoac da xac nhan
         if (appointment.getStatus() == AppointmentStatus.CANCELED) {
@@ -166,16 +162,12 @@ public class AppointmentServiceImpl implements IAppointmentService {
 
     // checkin cho customer
     @Override
-    public AppointmentDto checkInAppointment(Integer appointmentId, boolean isUserAccepted) {
+    public AppointmentDto checkInAppointment(Integer appointmentId) {
         Appointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy lịch hẹn với ID: " + appointmentId));
 
         if (appointment.getStatus() != AppointmentStatus.CONFIRMED) {
             throw new IllegalStateException("Chỉ có thể check-in khi lịch hẹn đã được xác nhận.");
-        }
-
-        if (!isUserAccepted) {
-            throw new AccessDeniedException("Bạn không được phép check-in lịch hẹn này.");
         }
 
         appointment.setStatus(AppointmentStatus.CHECKED_IN);
@@ -251,10 +243,10 @@ public class AppointmentServiceImpl implements IAppointmentService {
     }
 
     @Override
-    public List<AppointmentDto> getAppointmentByTechinician(String username) {
-        User tech = userRepository.findByUsername(username)
+    public List<AppointmentDto> getAppointmentByTechinician(Integer technicianId) {
+        User tech = userRepository.findById(technicianId)
                 .orElseThrow(
-                        () -> new ResourceNotFoundException("Không tìm thấy kỹ thuật viên với username : " + username));
+                        () -> new ResourceNotFoundException("Không tìm thấy kỹ thuật viên với username : " + technicianId));
 
         return appointmentRepository
                 .findByAssignedTechnician_UserId(tech.getUserId())
@@ -265,8 +257,8 @@ public class AppointmentServiceImpl implements IAppointmentService {
 
     // dat lich hen cho customer
     @Override
-    public AppointmentDto createAppointmentForCustomer(String username, AppointmentRequest request) {
-        User customer = userRepository.findByUsername(username)
+    public AppointmentDto createAppointmentForCustomer(Integer username, AppointmentRequest request) {
+        User customer = userRepository.findById(username)
                 .orElseThrow(
                         () -> new ResourceNotFoundException("Không tìm thấy khách hàng với username: " + username));
 
@@ -318,10 +310,10 @@ public class AppointmentServiceImpl implements IAppointmentService {
 
     // huy lich hen cua customer
     @Override
-    public AppointmentDto cancelAppointmentForCustomer(Integer appointmentId, String username) {
-        User customer = userRepository.findByUsername(username)
+    public AppointmentDto cancelAppointmentForCustomer(Integer appointmentId, Integer customerId) {
+        User customer = userRepository.findById(customerId)
                 .orElseThrow(
-                        () -> new ResourceNotFoundException("Không tìm thấy khách hàng với username: " + username));
+                        () -> new ResourceNotFoundException("Không tìm thấy khách hàng với username: " + customerId));
 
         Appointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy lịch hẹn với ID: " + appointmentId));

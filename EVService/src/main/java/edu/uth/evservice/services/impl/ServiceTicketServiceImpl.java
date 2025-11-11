@@ -93,7 +93,7 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
 
     // tech tao ticket tu appointment duoc giao
     @Override
-    public ServiceTicketDto createTicketFromAppointment(Integer appointmentId, String technicianUsername) {
+    public ServiceTicketDto createTicketFromAppointment(Integer appointmentId, Integer technicianId) {
         Appointment appointment = appointmentRepo.findById(appointmentId)
                 .orElseThrow(() -> new EntityNotFoundException("Appointment not found: " + appointmentId));
 
@@ -103,7 +103,7 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
         if (appointment.getServiceTickets() != null) {
             throw new IllegalStateException("A service ticket has already been created for this appointment.");
         }
-        if (!appointment.getAssignedTechnician().getUsername().equals(technicianUsername)) {
+        if (!appointment.getAssignedTechnician().getUserId().equals(technicianId)) {
             throw new SecurityException("You are not assigned to this appointment.");
         }
 
@@ -141,8 +141,8 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
     }
 
     @Override
-    public ServiceTicketDto completeWorkOnTicket(Integer ticketId, String username) {
-        verifyTicketOwnership(username, ticketId);
+    public ServiceTicketDto completeWorkOnTicket(Integer ticketId, Integer technicianId) {
+        verifyTicketOwnership(technicianId, ticketId);
         ServiceTicket ticket = ticketRepo.findById(ticketId)
                 .orElseThrow(() -> new EntityNotFoundException("Service Ticket not found"));
 
@@ -161,13 +161,11 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
 
     // kiem tra quyen so huu ticket cua tech
     @Override
-    public void verifyTicketOwnership(String username, Integer ticketId) {
-        User technician = userRepo.findByUsername(username)
-                .orElseThrow(() -> new EntityNotFoundException("Technician not found: " + username));
+    public void verifyTicketOwnership(Integer technicianId, Integer ticketId) {
         ServiceTicket ticket = ticketRepo.findById(ticketId)
                 .orElseThrow(() -> new EntityNotFoundException("Service Ticket not found: " + ticketId));
 
-        if (!ticket.getTechnician().getUserId().equals(technician.getUserId())) {
+        if (!ticket.getTechnician().getUserId().equals(technicianId)) {
             throw new SecurityException("Access Denied: You do not own this service ticket.");
         }
     }
@@ -180,8 +178,8 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
 
     // cap nhat ticket status
     @Override
-    public ServiceTicketDto updateTicketStatus(Integer ticketId, String username, ServiceTicketStatus newStatus) {
-        verifyTicketOwnership(username, ticketId);
+    public ServiceTicketDto updateTicketStatus(Integer ticketId, Integer technicianId, ServiceTicketStatus newStatus) {
+        verifyTicketOwnership(technicianId, ticketId);
         ServiceTicket ticket = ticketRepo.findById(ticketId)
                 .orElseThrow(() -> new EntityNotFoundException("Service Ticket not found"));
         ticket.setStatus(newStatus);
@@ -189,18 +187,18 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
     }
 
     @Override
-    public ServiceTicketDto updateTicketNotes(Integer ticketId, String username, String newNotes) {
-        verifyTicketOwnership(username, ticketId);
+    public ServiceTicketDto updateTicketNotes(Integer ticketId, Integer technicianId, String newNotes) {
+        verifyTicketOwnership(technicianId, ticketId);
         ServiceTicket ticket = ticketRepo.findById(ticketId)
                 .orElseThrow(() -> new EntityNotFoundException("Service Ticket not found"));
         ticket.setNotes(newNotes);
         return toDto(ticketRepo.save(ticket));
     }
     @Override
-    public SuggestedPartsDto addServiceItemToTicket(Integer ticketId, AddServiceItemRequest request, String username) {
-        ServiceTicket ticket = getTicketAndVerifyStatus(ticketId, username);
+    public SuggestedPartsDto addServiceItemToTicket(Integer ticketId, AddServiceItemRequest request, Integer technicianId) {
+        ServiceTicket ticket = getTicketAndVerifyStatus(ticketId, technicianId);
 
-        ServiceCenter techCenter =getCenterFromUsername(username);
+        ServiceCenter techCenter =getCenterFromUsername(technicianId);
 
         ServiceItem item = serviceItemRepo.findById(request.getItemId()).orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy hạng mục dịch vụ này"));
 
@@ -244,8 +242,8 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
     }
 
     @Override
-    public void removeServiceItemFromTicket(Integer ticketId, Integer itemId, String username) {
-        getTicketAndVerifyStatus(ticketId, username);
+    public void removeServiceItemFromTicket(Integer ticketId, Integer itemId, Integer technicianId) {
+        getTicketAndVerifyStatus(ticketId, technicianId);
 
         TicketServiceItemId id = new TicketServiceItemId(ticketId, itemId);
         if (!ticketServiceItemRepository.existsById(id)) {
@@ -266,8 +264,8 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
      * 6. Cập nhật bảng TicketPart
      */
     @Override
-    public TicketPartDto updatePartOnTicket(Integer ticketId, UpdatePartQuantityRequest request, String username) {
-        ServiceTicket ticket = getTicketAndVerifyStatus(ticketId, username);
+    public TicketPartDto updatePartOnTicket(Integer ticketId, UpdatePartQuantityRequest request, Integer technicianId) {
+        ServiceTicket ticket = getTicketAndVerifyStatus(ticketId, technicianId);
 
         Part part = partRepo.findById(request.getPartId())
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy phụ tùng"));
@@ -295,7 +293,7 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
             return toDto(ticketPartRepo.findById(id).get());
         }
 
-        ServiceCenter techCenter =getCenterFromUsername(username);
+        ServiceCenter techCenter =getCenterFromUsername(technicianId);
 
         Inventory inventory = inventoryRepo.findByPart_PartIdAndServiceCenter(request.getPartId(), techCenter)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy hàng tồn kho cho phụ tùng này"));
@@ -335,8 +333,8 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
 
 
     // Lấy ticket và kiểm tra trạng thái, nếu là in progress mới được thêm item và part
-    private ServiceTicket getTicketAndVerifyStatus(Integer ticketId, String username) {
-        verifyTicketOwnership(username, ticketId);
+    private ServiceTicket getTicketAndVerifyStatus(Integer ticketId, Integer technicianId) {
+        verifyTicketOwnership(technicianId, ticketId);
         ServiceTicket ticket = ticketRepo.findById(ticketId)
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy phiếu dịch vụ: " + ticketId));
 
@@ -455,8 +453,8 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
     }
 
     // lấy trung tâm của tech
-    private ServiceCenter getCenterFromUsername(String username) {
-        User currentUser = userRepo.findByUsername(username)
+    private ServiceCenter getCenterFromUsername(Integer technicianId) {
+        User currentUser = userRepo.findById(technicianId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
         ServiceCenter center = currentUser.getServiceCenter();
         if (center == null) {
