@@ -2,21 +2,49 @@ package edu.uth.evservice.services.impl;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
-import edu.uth.evservice.dtos.*;
-import edu.uth.evservice.exception.ResourceNotFoundException;
-import edu.uth.evservice.models.*;
-import edu.uth.evservice.repositories.*;
-import edu.uth.evservice.requests.AddServiceItemRequest;
-import edu.uth.evservice.requests.UpdatePartQuantityRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import edu.uth.evservice.dtos.ServiceTicketDto;
+import edu.uth.evservice.dtos.ServiceTicketPartDto;
+import edu.uth.evservice.dtos.SuggestedPartsDto;
+import edu.uth.evservice.dtos.TechnicianPerformanceDto;
+import edu.uth.evservice.dtos.TicketPartDto;
+import edu.uth.evservice.dtos.TicketServiceItemDto;
+import edu.uth.evservice.exception.ResourceNotFoundException;
+import edu.uth.evservice.models.Appointment;
+import edu.uth.evservice.models.CustomerPackageContract;
+import edu.uth.evservice.models.Inventory;
+import edu.uth.evservice.models.Part;
+import edu.uth.evservice.models.ServiceCenter;
+import edu.uth.evservice.models.ServiceItem;
+import edu.uth.evservice.models.ServiceItemPart;
+import edu.uth.evservice.models.ServicePackage;
+import edu.uth.evservice.models.ServiceTicket;
+import edu.uth.evservice.models.TicketPart;
+import edu.uth.evservice.models.TicketPartId;
+import edu.uth.evservice.models.TicketServiceItem;
+import edu.uth.evservice.models.TicketServiceItemId;
+import edu.uth.evservice.models.User;
 import edu.uth.evservice.models.enums.AppointmentStatus;
 import edu.uth.evservice.models.enums.ServiceTicketStatus;
+import edu.uth.evservice.repositories.IAppointmentRepository;
+import edu.uth.evservice.repositories.IInventoryRepository;
+import edu.uth.evservice.repositories.IPartRepository;
+import edu.uth.evservice.repositories.IServiceItemPartRepository;
+import edu.uth.evservice.repositories.IServiceItemRepository;
+import edu.uth.evservice.repositories.IServiceTicketRepository;
+import edu.uth.evservice.repositories.ITicketPartRepository;
+import edu.uth.evservice.repositories.ITicketServiceItemRepository;
+import edu.uth.evservice.repositories.IUserRepository;
+import edu.uth.evservice.requests.AddServiceItemRequest;
 import edu.uth.evservice.requests.ServiceTicketRequest;
+import edu.uth.evservice.requests.UpdatePartQuantityRequest;
 import edu.uth.evservice.services.IServiceTicketService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -54,10 +82,10 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
     @Override
     public ServiceTicketDto createTicket(ServiceTicketRequest request) {
         Appointment appointment = appointmentRepo.findById(request.getAppointmentId())
-                .orElseThrow(() -> new RuntimeException("Appointment not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy lịch hẹn."));
 
         User technician = userRepo.findById(request.getTechnicianId())
-                .orElseThrow(() -> new RuntimeException("Technician not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy kỹ thuật viên."));
 
         ServiceTicket ticket = ServiceTicket.builder()
                 .appointment(appointment)
@@ -74,7 +102,7 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
     @Override
     public ServiceTicketDto updateTicket(Integer id, ServiceTicketRequest request) {
         ServiceTicket ticket = ticketRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Ticket not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy phiếu dịch vụ:"));
 
         ticket.setStartTime(request.getStartTime());
         ticket.setEndTime(request.getEndTime());
@@ -95,16 +123,18 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
     @Override
     public ServiceTicketDto createTicketFromAppointment(Integer appointmentId, Integer technicianId) {
         Appointment appointment = appointmentRepo.findById(appointmentId)
-                .orElseThrow(() -> new EntityNotFoundException("Appointment not found: " + appointmentId));
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy lịch hẹn với ID: " + appointmentId));
 
         if (appointment.getStatus() != AppointmentStatus.ASSIGNED) {
-            throw new IllegalStateException("Cannot create service ticket. Customer has not checked in yet.");
+            throw new IllegalStateException("Không thể tạo phiếu dịch vụ. Khách chưa được giao cho kỹ thuật viên.");
         }
-        if (appointment.getServiceTickets() != null) {
-            throw new IllegalStateException("A service ticket has already been created for this appointment.");
-        }
+        // loai bo de co the tao nhieu ticket cho 1 appointment
+        // if (appointment.getServiceTickets() != null) {
+        // throw new IllegalStateException("A service ticket has already been created
+        // for this appointment.");
+        // }
         if (!appointment.getAssignedTechnician().getUserId().equals(technicianId)) {
-            throw new SecurityException("You are not assigned to this appointment.");
+            throw new SecurityException("Bạn không được giao lịch hẹn này.");
         }
 
         ServiceTicket ticket = ServiceTicket.builder()
@@ -118,24 +148,22 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
         ServiceTicket savedTicket = ticketRepo.save(ticket);
 
         // --- LOGIC MỚI: TỰ ĐỘNG THÊM SERVICE ITEMS NẾU CÓ CONTRACT ---
-        // if (appointment.getContract() != null) {
-        // ServicePackage servicePackage =
-        // appointment.getContract().getServicePackage();
-        // // Giả sử ServicePackage có một list các ServiceItem
-        // // Cần thêm mối quan hệ @ManyToMany giữa ServicePackage và ServiceItem
-        // List<ServiceItem> itemsInPackage = servicePackage.getServiceItems();
+        CustomerPackageContract contract = appointment.getContract();
+        if (contract != null && contract.getServicePackage() != null) {
+            ServicePackage servicePackage = contract.getServicePackage();
+            List<ServiceItem> itemsInPackage = servicePackage.getServiceItems();
 
-        // for (ServiceItem item : itemsInPackage) {
-        // TicketServiceItem tsi = TicketServiceItem.builder()
-        // .id(new TicketServiceItemId(savedTicket.getTicketId(), item.getItemId()))
-        // .serviceTicket(savedTicket)
-        // .serviceItem(item)
-        // .quantity(1)
-        // .unitPriceAtTimeOfService(0.0) // Miễn phí vì nằm trong gói
-        // .build();
-        // ticketServiceItemRepository.save(tsi);
-        // }
-        // }
+            for (ServiceItem item : itemsInPackage) {
+                TicketServiceItem tsi = TicketServiceItem.builder()
+                        .id(new TicketServiceItemId(savedTicket.getTicketId(), item.getItemId()))
+                        .serviceTicket(savedTicket)
+                        .serviceItem(item)
+                        .quantity(1)
+                        .unitPriceAtTimeOfService(0.0) // Miễn phí vì nằm trong gói
+                        .build();
+                ticketServiceItemRepository.save(tsi);
+            }
+        }
 
         return toDto(savedTicket);
     }
@@ -144,7 +172,7 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
     public ServiceTicketDto completeWorkOnTicket(Integer ticketId, Integer technicianId) {
         verifyTicketOwnership(technicianId, ticketId);
         ServiceTicket ticket = ticketRepo.findById(ticketId)
-                .orElseThrow(() -> new EntityNotFoundException("Service Ticket not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy phiếu dịch vụ:"));
 
         if (ticket.getEndTime() != null) {
             throw new IllegalStateException("Work on this ticket has already been completed.");
@@ -163,7 +191,7 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
     @Override
     public void verifyTicketOwnership(Integer technicianId, Integer ticketId) {
         ServiceTicket ticket = ticketRepo.findById(ticketId)
-                .orElseThrow(() -> new EntityNotFoundException("Service Ticket not found: " + ticketId));
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy phiếu dịch vụ:: " + ticketId));
 
         if (!ticket.getTechnician().getUserId().equals(technicianId)) {
             throw new SecurityException("Access Denied: You do not own this service ticket.");
@@ -181,7 +209,7 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
     public ServiceTicketDto updateTicketStatus(Integer ticketId, Integer technicianId, ServiceTicketStatus newStatus) {
         verifyTicketOwnership(technicianId, ticketId);
         ServiceTicket ticket = ticketRepo.findById(ticketId)
-                .orElseThrow(() -> new EntityNotFoundException("Service Ticket not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy phiếu dịch vụ:"));
         ticket.setStatus(newStatus);
         return toDto(ticketRepo.save(ticket));
     }
@@ -190,25 +218,28 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
     public ServiceTicketDto updateTicketNotes(Integer ticketId, Integer technicianId, String newNotes) {
         verifyTicketOwnership(technicianId, ticketId);
         ServiceTicket ticket = ticketRepo.findById(ticketId)
-                .orElseThrow(() -> new EntityNotFoundException("Service Ticket not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy phiếu dịch vụ:"));
         ticket.setNotes(newNotes);
         return toDto(ticketRepo.save(ticket));
     }
+
     @Override
-    public SuggestedPartsDto addServiceItemToTicket(Integer ticketId, AddServiceItemRequest request, Integer technicianId) {
+    public SuggestedPartsDto addServiceItemToTicket(Integer ticketId, AddServiceItemRequest request,
+            Integer technicianId) {
         ServiceTicket ticket = getTicketAndVerifyStatus(ticketId, technicianId);
 
-        ServiceCenter techCenter =getCenterFromUsername(technicianId);
+        ServiceCenter techCenter = getCenterFromUsername(technicianId);
 
-        ServiceItem item = serviceItemRepo.findById(request.getItemId()).orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy hạng mục dịch vụ này"));
+        ServiceItem item = serviceItemRepo.findById(request.getItemId())
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy hạng mục dịch vụ này"));
 
-        if(ticketServiceItemRepository.existsById(new TicketServiceItemId(ticketId,request.getItemId()))) {
+        if (ticketServiceItemRepository.existsById(new TicketServiceItemId(ticketId, request.getItemId()))) {
             throw new IllegalStateException("Hạng mục dịch vụ này đã tồn tại");
         }
 
-        //Tạo TicketServiceItem
+        // Tạo TicketServiceItem
         TicketServiceItem ticketServiceItem = TicketServiceItem.builder()
-                .id(new TicketServiceItemId(ticketId,request.getItemId()))
+                .id(new TicketServiceItemId(ticketId, request.getItemId()))
                 .serviceTicket(ticket)
                 .serviceItem(item)
                 .quantity(request.getQuantity())
@@ -222,12 +253,12 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
         List<ServiceItemPart> suggestions = suggestionRepo.findByServiceItem_ItemId(request.getItemId());
 
         List<ServiceTicketPartDto> suggestedParts = suggestions.stream()
-                .map(suggestion ->{
+                .map(suggestion -> {
                     Part part = suggestion.getPart();
 
                     int suggestedQty = suggestion.getQuantity();
 
-                    //Lấy tồn kho
+                    // Lấy tồn kho
                     int stock = inventoryRepo.findByPart_PartIdAndServiceCenter(part.getPartId(), techCenter)
                             .map(Inventory::getQuantity).orElse(0);
 
@@ -253,9 +284,9 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
         ticketServiceItemRepository.deleteById(id);
     }
 
-
     /**
-     * Cập nhật số lượng của một Part trên Ticket nếu tech ko muốn lấy số lượng như gợi ý.
+     * Cập nhật số lượng của một Part trên Ticket nếu tech ko muốn lấy số lượng như
+     * gợi ý.
      * 1. Lấy số lượng Tech muốn
      * 2. Lấy số lượng đang có trên ticket
      * 3. Tính chênh lệch (delta = newQuantity - currentQuantity)
@@ -293,7 +324,7 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
             return toDto(ticketPartRepo.findById(id).get());
         }
 
-        ServiceCenter techCenter =getCenterFromUsername(technicianId);
+        ServiceCenter techCenter = getCenterFromUsername(technicianId);
 
         Inventory inventory = inventoryRepo.findByPart_PartIdAndServiceCenter(request.getPartId(), techCenter)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy hàng tồn kho cho phụ tùng này"));
@@ -330,9 +361,8 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
         }
     }
 
-
-
-    // Lấy ticket và kiểm tra trạng thái, nếu là in progress mới được thêm item và part
+    // Lấy ticket và kiểm tra trạng thái, nếu là in progress mới được thêm item và
+    // part
     private ServiceTicket getTicketAndVerifyStatus(Integer ticketId, Integer technicianId) {
         verifyTicketOwnership(technicianId, ticketId);
         ServiceTicket ticket = ticketRepo.findById(ticketId)
@@ -343,8 +373,6 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
         }
         return ticket;
     }
-
-
 
     // --- Các hàm DTO ---
 
@@ -416,10 +444,11 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
     }
 
     @Override
-    public List<TechnicianPerformanceDto> calculateTechnicianPerformance(LocalDateTime startDate, LocalDateTime endDate) {
+    public List<TechnicianPerformanceDto> calculateTechnicianPerformance(LocalDateTime startDate,
+            LocalDateTime endDate) {
         // Lấy các ticket đã hoàn thành trong khoảng thời gian
-        List<ServiceTicket> completedTickets =
-                ticketRepo.findByStatusAndEndTimeBetween(ServiceTicketStatus.COMPLETED, startDate, endDate);
+        List<ServiceTicket> completedTickets = ticketRepo.findByStatusAndEndTimeBetween(ServiceTicketStatus.COMPLETED,
+                startDate, endDate);
 
         // Gom nhóm theo kỹ thuật viên
         Map<User, List<ServiceTicket>> groupedByTechnician = completedTickets.stream()
@@ -448,7 +477,8 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
                             .avgMinutes(avgMinutes)
                             .build();
                 })
-                .sorted(Comparator.comparingLong(TechnicianPerformanceDto::getTotalTickets).reversed()) // sắp giảm dần theo số vé
+                .sorted(Comparator.comparingLong(TechnicianPerformanceDto::getTotalTickets).reversed()) // sắp giảm dần
+                                                                                                        // theo số vé
                 .collect(Collectors.toList());
     }
 
