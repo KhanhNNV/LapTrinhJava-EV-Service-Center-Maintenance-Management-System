@@ -40,7 +40,7 @@ public class VehicleController {
 
     // GET /api/vehicles (Lấy tất cả xe của tôi)
     @GetMapping
-    @PreAuthorize("hasAnyRole('CUSTOMER,'STAFF','TECHNICIAN','ADMIN')") 
+    @PreAuthorize("hasAnyRole('CUSTOMER','STAFF','TECHNICIAN','ADMIN')") 
     public ResponseEntity<List<VehicleDto>> getMyVehicles() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         List<VehicleDto> vehicles = vehicleService.getMyVehicles(username);
@@ -49,7 +49,7 @@ public class VehicleController {
 
     // GET /api/vehicles/{id} (Lấy 1 xe của tôi)
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('CUSTOMER,'STAFF','TECHNICIAN','ADMIN')") 
+    @PreAuthorize("hasAnyRole('CUSTOMER','STAFF','TECHNICIAN','ADMIN')") 
     public ResponseEntity<VehicleDto> getMyVehicleById(@PathVariable("id") Integer id) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         VehicleDto vehicle = vehicleService.getMyVehicleById(id, username);
