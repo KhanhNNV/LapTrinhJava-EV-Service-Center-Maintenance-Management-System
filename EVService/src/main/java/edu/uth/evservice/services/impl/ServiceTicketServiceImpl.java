@@ -6,6 +6,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import edu.uth.evservice.dtos.TechnicianPerformanceDto;
+import edu.uth.evservice.exception.ResourceNotFoundException;
 import edu.uth.evservice.requests.NotificationRequest;
 import edu.uth.evservice.services.INotificationService;
 import org.springframework.stereotype.Service;
@@ -37,6 +38,7 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
     private final ITicketServiceItemRepository ticketServiceItemRepository;
     //
     private final INotificationService notificationService;
+
 
     @Override
     public List<ServiceTicketDto> getAllTickets() {
@@ -169,24 +171,71 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
         return toDto(savedTicket);
     }
 
-    @Override
-    public ServiceTicketDto completeWorkOnTicket(Integer ticketId, String username) {
-        verifyTicketOwnership(username, ticketId);
-        ServiceTicket ticket = ticketRepo.findById(ticketId)
-                .orElseThrow(() -> new EntityNotFoundException("Service Ticket not found"));
+//    @Override
+//    public ServiceTicketDto completeWorkOnTicket(Integer ticketId, String username) {
+//        verifyTicketOwnership(username, ticketId);
+//        ServiceTicket ticket = ticketRepo.findById(ticketId)
+//                .orElseThrow(() -> new EntityNotFoundException("Service Ticket not found"));
+//
+//        if (ticket.getEndTime() != null) {
+//            throw new IllegalStateException("Work on this ticket has already been completed.");
+//        }
+//
+//        ticket.setEndTime(LocalDateTime.now());
+//        ticket.setStatus(ServiceTicketStatus.COMPLETED);
+//
+//        // Cập nhật cả Appointment liên quan
+//        ticket.getAppointment().setStatus(AppointmentStatus.COMPLETED);
+//
+//        return toDto(ticketRepo.save(ticket));
+//    }
+@Override
+@Transactional // Đảm bảo việc hoàn tất VÀ gửi thông báo là một giao dịch
+public ServiceTicketDto completeWorkOnTicket(Integer ticketId, String technicianUsername) {
 
-        if (ticket.getEndTime() != null) {
-            throw new IllegalStateException("Work on this ticket has already been completed.");
-        }
+    // 1. Tìm Phiếu Dịch vụ
+    ServiceTicket ticket = ticketRepo.findById(ticketId)
+            .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy Phiếu Dịch vụ: " + ticketId));
 
-        ticket.setEndTime(LocalDateTime.now());
-        ticket.setStatus(ServiceTicketStatus.COMPLETED);
+    // 2. Tìm Kỹ thuật viên (người đang thực hiện hành động)
+    User technician = userRepo.findByUsername(technicianUsername)
+            .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy Kỹ thuật viên: " + technicianUsername));
 
-        // Cập nhật cả Appointment liên quan
-        ticket.getAppointment().setStatus(AppointmentStatus.COMPLETED);
-
-        return toDto(ticketRepo.save(ticket));
+    // 3. KIỂM TRA BẢO MẬT: KTV có đúng là người được gán cho phiếu này không?
+    if (ticket.getTechnician() == null ||
+            !ticket.getTechnician().getUserId().equals(technician.getUserId())) {
+        throw new SecurityException("Bạn không phải là kỹ thuật viên được gán cho phiếu dịch vụ này.");
     }
+
+    // 4. KIỂM TRA LOGIC: Phiếu có đang 'IN_PROGRESS' không?
+    if (ticket.getStatus() != ServiceTicketStatus.IN_PROGRESS) {
+        throw new IllegalStateException("Chỉ có thể hoàn thành các phiếu đang ở trạng thái 'IN_PROGRESS'.");
+    }
+
+    // 5. CẬP NHẬT PHIẾU
+    ticket.setStatus(ServiceTicketStatus.COMPLETED); // Đổi trạng thái
+    ticket.setEndTime(LocalDateTime.now()); // Ghi lại thời gian hoàn thành
+
+    ServiceTicket savedTicket = ticketRepo.save(ticket);
+
+    // === 6. PHẦN CODE GỬI THÔNG BÁO ===
+
+    // Lấy thông tin khách hàng từ lịch hẹn liên quan
+    User customer = savedTicket.getAppointment().getCustomer();
+
+    NotificationRequest customerNoti = new NotificationRequest();
+    customerNoti.setUserId(customer.getUserId()); // ID người nhận (Khách hàng)
+    customerNoti.setTitle("Dịch vụ của bạn đã hoàn tất!");
+    customerNoti.setMessage("Dịch vụ cho xe [" + savedTicket.getAppointment().getVehicle().getLicensePlate() +
+            "] (Phiếu #" + savedTicket.getTicketId() + ") đã được hoàn thành. " +
+            "Vui lòng đợi thông báo hóa đơn để thanh toán.");
+
+    notificationService.createNotification(customerNoti); // Gửi đi
+    // ===================================
+
+    // 7. Trả về kết quả
+    return toDto(savedTicket); // Giả sử bạn có hàm toDto
+}
 
     // kiem tra quyen so huu ticket cua tech
     @Override
