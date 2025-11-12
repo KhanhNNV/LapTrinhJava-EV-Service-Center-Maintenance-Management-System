@@ -16,5 +16,5 @@ public interface IVehicleRepository extends JpaRepository<Vehicle, Integer> {
     // Công dụng: Dùng cho API "Lấy danh sách xe của tôi".
     List<Vehicle> findByUser_Username(String username);
     // Công dụng: Dùng cho API "Lấy/Sửa/Xóa một chiếc xe cụ thể" để đảm bảo bảo mật.
-    Optional<Vehicle> findByVehicleIdAndUser_Username(Integer vehicleId, String username);
+    Optional<Vehicle> findByVehicleIdAndUser_UserId(Integer vehicleId, Integer UserId);
 }

@@ -14,14 +14,14 @@ public interface ICustomerPackageContractService {
     // void deleteContract(Integer id);
 
     // Customer mua một gói dịch vụ mới
-    CustomerPackageContractDto purchasePackage(CustomerPackageContractRequest request, String customerUsername);
+    CustomerPackageContractDto purchasePackage(CustomerPackageContractRequest request, Integer UserId);
 
     // Customer xem tất cả hợp đồng của mình
-    List<CustomerPackageContractDto> getMyContracts(String customerUsername);
+    List<CustomerPackageContractDto> getMyContracts(Integer UserId);
 
     // Customer xem chi tiết 1 hợp đồng
-    CustomerPackageContractDto getMyContractById(Integer contractId, String customerUsername);
+    CustomerPackageContractDto getMyContractById(Integer contractId, Integer UserId);
 
     // Customer hủy 1 hợp đồng
-    CustomerPackageContractDto cancelMyContract(Integer contractId, String customerUsername);
+    CustomerPackageContractDto cancelMyContract(Integer contractId, Integer UserId);
 }

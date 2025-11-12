@@ -14,4 +14,5 @@ public class CertificateRequest {
     String issuingOrganization;
     String description;
     Integer validityPeriod;
+    String sericeType;
 }
