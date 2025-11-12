@@ -23,7 +23,14 @@ public class SalaryServiceImpl implements ISalaryService {
 
     @Override
     public List<SalaryDto> calculateMonthlySalaries(YearMonth month) {
+        if (month == null) {
+            throw new IllegalArgumentException("Tháng không được để trống.");
+        }
+
         List<User> users = userRepository.findAll();
+        if (users.isEmpty()) {
+            throw new IllegalStateException("Không tìm thấy người dùng nào trong hệ thống.");
+        }
 
         return users.stream()
                 .filter(user -> user.getRole() == Role.STAFF || user.getRole() == Role.TECHNICIAN)
@@ -46,7 +53,13 @@ public class SalaryServiceImpl implements ISalaryService {
 
                                     // Lấy ngày từ invoice
                                     if (item.getServiceTicket().getInvoice() == null) return false;
-                                    return YearMonth.from(item.getServiceTicket().getInvoice().getInvoiceDate()).equals(month);
+
+                                    try {
+                                        return YearMonth.from(item.getServiceTicket().getInvoice().getInvoiceDate()).equals(month);
+                                    } catch (Exception e) {
+                                        throw new IllegalStateException("Invoice date không hợp lệ cho ticket " +
+                                                item.getServiceTicket().getTicketId(), e);
+                                    }
                                 })
                                 .mapToDouble(i -> i.getUnitPriceAtTimeOfService() * i.getQuantity())
                                 .sum();
@@ -65,5 +78,6 @@ public class SalaryServiceImpl implements ISalaryService {
                 })
                 .collect(Collectors.toList());
     }
+
 
 }

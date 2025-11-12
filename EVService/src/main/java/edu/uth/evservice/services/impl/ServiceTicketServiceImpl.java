@@ -418,6 +418,14 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
     }
     //Báo cáo hiệu suất
     public List<PerformanceDto> calculatePerformance(LocalDate start, LocalDate end) {
+        // Kiểm tra tham số
+        if (start == null || end == null) {
+            throw new IllegalArgumentException("Ngày bắt đầu và kết thúc không được null.");
+        }
+        if (start.isAfter(end)) {
+            throw new IllegalArgumentException("Ngày bắt đầu không được lớn hơn ngày kết thúc.");
+        }
+
         LocalDateTime startDate = start.atStartOfDay();
         LocalDateTime endDate = end.atTime(23, 59, 59);
 
@@ -425,8 +433,12 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
         List<ServiceTicket> tickets = ticketRepo
                 .findByStatusAndEndTimeBetween(ServiceTicketStatus.COMPLETED, startDate, endDate);
 
+        // Nếu không có ticket nào, có thể trả về danh sách rỗng nhưng vẫn show kỹ thuật viên
         // Lấy danh sách kỹ thuật viên
         List<User> technicians = userRepo.findByRole(Role.TECHNICIAN);
+        if (technicians.isEmpty()) {
+            throw new EntityNotFoundException("Không có kỹ thuật viên nào trong hệ thống.");
+        }
 
         // Gom nhóm ticket theo technician
         Map<Integer, List<ServiceTicket>> ticketsByTech = tickets.stream()

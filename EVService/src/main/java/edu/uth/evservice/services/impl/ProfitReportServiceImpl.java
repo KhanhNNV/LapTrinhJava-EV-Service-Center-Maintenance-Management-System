@@ -26,6 +26,14 @@ public class ProfitReportServiceImpl implements IProfitReportService {
 
     @Override
     public ProfitReportDto getMonthlyProfitReport(int year, int month) {
+        // Kiểm tra tham số
+        if (month < 1 || month > 12) {
+            throw new IllegalArgumentException("Tháng phải nằm trong khoảng 1-12.");
+        }
+        if (year < 1900 || year > LocalDateTime.now().getYear()) {
+            throw new IllegalArgumentException("Năm không hợp lệ: " + year);
+        }
+
         // 1. Xác định thời gian
         LocalDateTime startOfMonth = YearMonth.of(year, month).atDay(1).atStartOfDay();
         LocalDateTime endOfMonth = YearMonth.of(year, month).atEndOfMonth().atTime(23, 59, 59);
@@ -34,19 +42,26 @@ public class ProfitReportServiceImpl implements IProfitReportService {
         List<ServiceTicket> completedTickets = serviceTicketRepo
                 .findByStatusAndEndTimeBetween(ServiceTicketStatus.COMPLETED, startOfMonth, endOfMonth);
 
+        if (completedTickets.isEmpty()) {
+            throw new IllegalStateException("Không tìm thấy ticket COMPLETED nào trong tháng " + month + "/" + year);
+        }
+
         // 3. Tính tổng thu từ hóa đơn
         double totalRevenue = completedTickets.stream()
                 .mapToDouble(ticket -> invoiceRepo.findByServiceTicket_TicketId(ticket.getTicketId())
                         .map(invoice -> invoice.getTotalAmount())
                         .orElse(0.0))
                 .sum();
-        long totalRevenueLong = Math.round(totalRevenue); // Chuyển sang long
+        long totalRevenueLong = Math.round(totalRevenue);
 
         long staffSalary = 10_000_000L;
 
-// Lương Technician
+        // Lương Technician
         Map<Integer, Long> technicianSalaryMap = new HashMap<>();
         for (ServiceTicket ticket : completedTickets) {
+            if (ticket.getTechnician() == null) {
+                throw new IllegalStateException("Ticket " + ticket.getTicketId() + " chưa gán kỹ thuật viên.");
+            }
             Integer techId = ticket.getTechnician().getUserId();
             double ticketRevenue = invoiceRepo.findByServiceTicket_TicketId(ticket.getTicketId())
                     .map(invoice -> invoice.getTotalAmount())
@@ -56,16 +71,20 @@ public class ProfitReportServiceImpl implements IProfitReportService {
         }
         long totalTechnicianSalary = technicianSalaryMap.values().stream().mapToLong(Long::longValue).sum();
 
-// Chi phí nhập Part
+        // Chi phí nhập Part
         long partCost = completedTickets.stream()
                 .flatMap(ticket -> ticketPartRepo.findByTicket_TicketId(ticket.getTicketId()).stream())
-                .mapToDouble(tp -> tp.getQuantity() * tp.getPart().getCostPrice())
+                .mapToDouble(tp -> {
+                    if (tp.getPart() == null) {
+                        throw new IllegalStateException("TicketPart không có Part gán cho ticket " + tp.getId());
+                    }
+                    return tp.getQuantity() * tp.getPart().getCostPrice();
+                })
                 .mapToLong(Math::round)
                 .sum();
 
         long totalExpense = staffSalary + totalTechnicianSalary + partCost;
         long profit = totalRevenueLong - totalExpense;
-
 
         return ProfitReportDto.builder()
                 .month(month)
@@ -77,6 +96,5 @@ public class ProfitReportServiceImpl implements IProfitReportService {
                 .totalExpense(totalExpense)
                 .profit(profit)
                 .build();
-
     }
 }
