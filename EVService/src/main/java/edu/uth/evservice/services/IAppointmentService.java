@@ -3,6 +3,7 @@ package edu.uth.evservice.services;
 import java.util.List;
 
 import edu.uth.evservice.dtos.AppointmentDto;
+import edu.uth.evservice.dtos.TechnicianWithCertificateDto;
 import edu.uth.evservice.requests.AppointmentRequest;
 
 public interface IAppointmentService {
@@ -26,10 +27,13 @@ public interface IAppointmentService {
     // --- LOGIC MỚI CHO WORKFLOW ---
 
     // confirm cho khach hang
-    AppointmentDto confirmForCustomer(Integer appointmentId,Integer staffId);
+    AppointmentDto confirmForCustomer(Integer appointmentId, Integer staffId);
 
     // check-in chi can xac nhan role admin, staff
     AppointmentDto checkInAppointment(Integer appointmentId);
+
+    // lay danh sach tech goi y cho lich hen theo certificate
+    List<TechnicianWithCertificateDto> getSuggestedTechniciansForAppointment(Integer appointmentId);
 
     // phan cong appointment cho tech
     AppointmentDto assignTechnician(Integer appointmentId, Integer technicianId);
