@@ -6,6 +6,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import edu.uth.evservice.dtos.TechnicianPerformanceDto;
+import edu.uth.evservice.requests.NotificationRequest;
+import edu.uth.evservice.services.INotificationService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,6 +35,8 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
     private final IAppointmentRepository appointmentRepo;
     private final IUserRepository userRepo;
     private final ITicketServiceItemRepository ticketServiceItemRepository;
+    //
+    private final INotificationService notificationService;
 
     @Override
     public List<ServiceTicketDto> getAllTickets() {
@@ -75,8 +79,36 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
 
         ticket.setStartTime(request.getStartTime());
         ticket.setEndTime(request.getEndTime());
-        ticket.setStatus(ServiceTicketStatus.valueOf(request.getStatus()));
         ticket.setNotes(request.getNotes());
+
+        // --- 2. NÂNG CẤP LOGIC CẬP NHẬT TRẠNG THÁI ---
+        ServiceTicketStatus newStatus = null;
+        if (request.getStatus() != null) {
+            newStatus = ServiceTicketStatus.valueOf(request.getStatus().toUpperCase());
+            ticket.setStatus(newStatus);
+        }
+
+        ServiceTicket savedTicket = ticketRepo.save(ticket);
+
+        // === 3. PHẦN CODE MỚI THÊM VÀO (Gửi thông báo) ===
+
+        // Kiểm tra xem trạng thái mới có phải là "HOÀN THÀNH" không
+        // (Giả sử trạng thái hoàn thành là 'COMPLETED', bạn hãy thay đổi nếu cần)
+        if (newStatus != null && newStatus == ServiceTicketStatus.COMPLETED) {
+
+            // Lấy thông tin khách hàng từ lịch hẹn liên quan
+            User customer = savedTicket.getAppointment().getCustomer();
+
+            NotificationRequest customerNoti = new NotificationRequest();
+            customerNoti.setUserId(customer.getUserId()); // ID người nhận (Khách hàng)
+            customerNoti.setTitle("Dịch vụ của bạn đã hoàn tất!");
+            customerNoti.setMessage("Dịch vụ cho xe [" + savedTicket.getAppointment().getVehicle().getLicensePlate() +
+                    "] (Phiếu #" + savedTicket.getTicketId() + ") đã được hoàn thành. " +
+                    "Vui lòng đợi thông báo hóa đơn để thanh toán.");
+
+            notificationService.createNotification(customerNoti); // Gửi đi
+        }
+
 
         return toDto(ticketRepo.save(ticket));
     }
