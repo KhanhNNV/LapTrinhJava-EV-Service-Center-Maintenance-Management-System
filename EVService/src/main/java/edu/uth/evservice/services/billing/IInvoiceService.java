@@ -1,4 +1,4 @@
-package edu.uth.evservice.services;
+package edu.uth.evservice.services.billing;
 
 import edu.uth.evservice.dtos.InvoiceDto;
 

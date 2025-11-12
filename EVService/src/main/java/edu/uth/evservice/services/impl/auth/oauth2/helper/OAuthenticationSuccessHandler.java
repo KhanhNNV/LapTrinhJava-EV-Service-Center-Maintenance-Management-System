@@ -1,4 +1,4 @@
-package edu.uth.evservice.services.impl.oauth2;
+package edu.uth.evservice.services.impl.auth.oauth2.helper;
 
 import java.io.IOException;
 
@@ -8,7 +8,7 @@ import org.springframework.security.web.authentication.SimpleUrlAuthenticationSu
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import edu.uth.evservice.services.jwt.IJwtService;
+import edu.uth.evservice.services.auth.IJwtService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

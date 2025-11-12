@@ -1,4 +1,4 @@
-package edu.uth.evservice.services.jwt;
+package edu.uth.evservice.services.auth;
 
 import edu.uth.evservice.dtos.UserDto;
 import edu.uth.evservice.dtos.jwt.JwtDto;

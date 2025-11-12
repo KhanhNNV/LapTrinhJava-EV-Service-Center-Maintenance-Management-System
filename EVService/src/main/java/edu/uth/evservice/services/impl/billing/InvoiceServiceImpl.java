@@ -1,4 +1,4 @@
-package edu.uth.evservice.services.impl;
+package edu.uth.evservice.services.impl.billing;
 
 import edu.uth.evservice.dtos.InvoiceDto;
 import edu.uth.evservice.dtos.TicketPartDto;
@@ -9,8 +9,7 @@ import edu.uth.evservice.models.enums.PaymentMethod;
 import edu.uth.evservice.models.enums.PaymentStatus;
 import edu.uth.evservice.models.enums.ServiceTicketStatus;
 import edu.uth.evservice.repositories.*;
-import edu.uth.evservice.requests.CreateInvoiceRequest;
-import edu.uth.evservice.services.IInvoiceService;
+import edu.uth.evservice.services.billing.IInvoiceService;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;

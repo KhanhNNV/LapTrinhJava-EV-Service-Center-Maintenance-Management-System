@@ -1,7 +1,7 @@
 package edu.uth.evservice.controllers;
 
 import edu.uth.evservice.dtos.InvoiceDto;
-import edu.uth.evservice.services.IInvoiceService;
+import edu.uth.evservice.services.billing.IInvoiceService;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.springframework.http.HttpStatus;

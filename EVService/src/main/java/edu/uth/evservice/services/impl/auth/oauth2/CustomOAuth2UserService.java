@@ -1,4 +1,4 @@
-package edu.uth.evservice.services.impl.oauth2;
+package edu.uth.evservice.services.impl.auth.oauth2;
 
 import java.util.Map;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import edu.uth.evservice.models.CustomerUserDetails;
 import edu.uth.evservice.models.User;
+import edu.uth.evservice.services.impl.auth.oauth2.helper.Oauth2UserProcessor;
 import lombok.RequiredArgsConstructor;
 
 @Service

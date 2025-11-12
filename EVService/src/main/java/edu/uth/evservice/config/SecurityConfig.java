@@ -18,9 +18,9 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import edu.uth.evservice.services.impl.oauth2.CustomOAuth2UserService;
-import edu.uth.evservice.services.impl.oauth2.CustomOidcUserService;
-import edu.uth.evservice.services.impl.oauth2.OAuthenticationSuccessHandler;
+import edu.uth.evservice.services.impl.auth.oauth2.CustomOAuth2UserService;
+import edu.uth.evservice.services.impl.auth.oauth2.CustomOidcUserService;
+import edu.uth.evservice.services.impl.auth.oauth2.helper.OAuthenticationSuccessHandler;
 import lombok.RequiredArgsConstructor;
 
 

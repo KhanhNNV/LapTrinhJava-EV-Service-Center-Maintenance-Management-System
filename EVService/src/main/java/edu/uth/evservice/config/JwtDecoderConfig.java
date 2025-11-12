@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 
 import com.nimbusds.jose.JOSEException;
 
-import edu.uth.evservice.services.jwt.IJwtService;
+import edu.uth.evservice.services.auth.IJwtService;
 import lombok.RequiredArgsConstructor;
 
 @Component

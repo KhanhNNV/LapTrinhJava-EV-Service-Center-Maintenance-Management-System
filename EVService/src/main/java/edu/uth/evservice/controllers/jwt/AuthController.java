@@ -13,7 +13,7 @@ import edu.uth.evservice.dtos.jwt.JwtDto;
 import edu.uth.evservice.requests.jwt.LoginRequest;
 import edu.uth.evservice.requests.jwt.RefreshTokenRequest;
 import edu.uth.evservice.requests.jwt.RegisterRequest;
-import edu.uth.evservice.services.jwt.IAuthenticaionService;
+import edu.uth.evservice.services.auth.IAuthenticaionService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
