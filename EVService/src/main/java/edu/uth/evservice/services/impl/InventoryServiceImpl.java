@@ -5,6 +5,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import edu.uth.evservice.exception.ResourceNotFoundException;
+import edu.uth.evservice.models.User;
+import edu.uth.evservice.models.enums.Role;
+import edu.uth.evservice.requests.NotificationRequest;
+import edu.uth.evservice.services.INotificationService;
 import org.springframework.stereotype.Service;
 
 import edu.uth.evservice.dtos.InventoryDto;
@@ -19,6 +23,7 @@ import edu.uth.evservice.services.IInventoryService;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -27,6 +32,8 @@ public class InventoryServiceImpl implements IInventoryService {
     private final IInventoryRepository inventoryRepository;
     private final IPartRepository partRepository;
     private final IServiceCenterRepository serviceCenterRepository;
+    //
+    private final INotificationService notificationService;
 
     // private Part findPartById(Integer id) {
     // if (id == null) {
@@ -103,28 +110,80 @@ public class InventoryServiceImpl implements IInventoryService {
         return dto;
     }
 
-    @Override
-    public InventoryDto updateInventory(Integer id, InventoryRequest inventory) {
-        if (id == null || inventory == null) {
-            throw new IllegalArgumentException("Id and inventory request cannot be null");
-        }
-
-        ServiceCenter serviceCenter = serviceCenterRepository.findById(inventory.getCenterId())
-                .orElseThrow(() -> new RuntimeException("Center not found"));
-        Part part = partRepository.findById(inventory.getPartId())
-                .orElseThrow(() -> new RuntimeException("Part not found"));
-
-        return inventoryRepository.findById(id).map(existing -> {
-            existing.setQuantity(inventory.getQuantity());
-            existing.setMinQuantity(inventory.getMinQuantity());
-            existing.setUpdatedAt(LocalDate.now());
-            existing.setPart(part);
-            existing.setServiceCenter(serviceCenter);
-
-            Inventory updated = inventoryRepository.save(existing);
-            return toDto(updated);
-        }).orElseThrow(() -> new ResourceNotFoundException("Inventory not found with id: " + id));
+//    @Override
+//    public InventoryDto updateInventory(Integer id, InventoryRequest inventory) {
+//        if (id == null || inventory == null) {
+//            throw new IllegalArgumentException("Id and inventory request cannot be null");
+//        }
+//
+//        ServiceCenter serviceCenter = serviceCenterRepository.findById(inventory.getCenterId())
+//                .orElseThrow(() -> new RuntimeException("Center not found"));
+//        Part part = partRepository.findById(inventory.getPartId())
+//                .orElseThrow(() -> new RuntimeException("Part not found"));
+//
+//        return inventoryRepository.findById(id).map(existing -> {
+//            existing.setQuantity(inventory.getQuantity());
+//            existing.setMinQuantity(inventory.getMinQuantity());
+//            existing.setUpdatedAt(LocalDate.now());
+//            existing.setPart(part);
+//            existing.setServiceCenter(serviceCenter);
+//
+//            Inventory updated = inventoryRepository.save(existing);
+//            return toDto(updated);
+//        }).orElseThrow(() -> new ResourceNotFoundException("Inventory not found with id: " + id));
+//    }
+@Override
+@Transactional // Đảm bảo việc cập nhật VÀ gửi thông báo là một giao dịch
+public InventoryDto updateInventory(Integer id, InventoryRequest inventory) {
+    if (id == null || inventory == null) {
+        throw new IllegalArgumentException("Id and inventory request cannot be null");
     }
+
+    // --- 1. PHẦN CODE CŨ CỦA BẠN (Giữ nguyên) ---
+    ServiceCenter serviceCenter = serviceCenterRepository.findById(inventory.getCenterId())
+            .orElseThrow(() -> new RuntimeException("Center not found"));
+    Part part = partRepository.findById(inventory.getPartId())
+            .orElseThrow(() -> new RuntimeException("Part not found"));
+
+    Inventory existing = inventoryRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Inventory not found with id: " + id));
+
+    existing.setQuantity(inventory.getQuantity());
+    existing.setMinQuantity(inventory.getMinQuantity());
+    existing.setUpdatedAt(LocalDate.now());
+    existing.setPart(part);
+    existing.setServiceCenter(serviceCenter);
+
+    Inventory updated = inventoryRepository.save(existing);
+
+    // === 2. PHẦN CODE MỚI THÊM VÀO (Gửi thông báo) ===
+
+    // 2.1. Kiểm tra xem số lượng có sắp hết hàng không
+    if (updated.getQuantity() <= updated.getMinQuantity()) {
+
+        // 2.2. Lấy danh sách nhân viên/admin tại trung tâm đó
+        // (Giả sử Entity ServiceCenter của bạn có quan hệ 'getUsers()' trả về List<User>)
+        List<User> usersToNotify = updated.getServiceCenter().getUsers();
+
+        // 2.3. Gửi thông báo cho từng người
+        for (User user : usersToNotify) {
+            // Chỉ gửi cho STAFF hoặc ADMIN
+            if (user.getRole() == Role.STAFF || user.getRole() == Role.ADMIN) {
+                NotificationRequest notiRequest = new NotificationRequest();
+                notiRequest.setUserId(user.getUserId());
+                notiRequest.setTitle("Cảnh báo Tồn kho Thấp!");
+                notiRequest.setMessage("Mặt hàng: '" + updated.getPart().getPartName() +
+                        "' tại trung tâm " + updated.getServiceCenter().getCenterName() +
+                        " sắp hết. Tồn kho hiện tại: " + updated.getQuantity());
+
+                notificationService.createNotification(notiRequest);
+            }
+        }
+    }
+    // ===========================================
+
+    return toDto(updated);
+}
 
     @Override
     public void deleteInventory(Integer id) {
