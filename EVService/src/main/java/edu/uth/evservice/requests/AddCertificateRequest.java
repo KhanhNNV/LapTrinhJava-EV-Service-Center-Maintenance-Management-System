@@ -9,4 +9,5 @@ public class AddCertificateRequest {
     private Integer certificateId;
     private LocalDate issueDate;
     private String credentialId;
+    private String notes; // ghi chú
 }

@@ -1,10 +1,13 @@
 package edu.uth.evservice.services.impl;
 
+import java.time.LocalDate; // <-- Thêm import
 import java.util.List;
 import java.util.stream.Collectors;
 
-import edu.uth.evservice.exception.ResourceNotFoundException;
+// Bỏ import exception không dùng nữa
+// import edu.uth.evservice.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional; // <-- Thêm import
 
 import edu.uth.evservice.dtos.TechnicianCertificateDto;
 import edu.uth.evservice.models.Certificate;
@@ -26,44 +29,6 @@ public class TechnicianCertificateServiceImpl implements ITechnicianCertificateS
     private final IUserRepository userRepository;
     private final ICertificateRepository certificateRepository;
 
-    @Override
-    public List<TechnicianCertificateDto> getCertificatesForTechnician(Integer technicianId) {
-        return techCertRepository.findByTechnician_UserId(technicianId)
-                .stream()
-                .map(this::toDto)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public TechnicianCertificateDto addCertificateToTechnician(Integer technicianId, AddCertificateRequest request) {
-        User technician = userRepository.findById(technicianId)
-                .orElseThrow(() -> new ResourceNotFoundException("Technician not found: " + technicianId));
-
-        Certificate certificate = certificateRepository.findById(request.getCertificateId())
-                .orElseThrow(() -> new ResourceNotFoundException("Certificate not found: " + request.getCertificateId()));
-
-        TechnicianCertificate techCert = TechnicianCertificate.builder()
-                .id(new TechnicianCertificateId(technicianId, request.getCertificateId()))
-                .technician(technician)
-                .certificate(certificate)
-                .issueDate(request.getIssueDate())
-                .expiryDate(request.getIssueDate().plusDays(certificate.getValidityPeriod()))
-                .credentialId(request.getCredentialId())
-                .notes("Verified") // Ghi chú mặc định
-                .build();
-
-        return toDto(techCertRepository.save(techCert));
-    }
-
-    @Override
-    public void removeCertificateFromTechnician(Integer technicianId, Integer certificateId) {
-        TechnicianCertificateId id = new TechnicianCertificateId(technicianId, certificateId);
-        if (!techCertRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Technician certificate mapping not found.");
-        }
-        techCertRepository.deleteById(id);
-    }
-
     private TechnicianCertificateDto toDto(TechnicianCertificate entity) {
         return TechnicianCertificateDto.builder()
                 .technicianId(entity.getTechnician().getUserId())
@@ -74,5 +39,74 @@ public class TechnicianCertificateServiceImpl implements ITechnicianCertificateS
                 .expiryDate(entity.getExpiryDate())
                 .credentialId(entity.getCredentialId())
                 .build();
+    }
+
+    @Override
+    @Transactional
+    public TechnicianCertificateDto addCertificateToMyProfile(AddCertificateRequest request, String technicianUsername) {
+        // 1. Tìm KTV (User) bằng username
+        User technician = userRepository.findByUsername(technicianUsername)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy Technician: " + technicianUsername));
+
+        // 2. Tìm Certificate (định nghĩa)
+        Certificate certificate = certificateRepository.findById(request.getCertificateId())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy Certificate: " + request.getCertificateId()));
+
+        // 3. Tạo ID tổng hợp
+        TechnicianCertificateId id = new TechnicianCertificateId(technician.getUserId(), request.getCertificateId());
+
+        // 4. Kiểm tra đã tồn tại chưa
+        if (techCertRepository.existsById(id)) {
+            throw new RuntimeException("Bạn đã có chứng chỉ này trong hồ sơ.");
+        }
+        
+        // 5. Tính ngày hết hạn
+        LocalDate expiryDate = request.getIssueDate().plusDays(certificate.getValidityPeriod());
+
+        // 6. Xây dựng đối tượng TechnicianCertificate
+        TechnicianCertificate techCert = TechnicianCertificate.builder()
+                .id(id)
+                .technician(technician)
+                .certificate(certificate)
+                .issueDate(request.getIssueDate())
+                .expiryDate(expiryDate)
+                .credentialId(request.getCredentialId())
+                .notes(request.getNotes()) // Giả sử AddCertificateRequest đã được thêm trường 'notes'
+                .build();
+
+        return toDto(techCertRepository.save(techCert));
+    }
+
+    @Override
+    public List<TechnicianCertificateDto> getMyCertificates(String technicianUsername) {
+        // Repository của bạn không có findByTechnician_Username, 
+        // vì vậy chúng ta phải dùng findByTechnician_UserId
+        // (Giả sử ITechnicianCertificateRepository có findByTechnician_UserId)
+        User technician = userRepository.findByUsername(technicianUsername)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy Technician: " + technicianUsername));
+
+        return techCertRepository.findByTechnician_UserId(technician.getUserId()) // Sử dụng phương thức từ file cũ
+                .stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public void removeCertificateFromMyProfile(Integer certificateId, String technicianUsername) {
+        // 1. Tìm KTV (User) bằng username
+        User technician = userRepository.findByUsername(technicianUsername)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy Technician: " + technicianUsername));
+        
+        // 2. Tạo ID tổng hợp
+        TechnicianCertificateId id = new TechnicianCertificateId(technician.getUserId(), certificateId);
+        
+        // 3. Kiểm tra tồn tại trước khi xóa
+        if (!techCertRepository.existsById(id)) {
+            throw new RuntimeException("Không tìm thấy chứng chỉ này trong hồ sơ của bạn.");
+        }
+        
+        // 4. Xóa
+        techCertRepository.deleteById(id);
     }
 }

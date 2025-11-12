@@ -68,7 +68,6 @@ public class TicketServiceItemService implements ITicketServiceItemService {
 
     private TicketServiceItemDto toDto(TicketServiceItem entity) {
         TicketServiceItemDto dto = new TicketServiceItemDto();
-        dto.setTicketId(entity.getId().getTicketId());
         dto.setItemId(entity.getId().getItemId());
         dto.setQuantity(entity.getQuantity());
         dto.setUnitPriceAtTimeOfService(entity.getUnitPriceAtTimeOfService());

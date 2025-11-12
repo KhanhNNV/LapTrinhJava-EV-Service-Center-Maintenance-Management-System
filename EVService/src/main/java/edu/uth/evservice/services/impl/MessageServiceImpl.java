@@ -59,10 +59,10 @@ public class MessageServiceImpl implements IMessageService {
     }
 @Override
 @Transactional // Đảm bảo tất cả các bước (kiểm tra, cập nhật, tạo) là một giao dịch
-public MessageDto createMessage(CreateMessageRequest request, String username) {
+public MessageDto createMessage(CreateMessageRequest request, Integer customerId) {
     // 1. TÌM NGƯỜI GỬI BẰNG USERNAME TỪ JWT
-    User sender = userRepository.findByUsername(username)
-            .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy người dùng (người gửi) với username: " + username));
+    User sender = userRepository.findById(customerId)
+            .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy người dùng (người gửi) với username: " + customerId));
 
     Conversation conversation; // Chuẩn bị "phòng chat"
 

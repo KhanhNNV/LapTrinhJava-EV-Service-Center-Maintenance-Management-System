@@ -7,5 +7,4 @@ import edu.uth.evservice.models.Part;
 
 @Repository
 public interface IPartRepository extends JpaRepository<Part, Integer> {
-    boolean existsByPartName(String partName);
 }

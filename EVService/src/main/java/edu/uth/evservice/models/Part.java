@@ -27,6 +27,9 @@ public class Part {
     @Column(name = "cost_price", nullable = false)
     private Double costPrice;
 
+    @OneToMany(mappedBy = "part", cascade = CascadeType.ALL,orphanRemoval = true)
+    private Set<Inventory> inventories;
+
     // Quan hệ N:M với ServiceItem thông qua bảng trung gian
     @OneToMany(mappedBy = "part", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<ServiceItemPart> serviceItemParts;

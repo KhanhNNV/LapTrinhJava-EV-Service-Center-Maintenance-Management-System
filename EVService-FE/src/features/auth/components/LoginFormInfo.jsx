@@ -12,6 +12,8 @@ export default function LoginFormInfo({
   onChangePassword,
   onSubmit,
   onSocial,
+  errors = {},
+  onFieldFocus,
   switchToRegister
 }) {
   const [showPassword, setShowPassword] = useState(false);
@@ -24,19 +26,33 @@ export default function LoginFormInfo({
 
   return (
     <div>
+      {errors.general && (
+        <p
+          className={formStyles.formErrorText}
+          style={{ textAlign: 'center', marginBottom: '1rem' }}
+        >
+          {errors.general}
+        </p>
+      )}
       {/* Sử dụng class từ formStyles */}
       <div className={formStyles.formGroup}>
         <label className={formStyles.formLabel} htmlFor="login-email">
-          Email hoặc Số điện thoại
+          Tên đăng nhập/Email
         </label>
         <input
           id="login-email"
-          className={formStyles.formInput}
-          placeholder="example@email.com"
+          className={`${formStyles.formInput} ${
+            errors.email || errors.general ? formStyles.formInputError : ''
+          }`}
+          placeholder="Nhập Tên đăng nhập/Email"
           value={email}
           onChange={(e) => onChangeEmail(e.target.value)}
           onKeyDown={handleKeyDown}
+          onFocus={() => onFieldFocus('email')}
         />
+        {errors.email && (
+          <p className={formStyles.formErrorText}>{errors.email}</p>
+        )}
       </div>
 
       <div className={formStyles.formGroup}>
@@ -47,11 +63,14 @@ export default function LoginFormInfo({
           <input
             id="login-password"
             type={showPassword ? 'text' : 'password'}
-            className={formStyles.formInput}
+            className={`${formStyles.formInput} ${
+              errors.password || errors.general ? formStyles.formInputError : ''
+            }`}
             placeholder="Nhập mật khẩu"
             value={password}
             onChange={(e) => onChangePassword(e.target.value)}
             onKeyDown={handleKeyDown}
+            onFocus={() => onFieldFocus('password')}
           />
           <button
             type="button"
@@ -63,6 +82,9 @@ export default function LoginFormInfo({
             <span className="material-icons">{showPassword ? 'visibility' : 'visibility_off'}</span>
           </button>
         </div>
+        {errors.password && (
+          <p className={formStyles.formErrorText}>{errors.password}</p>
+        )}
       </div>
 
       {/* Dùng formStyles.rememberForgot nếu bạn đã định nghĩa trong đó, hoặc giữ inline style/class riêng */}
@@ -86,10 +108,15 @@ export default function LoginFormInfo({
         <span className={formStyles.dividerText}>Hoặc đăng nhập với</span>
       </div>
 
+
       <div className={formStyles.socialButtons}>
-        <button className={`${formStyles.socialBtn} ${formStyles.google}`} onClick={() => onSocial('Google')}>
+        <button 
+          className={`${formStyles.socialBtn} ${formStyles.google}`}
+          onClick={() => onSocial('Google')} //Gọi hàm onSocial từ AuthPage
+        >
           <GoogleIcon /> Google
         </button>
+
         <button className={`${formStyles.socialBtn} ${formStyles.facebook}`} onClick={() => onSocial('Facebook')}>
           <FacebookIcon /> Facebook
         </button>

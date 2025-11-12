@@ -7,5 +7,6 @@ import java.util.Optional;
 
 public interface ICertificateRepository extends JpaRepository<Certificate, Integer> {
     Optional<Certificate> findByCertificateName(String certificateName);
-
+    // Lý do: Đảm bảo tên chứng chỉ (định nghĩa) là duy nhất.
+    boolean existsByCertificateName(String certificateNam);
 }

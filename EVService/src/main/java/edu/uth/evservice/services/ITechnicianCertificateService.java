@@ -6,9 +6,9 @@ import edu.uth.evservice.dtos.TechnicianCertificateDto;
 import edu.uth.evservice.requests.AddCertificateRequest;
 
 public interface ITechnicianCertificateService {
-    List<TechnicianCertificateDto> getCertificatesForTechnician(Integer technicianId);
+    List<TechnicianCertificateDto> getMyCertificates(String technicianUsername);
 
-    TechnicianCertificateDto addCertificateToTechnician(Integer technicianId, AddCertificateRequest request);
+    TechnicianCertificateDto addCertificateToMyProfile(AddCertificateRequest request, String technicianUsername);
 
-    void removeCertificateFromTechnician(Integer technicianId, Integer certificateId);
+    void removeCertificateFromMyProfile(Integer certificateId, String technicianUsername);
 }

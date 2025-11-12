@@ -45,9 +45,9 @@ public class MessageController {
     @PostMapping
     public MessageDto createMessage(@Validated @RequestBody CreateMessageRequest request, Authentication authentication) {
         // Lấy username của người đang đăng nhập từ "vé" JWT
-        String username = authentication.getName();
+        Integer customerId = Integer.parseInt(authentication.getName());
         // Gọi service và truyền thêm username vào
-        return messageService.createMessage(request, username);
+        return messageService.createMessage(request, customerId);
     }
 
     @PutMapping("/{id}")

@@ -16,12 +16,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import edu.uth.evservice.dtos.AppointmentDto;
-import edu.uth.evservice.models.User;
 import edu.uth.evservice.requests.AppointmentRequest;
 import edu.uth.evservice.requests.AssignTechnicianRequest;
 import edu.uth.evservice.services.IAppointmentService;
-import edu.uth.evservice.services.IUserService;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -30,19 +27,28 @@ import lombok.RequiredArgsConstructor;
 public class AppointmentController {
 
         private final IAppointmentService appointmentService;
-        private final IUserService userService;
 
+        // lay danh sach lich hen theo trang thai (admin/staff)
+        @GetMapping("/status/{status}")
+        @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+        public ResponseEntity<List<AppointmentDto>> getAppointmentsByStatus(@PathVariable String status) {
+        
+                return ResponseEntity.ok(appointmentService.getAppointmentsByStatus(status));
+        }
 
         // Customer create appointment
         @PostMapping
         @PreAuthorize("hasAnyRole('CUSTOMER')")
         public ResponseEntity<AppointmentDto> createMyAppointment(
-                        @RequestBody AppointmentRequest request,
-                        Authentication authentication) {
-                AppointmentDto newAppointment = appointmentService.createAppointmentForCustomer(
-                                authentication.getName(),
+                                @RequestBody AppointmentRequest request,
+                                Authentication authentication) {
+        
+        Integer customerId = Integer.parseInt(authentication.getName());
+
+        AppointmentDto newAppointment = appointmentService.createAppointmentForCustomer(
+                                customerId, 
                                 request);
-                return new ResponseEntity<>(newAppointment, HttpStatus.CREATED);
+        return new ResponseEntity<>(newAppointment, HttpStatus.CREATED);
         }
 
         // Customer cancel appointment
@@ -51,35 +57,26 @@ public class AppointmentController {
         public ResponseEntity<AppointmentDto> cancelMyAppointment(
                         @PathVariable Integer appointmentId,
                         Authentication authentication) {
-                AppointmentDto canceledAppointment = appointmentService.cancelAppointmentForCustomer(appointmentId,
-                                authentication.getName());
+                Integer customerId = Integer.parseInt(authentication.getName());
+                AppointmentDto canceledAppointment = appointmentService.cancelAppointmentForCustomer(appointmentId,customerId);
                 return ResponseEntity.ok(canceledAppointment);
         }
-
 
         // Staff xac nhan lich hen
         @PutMapping("/{appointmentId}/confirmForCustomer")
         @PreAuthorize("hasAnyRole('STAFF')")
         public ResponseEntity<AppointmentDto> confirmForCustomer(@PathVariable Integer appointmentId,
                         Authentication authentication) {
-                String staffUserName = authentication.getName();
-                AppointmentDto updatedAppointment = appointmentService.confirmForCustomer(appointmentId, staffUserName);
+                Integer staffId = Integer.parseInt(authentication.getName());
+                AppointmentDto updatedAppointment = appointmentService.confirmForCustomer(appointmentId, staffId);
                 return ResponseEntity.ok(updatedAppointment);
         }
 
         // check-in lịch hen cho customer
         @PutMapping("/{appointmentId}/check-in")
         @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
-        public ResponseEntity<AppointmentDto> checkIn(@PathVariable Integer appointmentId,
-                        Authentication authentication) {
-                User currentUser = userService.findByUsername(authentication.getName())
-                                .orElseThrow(() -> new EntityNotFoundException("User not found"));
-                boolean isAdmin = currentUser.getRole().name().equals("ADMIN");
-                boolean isStaff = currentUser.getRole().name().equals("STAFF");
-
-                AppointmentDto result = appointmentService.checkInAppointment(
-                                appointmentId,
-                                isAdmin || isStaff);
+        public ResponseEntity<AppointmentDto> checkIn(@PathVariable Integer appointmentId) {
+                AppointmentDto result = appointmentService.checkInAppointment(appointmentId);
 
                 return ResponseEntity.ok(result);
         }
@@ -89,8 +86,7 @@ public class AppointmentController {
         @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
         public ResponseEntity<AppointmentDto> assignTechnician(
                         @PathVariable Integer appointmentId,
-                        @RequestBody AssignTechnicianRequest request,
-                        Authentication authentication) {
+                        @RequestBody AssignTechnicianRequest request) {
                 AppointmentDto updatedAppointment = appointmentService.assignTechnician(appointmentId,
                                 request.getTechnicianId());
                 return ResponseEntity.ok(updatedAppointment);
@@ -100,8 +96,9 @@ public class AppointmentController {
         @GetMapping("/technician")
         @PreAuthorize("hasRole('TECHNICIAN')")
         public ResponseEntity<List<AppointmentDto>> getApointmentsByTechnician(Authentication authentication) {
+                Integer technicianId = Integer.parseInt(authentication.getName());
                 List<AppointmentDto> appointments = appointmentService
-                                .getAppointmentByTechinician(authentication.getName());
+                    .getAppointmentByTechinician(technicianId);
                 return ResponseEntity.ok(appointments);
         }
 

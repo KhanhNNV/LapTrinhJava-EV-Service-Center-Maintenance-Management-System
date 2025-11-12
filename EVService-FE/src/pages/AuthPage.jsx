@@ -1,87 +1,55 @@
 import React, { useState } from 'react';
-import AuthCard from '../features/auth/components/AuthCard'; //
-import LogoHeader from '../features/auth/components/LogoHeader'; //
-import LoginFormInfo from '../features/auth/components/LoginFormInfo'; //
-import OtpStep from '../features/auth/components/OtpStep'; //
-import RegisterFormInfo from '../features/auth/components/RegisterFormInfo'; //
-import RegisterSuccessStep from '../features/auth/components/RegisterSuccessStep'; //
-import styles from './AuthPage.module.css'; //
-// Import formStyles để dùng textCenter
-import formStyles from '../features/auth/components/formStyles.module.css'; //
+import { useNavigate } from 'react-router-dom';
 
+import AuthCard from '../features/auth/components/AuthCard';
+import LogoHeader from '../features/auth/components/LogoHeader';
+import LoginFormInfo from '../features/auth/components/LoginFormInfo';
+import OtpStep from '../features/auth/components/OtpStep';
+import RegisterFormInfo from '../features/auth/components/RegisterFormInfo';
+import RegisterSuccessStep from '../features/auth/components/RegisterSuccessStep';
+import styles from './AuthPage.module.css';
+
+import formStyles from '../features/auth/components/formStyles.module.css';
+import { useAuthForm } from '../features/auth/hooks/useAuthForm';
 export default function AuthPage() {
-    // --- State ---
-    const [tab, setTab] = useState('login');
-    // Login
-    const [loginStep, setLoginStep] = useState(1);
-    const [loginEmail, setLoginEmail] = useState('');
-    const [loginPassword, setLoginPassword] = useState('');
-    // Register
-    const [regStep, setRegStep] = useState(1);
-    const [fullName, setFullName] = useState('');
-    const [regEmail, setRegEmail] = useState('');
-    const [regPassword, setRegPassword] = useState('');
-    const [regConfirm, setRegConfirm] = useState('');
-    const [acceptTerms, setAcceptTerms] = useState(false);
-
-    // --- Hàm xử lý ---
-    const handleLoginSuccess = (userName) => {
-        console.log('Login successful for:', userName);
-        alert(`Chào mừng ${userName}! Đăng nhập thành công.`);
-        // Thực tế: gọi hàm từ App.jsx để cập nhật state global
-    };
-
-    const handleSocialLogin = (provider) => {
-        console.log(`Attempting social login with ${provider}`);
-        setTimeout(() => handleLoginSuccess(`${provider} User`), 300);
-    };
-
-    const switchToLogin = () => {
-        setTab('login');
-        setLoginStep(1);
-        setRegStep(1);
-    };
-
-    const switchToRegister = () => {
-        setTab('register');
-        setLoginStep(1);
-        setRegStep(1);
-    };
-
-    const handleLoginInfoSubmit = () => {
-        if (!loginEmail || !loginPassword) {
-             alert('Vui lòng nhập đầy đủ Email và Mật khẩu!');
-             return;
-         }
-        console.log('Login form submitted, moving to step 2');
-        setLoginStep(2); // Chuyển sang bước OTP
-    };
-
-    const handleLoginOtpConfirm = () => {
-        console.log('Login OTP confirmed');
-        const userName = loginEmail.split('@')[0] || 'User';
-        handleLoginSuccess(userName);
-    };
-
-    const handleRegisterInfoNext = () => {
-         if (!fullName || !regEmail || !regPassword || !regConfirm) return alert('Vui lòng điền đầy đủ thông tin!');
-         if (regPassword !== regConfirm) return alert('Mật khẩu không khớp!');
-         if (regPassword.length < 6) return alert('Mật khẩu phải có ít nhất 6 ký tự!');
-         if (!acceptTerms) return alert('Vui lòng đồng ý với điều khoản dịch vụ!');
-         console.log('Register form submitted, moving to step 2');
-         setRegStep(2);
-     };
-
-    const handleRegisterOtpConfirm = () => {
-        console.log('Register OTP confirmed');
-        setRegStep(3);
-    };
-
-    const handleRegisterSuccessDone = () => {
-        console.log('Register successful, logging in user...');
-        handleLoginSuccess(fullName || 'New User');
-    };
-
+    const {
+        tab,
+        loginStep,
+        loginEmail,
+        setLoginEmail,
+        loginPassword,
+        setLoginPassword,
+        loginErrors,
+        regStep,
+        regUsername,
+        setRegUsername,
+        fullName,
+        setFullName,
+        regEmail,
+        setRegEmail,
+        regPassword,
+        setRegPassword,
+        regConfirm,
+        setRegConfirm,
+        regPhoneNumber,
+        setRegPhoneNumber, // (Đổi tên từ setPhone)
+        regAddress,
+        setRegAddress, // (Đổi tên từ setAddress)
+        acceptTerms,
+        setAcceptTerms,
+        regErrors,
+        termsViewed,
+        setTermsViewed,
+        handleLoginFieldFocus,
+        handleRegFieldFocus,
+        handleSocialLogin,
+        switchToLogin,
+        switchToRegister,
+        handleLoginInfoSubmit,
+        handleRegisterInfoNext,
+        handleRegisterOtpConfirm,
+        handleRegisterSuccessDone
+    } = useAuthForm();
     // Logic showTabs giữ nguyên
     const showTabs = (tab === 'login' && loginStep === 1) || (tab === 'register' && regStep === 1);
 
@@ -92,7 +60,6 @@ export default function AuthPage() {
             {/* Chỉ hiển thị nút tab khi showTabs là true */}
             {showTabs && (
                 <div className={styles.tabButtons}>
-                    {/* <<< NÚT TAB ĐÃ ĐƯỢC THÊM LẠI >>> */}
                     <button
                         className={`${styles.tabBtn} ${tab === 'login' ? styles.tabBtnActive : styles.tabBtnInactive}`}
                         onClick={switchToLogin}
@@ -107,56 +74,64 @@ export default function AuthPage() {
                     >
                         Đăng ký
                     </button>
-                    {/* <<< KẾT THÚC NÚT TAB >>> */}
                 </div>
             )}
 
             {/* Nội dung thay đổi theo tab và bước */}
             {tab === 'login' ? (
-                <>
-                    {loginStep === 1 && (
-                        <LoginFormInfo
-                            email={loginEmail}
-                            password={loginPassword}
-                            onChangeEmail={setLoginEmail}
-                            onChangePassword={setLoginPassword}
-                            onSubmit={handleLoginInfoSubmit} // Đảm bảo gọi đúng hàm
-                            onSocial={handleSocialLogin}
-                            switchToRegister={switchToRegister}
-                        />
-                    )}
-                    {loginStep === 2 && (
-                        <OtpStep
-                            email={loginEmail}
-                            onBack={() => setLoginStep(1)}
-                            onConfirm={handleLoginOtpConfirm}
-                            confirmButtonText="ĐĂNG NHẬP"
-                        />
-                    )}
-                </>
+                <LoginFormInfo
+                    email={loginEmail}
+                    password={loginPassword}
+                    onChangeEmail={setLoginEmail}
+                    onChangePassword={setLoginPassword}
+                    onSubmit={handleLoginInfoSubmit}
+                    onSocial={handleSocialLogin}
+                    switchToRegister={switchToRegister}
+                    errors={loginErrors}
+                    onFieldFocus={handleLoginFieldFocus}
+                />
             ) : (
                 <>
                     {regStep === 1 && (
                         <RegisterFormInfo
+                            errors={regErrors}
+                            termsViewed={termsViewed}
+                            onTermsClick={() => setTermsViewed(true)}
+
+                            username={regUsername}
+                            setUsername={setRegUsername}
+
+                            phoneNumber={regPhoneNumber}
+                            setPhone={setRegPhoneNumber}
+
+                            address={regAddress}
+                            setAddress={setRegAddress}
+
                             fullName={fullName}
-                            email={regEmail}
-                            password={regPassword}
-                            confirm={regConfirm}
-                            accept={acceptTerms}
                             setFullName={setFullName}
+
+                            email={regEmail}
                             setEmail={setRegEmail}
+
+                            password={regPassword}
                             setPassword={setRegPassword}
+
+                            confirm={regConfirm}
                             setConfirm={setRegConfirm}
+
+                            accept={acceptTerms}
                             setAccept={setAcceptTerms}
-                            onNext={handleRegisterInfoNext} // Đảm bảo gọi đúng hàm
+
+                            onNext={handleRegisterInfoNext}
                             onSocial={handleSocialLogin}
-                            switchToLogin={switchToLogin}
+
+                            onFieldFocus={handleRegFieldFocus}
                         />
                     )}
                     {regStep === 2 && (
                         <OtpStep
                             email={regEmail}
-                            onBack={() => setRegStep(1)}
+                            onBack={() => { setRegStep(1); setRegErrors({}); }} // Xóa lỗi khi back
                             onConfirm={handleRegisterOtpConfirm}
                             confirmButtonText="XÁC NHẬN"
                         />
@@ -168,7 +143,7 @@ export default function AuthPage() {
                     )}
                     {/* Link "Đăng nhập" chỉ hiện ở bước 1 */}
                     {regStep === 1 && (
-                         <p className={formStyles.textCenter} style={{ marginTop: '0.5rem' }}>
+                        <p className={formStyles.textCenter} style={{ marginTop: '0.5rem' }}>
                             Đã có tài khoản?{' '}
                             <a href="#" className="link" onClick={(e) => { e.preventDefault(); switchToLogin(); }}>
                                 Đăng nhập
