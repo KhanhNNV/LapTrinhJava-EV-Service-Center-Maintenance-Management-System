@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,26 +24,27 @@ public class MyCertificatesController {
     // 1. (Create) KTV thêm một chứng chỉ vào hồ sơ
     @PostMapping
     public ResponseEntity<TechnicianCertificateDto> addMyCertificate(
-            @Valid @RequestBody AddCertificateRequest request) {
+            @Valid @RequestBody AddCertificateRequest request, Authentication authentication) {
         
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        TechnicianCertificateDto newCert = techCertService.addCertificateToMyProfile(request, username);
+        Integer UserId = Integer.parseInt(authentication.getName());
+        TechnicianCertificateDto newCert = techCertService.addCertificateToMyProfile(request, UserId);
         return new ResponseEntity<>(newCert, HttpStatus.CREATED);
     }
 
+
     // 2. (Read) KTV xem tất cả chứng chỉ của mình
     @GetMapping
-    public ResponseEntity<List<TechnicianCertificateDto>> getMyCertificates() {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        return ResponseEntity.ok(techCertService.getMyCertificates(username));
+    public ResponseEntity<List<TechnicianCertificateDto>> getMyCertificates(Authentication authentication) {
+        Integer UserId = Integer.parseInt(authentication.getName());
+        return ResponseEntity.ok(techCertService.getMyCertificates(UserId));
     }
 
     // 3. (Delete) KTV xóa một chứng chỉ khỏi hồ sơ
     // Lưu ý: ID ở đây là ID của ĐỊNH NGHĨA chứng chỉ (certificateId)
     @DeleteMapping("/{certificateId}")
-    public ResponseEntity<Void> removeMyCertificate(@PathVariable("certificateId") Integer certificateId) {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        techCertService.removeCertificateFromMyProfile(certificateId, username);
+    public ResponseEntity<Void> removeMyCertificate(@PathVariable("certificateId") Integer certificateId, Authentication authentication) {
+        Integer UserId = Integer.parseInt(authentication.getName());
+        techCertService.removeCertificateFromMyProfile(certificateId, UserId);
         return ResponseEntity.noContent().build();
     }
 }
