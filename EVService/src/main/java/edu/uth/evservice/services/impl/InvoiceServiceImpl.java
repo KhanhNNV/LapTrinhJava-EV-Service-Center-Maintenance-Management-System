@@ -11,10 +11,13 @@ import edu.uth.evservice.repositories.IInvoiceRepository;
 import edu.uth.evservice.repositories.IServiceTicketRepository;
 import edu.uth.evservice.repositories.IUserRepository;
 import edu.uth.evservice.requests.CreateInvoiceRequest;
+import edu.uth.evservice.requests.NotificationRequest;
 import edu.uth.evservice.services.IInvoiceService;
+import edu.uth.evservice.services.INotificationService;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -26,6 +29,7 @@ public class InvoiceServiceImpl implements IInvoiceService {
     final IInvoiceRepository invoiceRepository;
     final IUserRepository userRepository;
     final IServiceTicketRepository serviceTicketRepository;
+    final INotificationService notificationService;
 
     @Override
     public List<InvoiceDto> getAllInvoices() {
@@ -43,6 +47,7 @@ public class InvoiceServiceImpl implements IInvoiceService {
     }
 
     @Override
+    @Transactional
     public InvoiceDto createInvoice(CreateInvoiceRequest request) {
         User user = userRepository.findById(request.getUserId()).orElseThrow(
             ()-> new ResourceNotFoundException("Customer not found id: "+ request.getUserId()
@@ -61,6 +66,15 @@ public class InvoiceServiceImpl implements IInvoiceService {
                 .build();
 
         Invoice savedInvoice = invoiceRepository.save(invoice);
+
+        // === 2. PHẦN CODE MỚI THÊM VÀO (Gửi thông báo) ===
+        NotificationRequest customerNoti = new NotificationRequest();
+        customerNoti.setUserId(user.getUserId()); // ID người nhận (Khách hàng)
+        customerNoti.setTitle("Hóa đơn mới cho dịch vụ của bạn!");
+        customerNoti.setMessage("Hóa đơn #" + savedInvoice.getInvoiceId() + " với tổng số tiền " +
+                savedInvoice.getTotalAmount() + " đã được tạo. Vui lòng thanh toán.");
+
+        notificationService.createNotification(customerNoti); // Gửi đi
         return toDto(savedInvoice);
     }
 
