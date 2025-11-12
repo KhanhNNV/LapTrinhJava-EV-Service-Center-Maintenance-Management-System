@@ -43,10 +43,10 @@ public class TechnicianCertificateServiceImpl implements ITechnicianCertificateS
 
     @Override
     @Transactional
-    public TechnicianCertificateDto addCertificateToMyProfile(AddCertificateRequest request, String technicianUsername) {
+    public TechnicianCertificateDto addCertificateToMyProfile(AddCertificateRequest request, Integer UserId) {
         // 1. Tìm KTV (User) bằng username
-        User technician = userRepository.findByUsername(technicianUsername)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy Technician: " + technicianUsername));
+        User technician = userRepository.findByUserId(UserId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy Technician: " + UserId));
 
         // 2. Tìm Certificate (định nghĩa)
         Certificate certificate = certificateRepository.findById(request.getCertificateId())
@@ -78,12 +78,12 @@ public class TechnicianCertificateServiceImpl implements ITechnicianCertificateS
     }
 
     @Override
-    public List<TechnicianCertificateDto> getMyCertificates(String technicianUsername) {
+    public List<TechnicianCertificateDto> getMyCertificates(Integer UserId) {
         // Repository của bạn không có findByTechnician_Username, 
         // vì vậy chúng ta phải dùng findByTechnician_UserId
         // (Giả sử ITechnicianCertificateRepository có findByTechnician_UserId)
-        User technician = userRepository.findByUsername(technicianUsername)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy Technician: " + technicianUsername));
+        User technician = userRepository.findByUserId(UserId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy Technician: " + UserId));
 
         return techCertRepository.findByTechnician_UserId(technician.getUserId()) // Sử dụng phương thức từ file cũ
                 .stream()
@@ -93,10 +93,10 @@ public class TechnicianCertificateServiceImpl implements ITechnicianCertificateS
 
     @Override
     @Transactional
-    public void removeCertificateFromMyProfile(Integer certificateId, String technicianUsername) {
+    public void removeCertificateFromMyProfile(Integer certificateId, Integer UserId) {
         // 1. Tìm KTV (User) bằng username
-        User technician = userRepository.findByUsername(technicianUsername)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy Technician: " + technicianUsername));
+        User technician = userRepository.findByUserId(UserId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy Technician: " + UserId));
         
         // 2. Tạo ID tổng hợp
         TechnicianCertificateId id = new TechnicianCertificateId(technician.getUserId(), certificateId);

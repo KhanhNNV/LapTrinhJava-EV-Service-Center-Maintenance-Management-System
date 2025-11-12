@@ -66,27 +66,27 @@ public class VehicleServiceImpl implements IVehicleService {
     }
     // END: Thêm logic cho phương thức đăng ký xe của customer
     @Override
-    public List<VehicleDto> getMyVehicles(String customerUsername) {
+    public List<VehicleDto> getMyVehicles(Integer UserId) {
         // Sử dụng repository để tìm tất cả xe của user đang đăng nhập
-        return vehicleRepository.findByUser_Username(customerUsername)
+        return vehicleRepository.findByUser_UserId(UserId)
                 .stream()
                 .map(this::toDTO) // Chuyển đổi từng xe sang DTO
                 .collect(Collectors.toList());
     }
 
     @Override
-    public VehicleDto getMyVehicleById(Integer vehicleId, String customerUsername) {
+    public VehicleDto getMyVehicleById(Integer vehicleId, Integer UserId) {
         // Tìm xe theo ID VÀ username để đảm bảo đúng chủ sở hữu
-        Vehicle vehicle = vehicleRepository.findByVehicleIdAndUser_Username(vehicleId, customerUsername)
+        Vehicle vehicle = vehicleRepository.findByVehicleIdAndUser_UserId(vehicleId, UserId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy xe hoặc bạn không có quyền truy cập xe này."));
         
         return toDTO(vehicle);
     }
 
     @Override
-    public VehicleDto updateMyVehicle(Integer vehicleId, VehicleRequest request, String customerUsername) {
+    public VehicleDto updateMyVehicle(Integer vehicleId, VehicleRequest request, Integer UserId) {
         // 1. Tìm xe và xác thực chủ sở hữu
-        Vehicle existingVehicle = vehicleRepository.findByVehicleIdAndUser_Username(vehicleId, customerUsername)
+        Vehicle existingVehicle = vehicleRepository.findByVehicleIdAndUser_UserId(vehicleId, UserId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy xe hoặc bạn không có quyền sửa xe này."));
 
         // 2. Cập nhật thông tin (chỉ những gì customer được phép sửa)
@@ -102,9 +102,9 @@ public class VehicleServiceImpl implements IVehicleService {
     }
 
     @Override
-    public void deleteMyVehicle(Integer vehicleId, String customerUsername) {
+    public void deleteMyVehicle(Integer vehicleId, Integer UserId) {
         // 1. Tìm xe và xác thực chủ sở hữu
-        Vehicle vehicle = vehicleRepository.findByVehicleIdAndUser_Username(vehicleId, customerUsername)
+        Vehicle vehicle = vehicleRepository.findByVehicleIdAndUser_UserId(vehicleId, UserId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy xe hoặc bạn không có quyền xóa xe này."));
 
         // 2. Xóa xe

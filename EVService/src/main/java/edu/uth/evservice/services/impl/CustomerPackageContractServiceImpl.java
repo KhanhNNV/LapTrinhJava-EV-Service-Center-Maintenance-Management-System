@@ -30,10 +30,10 @@ private final ICustomerPackageContractRepository contractRepository;
     @Override
     @Transactional
     public CustomerPackageContractDto purchasePackage(CustomerPackageContractRequest request,
-                    String customerUsername) {
+                    Integer UserId) {
 
         // 1. Tìm khách hàng (User) từ username trong token
-        User customer = userRepository.findByUsername(customerUsername)
+        User customer = userRepository.findByUserId(UserId)
                         .orElseThrow(() -> new RuntimeException("Không tìm thấy khách hàng."));
 
         // 2. Tìm gói dịch vụ (ServicePackage) mà khách muốn mua
@@ -42,8 +42,8 @@ private final ICustomerPackageContractRepository contractRepository;
                                         "Không tìm thấy gói dịch vụ với ID: " + request.getPackageId()));
 
         // 3. Kiểm tra logic: Khách hàng đã mua gói này và còn 'ACTIVE' không?
-        boolean alreadyActive = contractRepository.existsByUser_UsernameAndServicePackage_PackageIdAndStatus(
-                        customerUsername,
+        boolean alreadyActive = contractRepository.existsByUser_UserIdAndServicePackage_PackageIdAndStatus(
+                        UserId,
                         request.getPackageId(),
                         ContractStatus.ACTIVE);
         if (alreadyActive) {
@@ -73,17 +73,17 @@ private final ICustomerPackageContractRepository contractRepository;
     }
 
     @Override
-    public List<CustomerPackageContractDto> getMyContracts(String customerUsername) {
-        return contractRepository.findByUser_Username(customerUsername)
+    public List<CustomerPackageContractDto> getMyContracts(Integer UserId) {
+        return contractRepository.findByUser_UserId(UserId)
                         .stream()
                         .map(this::toDTO)
                         .collect(Collectors.toList());
     }
 
     @Override
-    public CustomerPackageContractDto getMyContractById(Integer contractId, String customerUsername) {
+    public CustomerPackageContractDto getMyContractById(Integer contractId, Integer UserId) {
         CustomerPackageContract contract = contractRepository
-                        .findByContractIdAndUser_Username(contractId, customerUsername)
+                        .findByContractIdAndUser_UserId(contractId, UserId)
                         .orElseThrow(() -> new RuntimeException(
                                         "Không tìm thấy hợp đồng hoặc bạn không có quyền xem."));
         return toDTO(contract);
@@ -91,9 +91,9 @@ private final ICustomerPackageContractRepository contractRepository;
 
     @Override
     @Transactional
-    public CustomerPackageContractDto cancelMyContract(Integer contractId, String customerUsername) {
+    public CustomerPackageContractDto cancelMyContract(Integer contractId, Integer UserId) {
         CustomerPackageContract contract = contractRepository
-                        .findByContractIdAndUser_Username(contractId, customerUsername)
+                        .findByContractIdAndUser_UserId(contractId, UserId)
                         .orElseThrow(() -> new RuntimeException(
                                         "Không tìm thấy hợp đồng hoặc bạn không có quyền hủy."));
 

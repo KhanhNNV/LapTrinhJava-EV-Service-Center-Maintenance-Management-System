@@ -14,13 +14,13 @@ public interface ICustomerPackageContractRepository extends JpaRepository<Custom
     List<CustomerPackageContract> findByUser_UserId(Integer userId);
     // Lý do: Lấy tất cả hợp đồng của một người dùng cụ thể.
     // Dùng 'user.username' vì trường trong Entity là 'User user'
-    List<CustomerPackageContract> findByUser_Username(String username);
+    // List<CustomerPackageContract> findByUser_Username(String username);
 
     // Lý do: Tìm một hợp đồng cụ thể VÀ xác minh nó thuộc về đúng người dùng.
-    Optional<CustomerPackageContract> findByContractIdAndUser_Username(Integer contractId, String username);
+    Optional<CustomerPackageContract> findByContractIdAndUser_UserId(Integer contractId, Integer UserId);
     
     // Lý do: Kiểm tra xem khách hàng đã mua gói này và nó còn đang 'ACTIVE' không.
-    boolean existsByUser_UsernameAndServicePackage_PackageIdAndStatus(
-        String username, Integer packageId, ContractStatus status
+    boolean existsByUser_UserIdAndServicePackage_PackageIdAndStatus(
+        Integer UserId, Integer packageId, ContractStatus status
     );
 }
