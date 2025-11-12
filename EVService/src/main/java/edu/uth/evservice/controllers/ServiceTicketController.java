@@ -29,6 +29,7 @@ public class ServiceTicketController {
 
     // Báo cáo hiệu suất làm việc của technician
     @GetMapping("/performance")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<PerformanceDto>> getPerformance(
             @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
             @RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end) {

@@ -95,6 +95,7 @@ public class UserController {
     }
     //Báo cáo lợi nhuận trong 1 tháng
     @GetMapping("/profit")
+    @PreAuthorize("hasRole('ADMIN')")
     public ProfitReportDto getMonthlyProfit(@RequestParam int year, @RequestParam int month) {
         return profitReportService.getMonthlyProfitReport(year, month);
     }

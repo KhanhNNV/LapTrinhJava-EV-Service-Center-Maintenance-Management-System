@@ -126,6 +126,16 @@ public class GlobalExceptionHandler {
                 ex.getMessage() != null ? ex.getMessage() : "Hành động này không được phép.");
     }
 
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<Object> handleRuntimeException(RuntimeException ex) {
+        return buildResponse(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                ex.getMessage() != null
+                        ? ex.getMessage()
+                        : "Đã xảy ra lỗi runtime không xác định."
+        );
+    }
+
 
     // Lỗi chung (catch-all)
     @ExceptionHandler(Exception.class)
