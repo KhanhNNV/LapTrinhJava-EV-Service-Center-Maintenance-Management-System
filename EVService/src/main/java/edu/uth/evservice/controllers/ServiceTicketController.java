@@ -1,9 +1,9 @@
 package edu.uth.evservice.controllers;
 
+import java.time.LocalDate;
 import java.util.List;
 
-import edu.uth.evservice.dtos.SuggestedPartsDto;
-import edu.uth.evservice.dtos.TicketPartDto;
+import edu.uth.evservice.dtos.*;
 import edu.uth.evservice.requests.AddServiceItemRequest;
 import edu.uth.evservice.requests.UpdatePartQuantityRequest;
 import org.springframework.http.HttpStatus;
@@ -11,8 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 
-import edu.uth.evservice.dtos.ServiceTicketDto;
-import edu.uth.evservice.dtos.TechnicianPerformanceDto;
 import edu.uth.evservice.services.IServiceTicketService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -31,21 +29,15 @@ public class ServiceTicketController {
 
     // Báo cáo hiệu suất làm việc của technician
     @GetMapping("/performance")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<TechnicianPerformanceDto>> getTechnicianPerformance(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
+    public ResponseEntity<List<PerformanceDto>> getPerformance(
+            @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
+            @RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end) {
 
-        // Kiểm tra tính hợp lệ của thời gian
-        if (endDate.isBefore(startDate)) {
-            return ResponseEntity.badRequest().body(Collections.emptyList());
-        }
-
-        List<TechnicianPerformanceDto> report =
-                ticketService.calculateTechnicianPerformance(startDate, endDate);
+        List<PerformanceDto> report = ticketService.calculatePerformance(start, end);
         return ResponseEntity.ok(report);
-
     }
+
+
 
     // Tao service ticket tu appointment cua technician
     @PostMapping("/technician/{appointmentId}/create-service-ticket")

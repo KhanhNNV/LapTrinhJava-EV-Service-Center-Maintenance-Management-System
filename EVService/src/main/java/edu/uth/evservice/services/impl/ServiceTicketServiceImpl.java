@@ -1,10 +1,12 @@
 package edu.uth.evservice.services.impl;
 
+import java.time.DayOfWeek;
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
-
+import edu.uth.evservice.models.enums.Role;
 import edu.uth.evservice.dtos.*;
 import edu.uth.evservice.exception.ResourceNotFoundException;
 import edu.uth.evservice.models.*;
@@ -414,42 +416,45 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
                 .lineTotal(0)
                 .build();
     }
+    //Báo cáo hiệu suất
+    public List<PerformanceDto> calculatePerformance(LocalDate start, LocalDate end) {
+        LocalDateTime startDate = start.atStartOfDay();
+        LocalDateTime endDate = end.atTime(23, 59, 59);
 
-    @Override
-    public List<TechnicianPerformanceDto> calculateTechnicianPerformance(LocalDateTime startDate, LocalDateTime endDate) {
-        // Lấy các ticket đã hoàn thành trong khoảng thời gian
-        List<ServiceTicket> completedTickets =
-                ticketRepo.findByStatusAndEndTimeBetween(ServiceTicketStatus.COMPLETED, startDate, endDate);
+        // Lấy ticket hoàn tất trong khoảng ngày
+        List<ServiceTicket> tickets = ticketRepo
+                .findByStatusAndEndTimeBetween(ServiceTicketStatus.COMPLETED, startDate, endDate);
 
-        // Gom nhóm theo kỹ thuật viên
-        Map<User, List<ServiceTicket>> groupedByTechnician = completedTickets.stream()
+        // Lấy danh sách kỹ thuật viên
+        List<User> technicians = userRepo.findByRole(Role.TECHNICIAN);
+
+        // Gom nhóm ticket theo technician
+        Map<Integer, List<ServiceTicket>> ticketsByTech = tickets.stream()
                 .filter(t -> t.getTechnician() != null)
-                .collect(Collectors.groupingBy(ServiceTicket::getTechnician));
+                .collect(Collectors.groupingBy(t -> t.getTechnician().getUserId()));
 
-        // Tính toán hiệu suất cho từng kỹ thuật viên
-        return groupedByTechnician.entrySet().stream()
-                .map(entry -> {
-                    User tech = entry.getKey();
-                    List<ServiceTicket> tickets = entry.getValue();
+        List<PerformanceDto> report = new ArrayList<>();
 
-                    long totalMinutes = tickets.stream()
-                            .filter(t -> t.getStartTime() != null && t.getEndTime() != null)
-                            .mapToLong(t -> Duration.between(t.getStartTime(), t.getEndTime()).toMinutes())
-                            .sum();
+        for (User tech : technicians) {
+            List<ServiceTicket> techTickets = ticketsByTech.getOrDefault(tech.getUserId(), List.of());
 
-                    long totalTickets = tickets.size();
-                    double avgMinutes = totalTickets > 0 ? (double) totalMinutes / totalTickets : 0;
+            long totalSeconds = techTickets.stream()
+                    .filter(t -> t.getStartTime() != null && t.getEndTime() != null)
+                    .mapToLong(t -> Duration.between(t.getStartTime(), t.getEndTime()).getSeconds())
+                    .sum();
 
-                    return TechnicianPerformanceDto.builder()
-                            .technicianId(tech.getUserId())
-                            .technicianName(tech.getFullName())
-                            .totalTickets(totalTickets)
-                            .totalMinutes(totalMinutes)
-                            .avgMinutes(avgMinutes)
-                            .build();
-                })
-                .sorted(Comparator.comparingLong(TechnicianPerformanceDto::getTotalTickets).reversed()) // sắp giảm dần theo số vé
-                .collect(Collectors.toList());
+            double totalHours = totalSeconds / 3600.0;
+            int totalTickets = techTickets.size();
+
+            report.add(new PerformanceDto(
+                    tech.getUserId(),
+                    tech.getFullName(),
+                    totalTickets,
+                    totalHours
+            ));
+        }
+
+        return report;
     }
 
     // lấy trung tâm của tech

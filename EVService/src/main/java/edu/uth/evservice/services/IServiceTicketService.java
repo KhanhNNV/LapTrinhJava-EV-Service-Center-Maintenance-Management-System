@@ -1,12 +1,10 @@
 package edu.uth.evservice.services;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import edu.uth.evservice.dtos.ServiceTicketDto;
-import edu.uth.evservice.dtos.SuggestedPartsDto;
-import edu.uth.evservice.dtos.TechnicianPerformanceDto;
-import edu.uth.evservice.dtos.TicketPartDto;
+import edu.uth.evservice.dtos.*;
 import edu.uth.evservice.models.enums.ServiceTicketStatus;
 import edu.uth.evservice.requests.AddServiceItemRequest;
 import edu.uth.evservice.requests.ServiceTicketRequest;
@@ -40,8 +38,7 @@ public interface IServiceTicketService {
 
     ServiceTicketDto updateTicketNotes(Integer ticketId, Integer technicianId, String newNotes);
     // --- BÁO CÁO HIỆU SUẤT KỸ THUẬT VIÊN ---
-    List<TechnicianPerformanceDto> calculateTechnicianPerformance(LocalDateTime startDate, LocalDateTime endDate);
-
+    public List<PerformanceDto> calculatePerformance(LocalDate start, LocalDate end);
 
     // Thêm item và part vào ticket
 
