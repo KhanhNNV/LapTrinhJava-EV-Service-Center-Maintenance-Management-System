@@ -71,7 +71,7 @@ public class InvoiceServiceImpl implements IInvoiceService {
                 .invoiceDate(LocalDate.now())
                 .totalAmount(grandTotal)
                 .paymentStatus(PaymentStatus.PENDING)
-                .paymentMethod(PaymentMethod.UNSPECIFIED)
+                .paymentMethod(PaymentMethod.CASH) // vì lỗi khi tạo hóa đơn bắt buộc paymentMehod ko đc null nên gán tạm ai làm phần này fix lại dùm:))
                 .serviceTicket(serviceTicket)
                 .user(customer)
                 .build();
