@@ -8,11 +8,11 @@ import java.util.stream.Collectors;
 import edu.uth.evservice.dtos.*;
 import edu.uth.evservice.exception.ResourceNotFoundException;
 import edu.uth.evservice.models.*;
+import edu.uth.evservice.models.enums.Role;
 import edu.uth.evservice.repositories.*;
 import edu.uth.evservice.requests.AddServiceItemRequest;
 import edu.uth.evservice.requests.UpdatePartQuantityRequest;
 import edu.uth.evservice.dtos.TechnicianPerformanceDto;
-import edu.uth.evservice.exception.ResourceNotFoundException;
 import edu.uth.evservice.requests.NotificationRequest;
 import edu.uth.evservice.services.INotificationService;
 import org.springframework.stereotype.Service;
@@ -360,7 +360,7 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
 
         // Cập nhật kho (delta có thể âm, nghĩa là trả hàng vào kho)
         inventory.setQuantity(inventory.getQuantity() - delta);
-        inventoryRepo.save(inventory);
+        Inventory updatedInventory = inventoryRepo.save(inventory);
 
         if (newQuantity == 0) {
             if (currentQuantity > 0) {
@@ -378,6 +378,28 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
 
             ticketPart.setQuantity(newQuantity);
             TicketPart savedTp = ticketPartRepo.save(ticketPart);
+            // === PHẦN CODE MỚI THÊM VÀO (Gửi thông báo) ===
+
+            // 1. Kiểm tra xem số lượng có SẮP HẾT HÀNG không
+            if (updatedInventory.getQuantity() <= updatedInventory.getMinQuantity()) {
+
+                // 2. Lấy danh sách nhân viên/admin tại trung tâm đó
+                List<User> usersToNotify = userRepo.findByServiceCenter_CenterIdAndRoleIn(
+                        techCenter.getCenterId(), List.of(Role.STAFF, Role.ADMIN)
+                );
+
+                // 3. Gửi thông báo cho từng người
+                for (User user : usersToNotify) {
+                    NotificationRequest notiRequest = new NotificationRequest();
+                    notiRequest.setUserId(user.getUserId());
+                    notiRequest.setTitle("Cảnh báo Tồn kho Thấp!");
+                    notiRequest.setMessage("Mặt hàng: '" + part.getPartName() +
+                            "' tại trung tâm " + techCenter.getCenterName() +
+                            " đã đạt mức tồn kho tối thiểu (" + updatedInventory.getMinQuantity() + "). Cần nhập thêm.");
+
+                    notificationService.createNotification(notiRequest);
+                }
+            }
             return toDto(savedTp);
         }
     }
