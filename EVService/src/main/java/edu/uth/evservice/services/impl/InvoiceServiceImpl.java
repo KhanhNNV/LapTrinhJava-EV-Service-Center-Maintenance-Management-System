@@ -75,20 +75,18 @@ public class InvoiceServiceImpl implements IInvoiceService {
                 .serviceTicket(serviceTicket)
                 .user(customer)
                 .build();
-        Invoice save=invoiceRepo.save(invoice);
-        return toDto(save, serviceItems, parts, subtotalItems, subtotalParts,staff);
 
-        Invoice savedInvoice = invoiceRepository.save(invoice);
+        Invoice savedInvoice = invoiceRepo.save(invoice);
 
         // === 2. PHẦN CODE MỚI THÊM VÀO (Gửi thông báo) ===
         NotificationRequest customerNoti = new NotificationRequest();
-        customerNoti.setUserId(user.getUserId()); // ID người nhận (Khách hàng)
+        customerNoti.setUserId(customer.getUserId()); // ID người nhận (Khách hàng)
         customerNoti.setTitle("Hóa đơn mới cho dịch vụ của bạn!");
         customerNoti.setMessage("Hóa đơn #" + savedInvoice.getInvoiceId() + " với tổng số tiền " +
                 savedInvoice.getTotalAmount() + " đã được tạo. Vui lòng thanh toán.");
 
         notificationService.createNotification(customerNoti); // Gửi đi
-        return toDto(savedInvoice);
+        return toDto(savedInvoice, serviceItems, parts, subtotalItems, subtotalParts,staff);
     }
 
     @Override
