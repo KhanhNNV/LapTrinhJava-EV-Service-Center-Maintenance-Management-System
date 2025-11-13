@@ -179,7 +179,7 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
     public ServiceTicketDto completeWorkOnTicket(Integer ticketId, Integer technicianId) {
         verifyTicketOwnership(technicianId, ticketId);
         ServiceTicket ticket = ticketRepo.findById(ticketId)
-                .orElseThrow(() -> new EntityNotFoundException("Service Ticket not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy vé dịch vụ"));
 
     // 4. KIỂM TRA LOGIC: Phiếu có đang 'IN_PROGRESS' không?
     if (ticket.getStatus() != ServiceTicketStatus.IN_PROGRESS) {
@@ -193,7 +193,13 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
     ServiceTicket savedTicket = ticketRepo.save(ticket);
 
     // === 6. PHẦN CODE GỬI THÔNG BÁO ===
+        //  Lấy ra Appointment cha
+    Appointment appointment = savedTicket.getAppointment();
+        // 3.2. Cập nhật trạng thái của Appointment cha
+    appointment.setStatus(AppointmentStatus.COMPLETED);// Doi trang thai
+    appointment.setUpdatedAt(LocalDateTime.now());
 
+    appointmentRepo.save(appointment);
     // Lấy thông tin khách hàng từ lịch hẹn liên quan
     User customer = savedTicket.getAppointment().getCustomer();
 
