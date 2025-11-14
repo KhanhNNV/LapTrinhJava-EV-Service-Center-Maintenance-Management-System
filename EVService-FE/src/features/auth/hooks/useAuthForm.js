@@ -22,10 +22,16 @@ export const useAuthForm = () => {
   const [regPhoneNumber, setRegPhoneNumber] = useState("");
   const [regAddress, setRegAddress] = useState("");
   const [acceptTerms, setAcceptTerms] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   //State cho validation và điều khoản
   const [regErrors, setRegErrors] = useState({});
   const [termsViewed, setTermsViewed] = useState(false);
+
+  // STATE CHO QUÊN MẬT KHẨU
+  const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
+  const [forgotPasswordStep, setForgotPasswordStep] = useState(0); // 0: không hiển thị, 1: nhập email, 2: thành công
+
   // --- Hàm xử lý ---
 
   //~ Hàm xử lý xóa lỗi khi focus
@@ -85,6 +91,71 @@ export const useAuthForm = () => {
     setLoginErrors({}); //~ Ngược lại
   };
 
+  // Chuyển sang trang quên mật khẩu
+  const switchToForgotPassword = () => {
+    setTab("forgot");
+    setForgotPasswordStep(1);
+    // Copy email từ login form nếu có
+    if (loginEmail) {
+      setForgotPasswordEmail(loginEmail);
+    }
+    setLoginErrors({});
+  };
+  // THÊM HÀM: Validate email
+  const isValidEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  // THÊM HÀM: Xử lý quên mật khẩu
+  const handleForgotPasswordSubmit = async () => {
+    setLoginErrors({});
+    
+    // Validate email
+    if (!forgotPasswordEmail) {
+      setLoginErrors({ email: 'Vui lòng nhập email' });
+      return;
+    }
+
+    if (!isValidEmail(forgotPasswordEmail)) {
+      setLoginErrors({ email: 'Email không hợp lệ' });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      console.log('📧 Gửi yêu cầu quên mật khẩu cho:', forgotPasswordEmail);
+      
+      const response = await fetch(`${API_URL}/auth/forgot-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: forgotPasswordEmail })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Có lỗi xảy ra khi gửi yêu cầu');
+      }
+
+      // Chuyển sang bước thành công
+      setForgotPasswordStep(2);
+      console.log('✅ Yêu cầu quên mật khẩu thành công');
+      
+    } catch (error) {
+      console.error('❌ Lỗi quên mật khẩu:', error);
+      setLoginErrors({ general: error.message || 'Có lỗi xảy ra, vui lòng thử lại.' });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  // THÊM HÀM: Hoàn tất quên mật khẩu
+  const handleForgotPasswordDone = () => {
+    setForgotPasswordStep(0);
+    switchToLogin();
+  };
+
   const handleLoginInfoSubmit = async () => {
     setLoginErrors({}); //~ Xóa các lỗi cũ khi submit
 
@@ -96,6 +167,7 @@ export const useAuthForm = () => {
       });
       return;
     }
+    setIsLoading(true);
     try {
       const response = await authService.login(loginEmail, loginPassword);
       const tokenData = response.data;
@@ -105,7 +177,9 @@ export const useAuthForm = () => {
       } else {
         setLoginErrors({ general: "Lỗi không nhận được token." });
       }
+      setIsLoading(false);
     } catch (error) {
+      setIsLoading(false);
       if (
         error.response &&
         (error.response.status === 401 ||
@@ -179,9 +253,10 @@ export const useAuthForm = () => {
 
   const handleRegisterInfoNext = async () => {
     if (!validateRegistration()) {
-      console.log('Validation failed', regErrors);
+      console.log("Validation failed", regErrors);
       return;
     }
+    setIsLoading(true);
     try {
       const registerData = {
         username: regUsername,
@@ -191,39 +266,37 @@ export const useAuthForm = () => {
         phoneNumber: regPhoneNumber,
         address: regAddress,
       };
-      
-     
+
       await authService.register(registerData);
-      
-      console.log('Mã OTP được gửi qua email của bạn');
-      setRegStep(2);
+      setIsLoading(false);
+      console.log("Mã OTP được gửi qua email của bạn");
+      setRegStep(3); // Chuyển sang trang "RegisterSuccessStep"
       setRegErrors({});
     } catch (error) {
-      console.error('Register failed:', error);
+      setIsLoading(false);
+      console.error("Register failed:", error);
       if (error.response && error.response.data) {
         const errorMessage = error.response.data.message || error.response.data;
-        if (errorMessage.includes('Username đã tồn tại')) {
-          setRegErrors(prev => ({ ...prev, username: 'Tên đăng nhập này đã tồn tại' }));
-        } else if (errorMessage.includes(' tồn tại')) {
-          setRegErrors(prev => ({ ...prev, email: 'Email này đã tồn tại' }));
+        if (errorMessage.includes("Username đã tồn tại")) {
+          setRegErrors((prev) => ({
+            ...prev,
+            username: "Tên đăng nhập này đã tồn tại",
+          }));
+        } else if (errorMessage.includes(" tồn tại")) {
+          setRegErrors((prev) => ({ ...prev, email: "Email này đã tồn tại" }));
         } else {
           alert(`Đăng ký thất bại: ${errorMessage}`);
         }
       } else {
-        alert('Đã xảy ra lỗi kết nối. Vui lòng thử lại.');
+        alert("Đã xảy ra lỗi kết nối. Vui lòng thử lại.");
       }
     }
   };
 
-  const handleRegisterOtpConfirm = () => {
-    console.log('Đăng kí OTP thành công');
-    setRegStep(3);
-  };
-
   const handleRegisterSuccessDone = () => {
-    console.log('Đăng kí thành công, Vui lòng đăng nhập lại');
+    console.log("Đăng kí thành công, Vui lòng đăng nhập lại");
     switchToLogin();
-  };  
+  };
 
   return {
     tab,
@@ -258,9 +331,17 @@ export const useAuthForm = () => {
     handleSocialLogin,
     switchToLogin,
     switchToRegister,
+    switchToForgotPassword,
     handleLoginInfoSubmit,
     handleRegisterInfoNext,
-    handleRegisterOtpConfirm,
-    handleRegisterSuccessDone
+    handleRegisterSuccessDone,
+    isLoading,
+    forgotPasswordEmail,
+    setForgotPasswordEmail,
+    forgotPasswordStep,
+    setForgotPasswordStep,
+    handleForgotPasswordSubmit,
+    handleForgotPasswordDone
+    
   };
 };

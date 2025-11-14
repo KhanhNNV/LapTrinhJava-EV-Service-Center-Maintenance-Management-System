@@ -16,7 +16,7 @@
 import axios from "axios";
 //============================================================================//
 //~ Địa chỉ server
-export const API_URL = "http://localhost:8081";
+export const API_URL = "http://localhost:8080";
 //============================================================================//
 //. Tạo một instance mới của axios với cấu hình tùy chỉnh
 const apiClient = axios.create({
