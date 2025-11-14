@@ -14,7 +14,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Car, Plus, Edit, Trash2 } from 'lucide-react';
-import api from '@/lib/api';
+import api from '@/services/auth/api';
 import { toast } from 'sonner';
 
 export default function Vehicles() {

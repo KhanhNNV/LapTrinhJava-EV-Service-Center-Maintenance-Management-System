@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, Wrench, CheckCircle, Clock } from "lucide-react";
-import api from "@/lib/api";
+import api from "@/services/auth/api";
 import { useToast } from "@/hooks/use-toast";
-import { authService } from "@/lib/auth";
+import { authService } from "@/services/auth/auth";
 
 export default function TechnicianDashboard() {
   const { toast } = useToast();
@@ -56,7 +56,7 @@ export default function TechnicianDashboard() {
     };
 
     fetchStats();
-  }, []);
+  }, [toast]);
 
   const statCards = [
     {

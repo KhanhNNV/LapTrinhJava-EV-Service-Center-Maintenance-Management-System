@@ -30,6 +30,11 @@ import TechnicianDashboard from "./pages/technician/Dashboard";
 import TechnicianMyAppointments from "./pages/technician/MyAppointments";
 import TechnicianServiceTickets from "./pages/technician/ServiceTickets";
 import NotFound from "./pages/NotFound";
+import AuthCallbackPage from "./pages/auth/AuthCallbackPage";
+import VerifyEmailPending from "./pages/auth/VerifyEmailPending";
+import VerifyEmailPage from "./pages/auth/VerifyEmailPage";
+import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
+import ResetPasswordPage from "./pages/auth/ResetPasswordPage";
 
 const queryClient = new QueryClient();
 
@@ -43,12 +48,23 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          
+          <Route path="/auth/callback" element={<AuthCallbackPage />} />
+          <Route
+            path="/auth/verify-email-pending"
+            element={<VerifyEmailPending />}
+          />
+          <Route path="/auth/verify-email" element={<VerifyEmailPage />} />
+          <Route
+            path="/auth/forgot-password"
+            element={<ForgotPasswordPage />}
+          />
+          <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
+
           {/* Customer Routes */}
           <Route
             path="/dashboard/customer"
             element={
-              <ProtectedRoute allowedRoles={['CUSTOMER']}>
+              <ProtectedRoute allowedRoles={["CUSTOMER"]}>
                 <CustomerLayout />
               </ProtectedRoute>
             }
@@ -63,7 +79,7 @@ const App = () => (
           <Route
             path="/dashboard/staff"
             element={
-              <ProtectedRoute allowedRoles={['STAFF']}>
+              <ProtectedRoute allowedRoles={["STAFF"]}>
                 <StaffLayout />
               </ProtectedRoute>
             }
@@ -79,7 +95,7 @@ const App = () => (
           <Route
             path="/dashboard/admin"
             element={
-              <ProtectedRoute allowedRoles={['ADMIN']}>
+              <ProtectedRoute allowedRoles={["ADMIN"]}>
                 <AdminLayout />
               </ProtectedRoute>
             }
@@ -96,7 +112,7 @@ const App = () => (
           <Route
             path="/dashboard/technician"
             element={
-              <ProtectedRoute allowedRoles={['TECHNICIAN']}>
+              <ProtectedRoute allowedRoles={["TECHNICIAN"]}>
                 <TechnicianLayout />
               </ProtectedRoute>
             }

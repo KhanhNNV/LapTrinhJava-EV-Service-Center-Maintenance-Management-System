@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, Users, Wrench, CheckCircle } from "lucide-react";
-import api from "@/lib/api";
+import api from "@/services/auth/api";
 import { useToast } from "@/hooks/use-toast";
 
 export default function StaffDashboard() {

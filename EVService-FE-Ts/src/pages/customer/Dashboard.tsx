@@ -11,7 +11,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
-import api from '@/lib/api';
+import api from '@/services/auth/api';
 import { toast } from 'sonner';
 
 export default function CustomerDashboard() {
@@ -27,7 +27,7 @@ export default function CustomerDashboard() {
   const { data: appointments, isLoading: appointmentsLoading } = useQuery({
     queryKey: ['customer-appointments'],
     queryFn: async () => {
-      const response = await api.get('/api/appointments');
+      const response = await api.get('/api/appointments/myAppointments');
       return response.data;
     },
     retry: 1,

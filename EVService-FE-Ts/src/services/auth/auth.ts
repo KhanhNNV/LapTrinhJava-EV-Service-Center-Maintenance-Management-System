@@ -1,23 +1,5 @@
 import api from "./api";
-
-// Helper: decode JWT payload
-function parseJwt(token: string | null): any {
-  if (!token) return null;
-  const base64Url = token.split(".")[1];
-  if (!base64Url) return null;
-  try {
-    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-    const json = decodeURIComponent(
-      atob(base64)
-        .split("")
-        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
-        .join("")
-    );
-    return JSON.parse(json);
-  } catch {
-    return null;
-  }
-}
+import { parseJwt } from "@/utils/decodeJWT";
 
 export interface LoginCredentials {
   username: string; // form của bạn dùng "username"
@@ -30,6 +12,7 @@ export interface RegisterData {
   password: string;
   fullName: string;
   phoneNumber: string;
+  address?: string;
 }
 
 export type Role = "CUSTOMER" | "STAFF" | "TECHNICIAN" | "ADMIN";
@@ -45,20 +28,6 @@ export interface User {
 }
 
 export const authService = {
-  // async login(credentials: LoginCredentials) {
-  //   // BE yêu cầu LoginRequest có field "usernameOrEmail"
-  //   const payload = { usernameOrEmail: credentials.username, password: credentials.password };
-
-  //   // ✅ endpoint đúng: /auth/login (KHÔNG phải /auth/auth)
-  //   const res = await api.post('/auth/login', payload);
-  //   const { accessToken, refreshToken } = res.data;
-
-  //   localStorage.setItem('accessToken', accessToken);
-  //   localStorage.setItem('refreshToken', refreshToken);
-
-  //   // Không trả user nữa cho đúng DTO
-  //   return { accessToken, refreshToken };
-  // },
   async login(credentials: { username: string; password: string }) {
     const payload = {
       usernameOrEmail: credentials.username, // BE yêu cầu field này
@@ -118,10 +87,11 @@ export const authService = {
       fullName: payload.fullName || payload.name,
       role,
       phoneNumber: payload.phoneNumber,
+      address: payload.address,
     };
 
     // nếu muốn vẫn cache vào localStorage:
-    // localStorage.setItem('user', JSON.stringify(user));
+    //localStorage.setItem('user', JSON.stringify(user));
 
     return user;
   },

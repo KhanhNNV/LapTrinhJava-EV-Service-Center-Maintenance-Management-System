@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { authService } from '@/lib/auth';
+import { authService } from '@/services/auth/auth';
 import { toast } from 'sonner';
 
 import {

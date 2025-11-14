@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import api from "@/lib/api";
+import api from "@/services/auth/api";
 import { useToast } from "@/hooks/use-toast";
 import { Wrench, Plus, Edit, Trash2 } from "lucide-react";
 

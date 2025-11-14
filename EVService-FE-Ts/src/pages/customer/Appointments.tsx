@@ -22,8 +22,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Calendar, Plus, Clock, MapPin } from 'lucide-react';
-import api from '@/lib/api';
+import api from '@/services/auth/api';
 import { toast } from 'sonner';
+
+import { ENDPOINTS } from "@/config/endpoints";
 
 export default function Appointments() {
   const queryClient = useQueryClient();
@@ -33,13 +35,15 @@ export default function Appointments() {
     serviceType: '',
     appointmentDate: '',
     appointmentTime: '',
-    notes: '',
+    note: '',
+    centerId: '',
+    contractId: '',
   });
 
   const { data: vehicles } = useQuery({
     queryKey: ['customer-vehicles'],
     queryFn: async () => {
-      const response = await api.get('/api/vehicles');
+      const response = await api.get(ENDPOINTS.vehicles.list.url);
       return response.data;
     },
   });
@@ -47,7 +51,7 @@ export default function Appointments() {
   const { data: appointments, isLoading } = useQuery({
     queryKey: ['customer-appointments'],
     queryFn: async () => {
-      const response = await api.get('/api/appointments');
+      const response = await api.get('/api/appointments/myAppointments');
       return response.data;
     },
   });
@@ -57,6 +61,8 @@ export default function Appointments() {
       const response = await api.post('/api/appointments', {
         ...data,
         appointmentDate: `${data.appointmentDate}T${data.appointmentTime}`,
+        centerId : 1, // tạm thời fix centerId = 1
+        contractId : 1, // tạm thời fix contractId = 1
       });
       return response.data;
     },
@@ -69,7 +75,9 @@ export default function Appointments() {
         serviceType: '',
         appointmentDate: '',
         appointmentTime: '',
-        notes: '',
+        note: '',
+        centerId: '',
+        contractId: '',
       });
     },
     onError: () => {
@@ -142,7 +150,7 @@ export default function Appointments() {
                     </SelectTrigger>
                     <SelectContent>
                       {vehicles?.map((vehicle: any) => (
-                        <SelectItem key={vehicle.id} value={vehicle.id.toString()}>
+                        <SelectItem key={vehicle.id} value={vehicle.vehicleId}>
                           {vehicle.model} - {vehicle.licensePlate}
                         </SelectItem>
                       ))}
@@ -199,8 +207,8 @@ export default function Appointments() {
                   <Textarea
                     id="notes"
                     placeholder="Mô tả vấn đề hoặc yêu cầu đặc biệt..."
-                    value={formData.notes}
-                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                    value={formData.note}
+                    onChange={(e) => setFormData({ ...formData, note: e.target.value })}
                     rows={3}
                   />
                 </div>
@@ -255,8 +263,8 @@ export default function Appointments() {
                             <span>{appointment.serviceCenter.name}</span>
                           </div>
                         )}
-                        {appointment.notes && (
-                          <p className="mt-2 text-foreground">{appointment.notes}</p>
+                        {appointment.note && (
+                          <p className="mt-2 text-foreground">{appointment.note}</p>
                         )}
                       </div>
                     </div>

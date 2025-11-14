@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import api from "@/lib/api";
+import api from "@/services/auth/api";
 import { useToast } from "@/hooks/use-toast";
 import { Package, Plus, Edit, Trash2, AlertCircle } from "lucide-react";
 

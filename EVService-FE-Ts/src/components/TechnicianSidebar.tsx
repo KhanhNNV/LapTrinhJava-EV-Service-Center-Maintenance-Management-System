@@ -11,7 +11,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { authService } from "@/lib/auth";
+import { authService } from "@/services/auth/auth";
 import { useToast } from "@/hooks/use-toast";
 
 const menuItems = [
