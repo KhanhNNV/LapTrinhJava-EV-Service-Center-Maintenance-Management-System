@@ -15,11 +15,11 @@ public interface IInventoryService {
 //
 //    InventoryDto updateInventory(Integer id, InventoryRequest inventory);
 //
-//    void deleteInventory(Integer id);
+   void deleteInventory(Integer id);
 //
-//    List<InventoryDto> getInventoriesByPartId(Integer partId);
+   List<InventoryDto> getInventoriesByPartId(Integer partId);
 //
-//    List<InventoryDto> getInventoriesByCenterId(Integer centerId);
+   List<InventoryDto> getInventoriesByCenterId(Integer centerId);
 
     InventoryDto addStock(AddStockRequest request);
 }

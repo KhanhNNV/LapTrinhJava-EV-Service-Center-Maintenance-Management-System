@@ -21,6 +21,7 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 
 import edu.uth.evservice.models.CustomerUserDetails;
+import edu.uth.evservice.requests.jwt.RegisterRequest;
 import edu.uth.evservice.services.jwt.IJwtService;
 import lombok.RequiredArgsConstructor;
 
@@ -52,11 +53,11 @@ public class JwtServiceImpl implements IJwtService {
     @Override
     // . Tạo chuỗi JWT Access Token
     public String generateAccessToken(Authentication authenication) {
-        //Spring lấy danh sách các GrantedAuthority này từ Authentication object
+        // Spring lấy danh sách các GrantedAuthority này từ Authentication object
         // ví dụ: scope = "ROLE_TECHNICIAN"
         String scope = authenication.getAuthorities().stream()
-                        .map(GrantedAuthority::getAuthority)
-                        .collect(Collectors.joining(" ")); //~ Một list danh danh sách quyền
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.joining(" ")); // ~ Một list danh danh sách quyền
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + accessTime); // ~ THỜI GIAN HIỆN TẠI + KHOẢNG THỜI GIAN ACCESS TỒN
                                                                 // TẠI
@@ -149,6 +150,65 @@ public class JwtServiceImpl implements IJwtService {
     public Object getClaim(String token, String claimName) throws ParseException {
         SignedJWT signedJWT = SignedJWT.parse(token);
         return signedJWT.getJWTClaimsSet().getClaim(claimName);
+    }
+
+    // TẠO MỚI: Hàm tạo token đăng ký (ví dụ: thời hạn 15 phút)
+    public String generateRegistrationToken(RegisterRequest request) {
+        Date now = new Date();
+        Date expiryDate = new Date(now.getTime() + 900000); // 15 phút
+
+        try {
+            JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
+
+            JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
+                    .subject(request.getUsername()) // Dùng username làm subject
+                    .issueTime(now)
+                    .expirationTime(expiryDate)
+                    .claim("username", request.getUsername())
+                    .claim("fullName", request.getFullName())
+                    .claim("email", request.getEmail())
+                    .claim("password", request.getPassword()) // <-- Lưu pass vào token tạm
+                    .claim("phoneNumber", request.getPhoneNumber())
+                    .claim("address", request.getAddress())
+                    .claim("token_type", "registration")
+                    .build();
+
+            SignedJWT signedJWT = new SignedJWT(header, claimsSet);
+            JWSSigner singer = new MACSigner(keySecret.getBytes());
+            signedJWT.sign(singer);
+
+            return signedJWT.serialize();
+        } catch (JOSEException e) {
+            throw new RuntimeException("Không thể tạo token đăng ký: " + e.getMessage());
+        }
+    }
+
+    @Override
+    // . Tạo chuỗi JWT Đặt lại Mật khẩu
+    public String generatePasswordResetToken(Authentication authenication) {
+        Date now = new Date();
+        Date expiryDate = new Date(now.getTime() + accessTime); // Dùng accessTime (15 phút)
+
+        CustomerUserDetails userDetails = getCustomerUserDetails(authenication);
+        try {
+            JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
+
+            // Tạo payload
+            JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
+                    .subject(userDetails.getId().toString()) // ID của User
+                    .issueTime(now)
+                    .expirationTime(expiryDate)
+                    .claim("token_type", "password_reset") // <-- Loại token mới
+                    .build();
+
+            SignedJWT signedJWT = new SignedJWT(header, claimsSet);
+            JWSSigner singer = new MACSigner(keySecret.getBytes());
+            signedJWT.sign(singer);
+
+            return signedJWT.serialize();
+        } catch (JOSEException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }
