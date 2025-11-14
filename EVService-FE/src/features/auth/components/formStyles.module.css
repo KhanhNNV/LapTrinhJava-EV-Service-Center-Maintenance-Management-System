@@ -205,3 +205,29 @@
   margin-top: 0.25rem;
 }
 
+/* START: CSS cho Loader */
+.loader {
+  border: 4px solid #f3f3f3; /* Light grey */
+  border-top: 4px solid #3498db; /* Blue */
+  border-radius: 50%;
+  width: 24px; /* Kích thước nhỏ */
+  height: 24px;
+  animation: spin 1s linear infinite;
+  margin-right: 10px; /* Căn cách với chữ */
+}
+
+/* Hiệu ứng xoay */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Tùy chỉnh nút khi loading */
+.btnLoading {
+  display: flex; /* Để icon và chữ nằm cạnh nhau */
+  align-items: center;
+  justify-content: center;
+  opacity: 0.7; /* Làm mờ nút */
+  cursor: not-allowed; /* Cấm click */
+}
+/* END: CSS cho Loader */

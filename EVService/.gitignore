@@ -33,3 +33,7 @@ build/
 ### VS Code ###
 .vscode/
 
+####
+src\main\resources\refresh-token.txt
+src\main\resources\credentials.json
+src\main\resources\application-dev.properties

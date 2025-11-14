@@ -20,7 +20,7 @@ function App() {
           element={!isAuthenticated ? <AuthPage /> : <Navigate to="/dashboard" replace />}
         />
 
-        {/* (MỚI) Route cho trang Callback để "hứng" token */}
+        {/* Route cho trang Callback để "hứng" token cả đăng ký lẫn quên mật khẩu */}
         <Route
           path="/auth/callback"
           element={<AuthCallbackPage />}

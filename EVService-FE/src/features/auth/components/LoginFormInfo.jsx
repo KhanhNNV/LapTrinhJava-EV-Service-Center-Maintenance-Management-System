@@ -14,7 +14,8 @@ export default function LoginFormInfo({
   onSocial,
   errors = {},
   onFieldFocus,
-  switchToRegister
+  switchToRegister,
+  onForgotPassword 
 }) {
   const [showPassword, setShowPassword] = useState(false);
 
@@ -95,7 +96,14 @@ export default function LoginFormInfo({
             Ghi nhớ đăng nhập
           </label>
         </div>
-        <a href="#" className="link" onClick={(e) => e.preventDefault()}>
+        <a 
+        href="#" 
+        className="link" 
+        onClick={(e) => {
+            e.preventDefault();
+            onForgotPassword(); 
+        }}
+    >
           Quên mật khẩu?
         </a>
       </div>
