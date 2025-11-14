@@ -4,15 +4,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
 import lombok.Getter;
-
-
 @Configuration
 @Getter
 public class VnPayConfig {
     @Value("${VNPAY.VERSION}")
     private String vnpayVersion;
     @Value("${VNPAY.COMMEND}")
-    private String vnpayCommend;
+    private String vnpayCommand;
     @Value("${VNPAY.TMN-CODE}")
     private String vnpayTmnCode;
     @Value("${VNPAY.HASH-SECRET}")

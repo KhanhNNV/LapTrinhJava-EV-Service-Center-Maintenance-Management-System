@@ -20,7 +20,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import edu.uth.evservice.services.impl.auth.oauth2.CustomOAuth2UserService;
 import edu.uth.evservice.services.impl.auth.oauth2.CustomOidcUserService;
-import edu.uth.evservice.services.impl.auth.oauth2.helper.OAuthenticationSuccessHandler;
+import edu.uth.evservice.services.impl.auth.oauth2.helpers.OAuthenticationSuccessHandler;
 import lombok.RequiredArgsConstructor;
 
 

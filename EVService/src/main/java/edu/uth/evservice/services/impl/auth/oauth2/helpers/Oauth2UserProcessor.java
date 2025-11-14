@@ -1,4 +1,4 @@
-package edu.uth.evservice.services.impl.auth.oauth2.helper;
+package edu.uth.evservice.services.impl.auth.oauth2.helpers;
 
 import java.util.Optional;
 import java.util.UUID;

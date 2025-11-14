@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+
 import edu.uth.evservice.models.enums.PaymentMethod;
 import edu.uth.evservice.models.enums.PaymentStatus;
 
@@ -43,4 +46,8 @@ public class Invoice {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    @Builder.Default
+    @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PaymentTransaction> transactions = new ArrayList<>();
 }

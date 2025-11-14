@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 
 import edu.uth.evservice.models.CustomerUserDetails;
 import edu.uth.evservice.models.User;
-import edu.uth.evservice.services.impl.auth.oauth2.helper.Oauth2UserProcessor;
+import edu.uth.evservice.services.impl.auth.oauth2.helpers.Oauth2UserProcessor;
 import lombok.RequiredArgsConstructor;
 
 @Service
