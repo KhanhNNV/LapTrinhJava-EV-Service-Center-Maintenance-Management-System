@@ -2,6 +2,7 @@ package edu.uth.evservice.controllers;
 
 import java.util.List;
 
+import edu.uth.evservice.services.IUserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -28,6 +29,7 @@ import lombok.RequiredArgsConstructor;
 public class AppointmentController {
 
         private final IAppointmentService appointmentService;
+        private final IUserService userService;
 
         // lay danh sach lich hen theo trang thai (admin/staff)
         @GetMapping("/status/{status}")
