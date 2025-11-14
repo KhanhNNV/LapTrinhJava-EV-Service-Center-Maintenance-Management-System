@@ -27,7 +27,7 @@ public class VnPayHelper {
     private final VnPayConfig vnPayConfig;
 
     //. Tạo chữ ký HMAC-SHA512
-    private String hmacSHA512(final String key, final String data) {
+    public String hmacSHA512(final String key, final String data) {
         try {
 
             if (key == null || data == null) {
@@ -51,7 +51,7 @@ public class VnPayHelper {
     }
 
     //. Tạo query từ Map và sắp xếp theo chiều (A-Z)
-    private String buildQueryString (Map<String,String> params){
+    public String buildQueryString (Map<String,String> params){
         StringJoiner sj = new StringJoiner("&"); //~ Đây là một class Java giúp nối nhiều chuỗi với nhau bởi một ký tự cụ thể nào đó
 
         params.entrySet().stream()
