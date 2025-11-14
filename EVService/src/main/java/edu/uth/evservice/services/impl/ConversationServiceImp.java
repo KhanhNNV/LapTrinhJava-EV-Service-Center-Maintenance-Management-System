@@ -43,12 +43,12 @@ public class ConversationServiceImp  implements IConversationService {
     @Override
     public ConversationDto createConversation(CreateConversationRequest request) {
         User customer = userRepository.findById(request.getCustomerId())
-                .orElseThrow(() -> new EntityNotFoundException("Customer not found with id: " + request.getCustomerId()));
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy khách hàng có ID: " + request.getCustomerId()));
         
         User staff = null;
         if (request.getEmployeeId() != null) {
             staff = userRepository.findById(request.getEmployeeId())
-                .orElseThrow(() -> new EntityNotFoundException("Staff not found with id: " + request.getEmployeeId()));
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy nhân viên có ID: " + request.getEmployeeId()));
         }
 
         Conversation conversation = Conversation.builder()
@@ -68,11 +68,11 @@ public class ConversationServiceImp  implements IConversationService {
         return conversationRepository.findById(id)
                 .map(existing -> {
                     User customer = userRepository.findById(request.getCustomerId())
-                        .orElseThrow(() -> new EntityNotFoundException("Customer not found with id: " + request.getCustomerId()));
+                        .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy khách hàng có ID: " + request.getCustomerId()));
                     User staff = null;
                     if (request.getEmployeeId() != null) {
                         staff = userRepository.findById(request.getEmployeeId())
-                            .orElseThrow(() -> new EntityNotFoundException("Staff not found with id: " + request.getEmployeeId()));
+                            .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy nhân viên có ID: " + request.getEmployeeId()));
                     }
 
                     existing.setStatus(ConversationStatus.valueOf(request.getStatus().toUpperCase()));
@@ -84,7 +84,7 @@ public class ConversationServiceImp  implements IConversationService {
                     Conversation updated = conversationRepository.save(existing);
                     return toDto(updated);
                 })
-                .orElseThrow(() -> new EntityNotFoundException("Conversation not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy cuộc trò chuyện có id: " + id));
     }
 
     @Override

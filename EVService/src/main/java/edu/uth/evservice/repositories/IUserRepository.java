@@ -30,5 +30,7 @@ public interface IUserRepository extends JpaRepository<User, Integer> {
     List<User> findByFullNameContainingIgnoreCase(String fullName);
 
     List<User> findByUsernameContainingIgnoreCaseOrFullNameContainingIgnoreCase(String username, String fullName);
+    //
+    List<User> findByServiceCenter_CenterIdAndRoleIn(Integer centerId, List<Role> roles);
 
 }

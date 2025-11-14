@@ -6,6 +6,10 @@ import java.util.stream.Collectors;
 
 import edu.uth.evservice.exception.ResourceNotFoundException;
 import edu.uth.evservice.requests.AddStockRequest;
+import edu.uth.evservice.models.User;
+import edu.uth.evservice.models.enums.Role;
+import edu.uth.evservice.requests.NotificationRequest;
+import edu.uth.evservice.services.INotificationService;
 import org.springframework.stereotype.Service;
 
 import edu.uth.evservice.dtos.InventoryDto;
@@ -28,6 +32,8 @@ public class InventoryServiceImpl implements IInventoryService {
     private final IInventoryRepository inventoryRepository;
     private final IPartRepository partRepository;
     private final IServiceCenterRepository serviceCenterRepository;
+    //
+    private final INotificationService notificationService;
 
     @Override
     public InventoryDto addStock(AddStockRequest request) {
@@ -75,5 +81,33 @@ public class InventoryServiceImpl implements IInventoryService {
                 .build();
     }
 
+    @Override
+    public void deleteInventory(Integer id) {
+        if (id == null) {
+            throw new IllegalArgumentException("Id cannot be null");
+        }
+        inventoryRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Inventory not found with id: " + id));
+        inventoryRepository.deleteById(id);
+    }
 
+    @Override
+    public List<InventoryDto> getInventoriesByPartId(Integer partId) {
+        if (partId == null) {
+            throw new IllegalArgumentException("PartId cannot be null");
+        }
+        return inventoryRepository.findByPart_PartId(partId).stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<InventoryDto> getInventoriesByCenterId(Integer centerId) {
+        if (centerId == null) {
+            throw new IllegalArgumentException("CenterId cannot be null");
+        }
+        return inventoryRepository.findByServiceCenter_CenterId(centerId).stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
+    }
 }

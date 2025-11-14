@@ -10,10 +10,13 @@ import edu.uth.evservice.models.enums.PaymentStatus;
 import edu.uth.evservice.models.enums.ServiceTicketStatus;
 import edu.uth.evservice.repositories.*;
 import edu.uth.evservice.requests.CreateInvoiceRequest;
+import edu.uth.evservice.requests.NotificationRequest;
 import edu.uth.evservice.services.IInvoiceService;
+import edu.uth.evservice.services.INotificationService;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -29,6 +32,7 @@ public class InvoiceServiceImpl implements IInvoiceService {
     private final ITicketPartRepository ticketPartRepo;
     private final ITicketServiceItemRepository  ticketItemRepo;
     private final IUserRepository userRepo;
+    private final INotificationService notificationService;
 
 
     @Override
@@ -67,13 +71,22 @@ public class InvoiceServiceImpl implements IInvoiceService {
                 .invoiceDate(LocalDate.now())
                 .totalAmount(grandTotal)
                 .paymentStatus(PaymentStatus.PENDING)
-                .paymentMethod(PaymentMethod.UNSPECIFIED)
+                .paymentMethod(PaymentMethod.CASH) // vì lỗi khi tạo hóa đơn bắt buộc paymentMehod ko đc null nên gán tạm ai làm phần này fix lại dùm:))
                 .serviceTicket(serviceTicket)
                 .user(customer)
                 .build();
-        Invoice save=invoiceRepo.save(invoice);
-        return toDto(save, serviceItems, parts, subtotalItems, subtotalParts,staff);
 
+        Invoice savedInvoice = invoiceRepo.save(invoice);
+
+        // === 2. PHẦN CODE MỚI THÊM VÀO (Gửi thông báo) ===
+        NotificationRequest customerNoti = new NotificationRequest();
+        customerNoti.setUserId(customer.getUserId()); // ID người nhận (Khách hàng)
+        customerNoti.setTitle("Hóa đơn mới cho dịch vụ của bạn!");
+        customerNoti.setMessage("Hóa đơn #" + savedInvoice.getInvoiceId() + " với tổng số tiền " +
+                savedInvoice.getTotalAmount() + " đã được tạo. Vui lòng thanh toán.");
+
+        notificationService.createNotification(customerNoti); // Gửi đi
+        return toDto(savedInvoice, serviceItems, parts, subtotalItems, subtotalParts,staff);
     }
 
     @Override

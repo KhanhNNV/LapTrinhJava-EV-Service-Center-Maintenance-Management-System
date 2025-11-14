@@ -13,9 +13,13 @@ import edu.uth.evservice.models.enums.Role;
 import edu.uth.evservice.dtos.*;
 import edu.uth.evservice.exception.ResourceNotFoundException;
 import edu.uth.evservice.models.*;
+import edu.uth.evservice.models.enums.Role;
 import edu.uth.evservice.repositories.*;
 import edu.uth.evservice.requests.AddServiceItemRequest;
 import edu.uth.evservice.requests.UpdatePartQuantityRequest;
+import edu.uth.evservice.dtos.TechnicianPerformanceDto;
+import edu.uth.evservice.requests.NotificationRequest;
+import edu.uth.evservice.services.INotificationService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -68,6 +72,9 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
     private final IUserRepository userRepo;
 
     private final ITicketServiceItemRepository ticketServiceItemRepository;
+    //
+    private final INotificationService notificationService;
+
     private final IServiceItemRepository serviceItemRepo;
     private final IPartRepository partRepo;
     private final IInventoryRepository inventoryRepo;
@@ -115,8 +122,36 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
 
         ticket.setStartTime(request.getStartTime());
         ticket.setEndTime(request.getEndTime());
-        ticket.setStatus(ServiceTicketStatus.valueOf(request.getStatus()));
         ticket.setNotes(request.getNotes());
+
+        // --- 2. NÂNG CẤP LOGIC CẬP NHẬT TRẠNG THÁI ---
+        ServiceTicketStatus newStatus = null;
+        if (request.getStatus() != null) {
+            newStatus = ServiceTicketStatus.valueOf(request.getStatus().toUpperCase());
+            ticket.setStatus(newStatus);
+        }
+
+        ServiceTicket savedTicket = ticketRepo.save(ticket);
+
+        // === 3. PHẦN CODE MỚI THÊM VÀO (Gửi thông báo) ===
+
+        // Kiểm tra xem trạng thái mới có phải là "HOÀN THÀNH" không
+        // (Giả sử trạng thái hoàn thành là 'COMPLETED', bạn hãy thay đổi nếu cần)
+        if (newStatus != null && newStatus == ServiceTicketStatus.COMPLETED) {
+
+            // Lấy thông tin khách hàng từ lịch hẹn liên quan
+            User customer = savedTicket.getAppointment().getCustomer();
+
+            NotificationRequest customerNoti = new NotificationRequest();
+            customerNoti.setUserId(customer.getUserId()); // ID người nhận (Khách hàng)
+            customerNoti.setTitle("Dịch vụ của bạn đã hoàn tất!");
+            customerNoti.setMessage("Dịch vụ cho xe [" + savedTicket.getAppointment().getVehicle().getLicensePlate() +
+                    "] (Phiếu #" + savedTicket.getTicketId() + ") đã được hoàn thành. " +
+                    "Vui lòng đợi thông báo hóa đơn để thanh toán.");
+
+            notificationService.createNotification(customerNoti); // Gửi đi
+        }
+
 
         return toDto(ticketRepo.save(ticket));
     }
@@ -181,20 +216,43 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
     public ServiceTicketDto completeWorkOnTicket(Integer ticketId, Integer technicianId) {
         verifyTicketOwnership(technicianId, ticketId);
         ServiceTicket ticket = ticketRepo.findById(ticketId)
-                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy phiếu dịch vụ:"));
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy vé dịch vụ"));
 
-        if (ticket.getEndTime() != null) {
-            throw new IllegalStateException("Work on this ticket has already been completed.");
-        }
-
-        ticket.setEndTime(LocalDateTime.now());
-        ticket.setStatus(ServiceTicketStatus.COMPLETED);
-
-        // Cập nhật cả Appointment liên quan
-        ticket.getAppointment().setStatus(AppointmentStatus.COMPLETED);
-
-        return toDto(ticketRepo.save(ticket));
+    // 4. KIỂM TRA LOGIC: Phiếu có đang 'IN_PROGRESS' không?
+    if (ticket.getStatus() != ServiceTicketStatus.IN_PROGRESS) {
+        throw new IllegalStateException("Chỉ có thể hoàn thành các phiếu đang ở trạng thái 'IN_PROGRESS'.");
     }
+
+    // 5. CẬP NHẬT PHIẾU
+    ticket.setStatus(ServiceTicketStatus.COMPLETED); // Đổi trạng thái
+    ticket.setEndTime(LocalDateTime.now()); // Ghi lại thời gian hoàn thành
+
+    ServiceTicket savedTicket = ticketRepo.save(ticket);
+
+    // === 6. PHẦN CODE GỬI THÔNG BÁO ===
+        //  Lấy ra Appointment cha
+    Appointment appointment = savedTicket.getAppointment();
+        // 3.2. Cập nhật trạng thái của Appointment cha
+    appointment.setStatus(AppointmentStatus.COMPLETED);// Doi trang thai
+    appointment.setUpdatedAt(LocalDateTime.now());
+
+    appointmentRepo.save(appointment);
+    // Lấy thông tin khách hàng từ lịch hẹn liên quan
+    User customer = savedTicket.getAppointment().getCustomer();
+
+    NotificationRequest customerNoti = new NotificationRequest();
+    customerNoti.setUserId(customer.getUserId()); // ID người nhận (Khách hàng)
+    customerNoti.setTitle("Dịch vụ của bạn đã hoàn tất!");
+    customerNoti.setMessage("Dịch vụ cho xe [" + savedTicket.getAppointment().getVehicle().getLicensePlate() +
+            "] (Phiếu #" + savedTicket.getTicketId() + ") đã được hoàn thành. " +
+            "Vui lòng đợi thông báo hóa đơn để thanh toán.");
+
+    notificationService.createNotification(customerNoti); // Gửi đi
+    // ===================================
+
+    // 7. Trả về kết quả
+    return toDto(savedTicket); // Giả sử bạn có hàm toDto
+}
 
     // kiem tra quyen so huu ticket cua tech
     @Override
@@ -348,7 +406,7 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
 
         // Cập nhật kho (delta có thể âm, nghĩa là trả hàng vào kho)
         inventory.setQuantity(inventory.getQuantity() - delta);
-        inventoryRepo.save(inventory);
+        Inventory updatedInventory = inventoryRepo.save(inventory);
 
         if (newQuantity == 0) {
             if (currentQuantity > 0) {
@@ -366,6 +424,28 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
 
             ticketPart.setQuantity(newQuantity);
             TicketPart savedTp = ticketPartRepo.save(ticketPart);
+            // === PHẦN CODE MỚI THÊM VÀO (Gửi thông báo) ===
+
+            // 1. Kiểm tra xem số lượng có SẮP HẾT HÀNG không
+            if (updatedInventory.getQuantity() <= updatedInventory.getMinQuantity()) {
+
+                // 2. Lấy danh sách nhân viên/admin tại trung tâm đó
+                List<User> usersToNotify = userRepo.findByServiceCenter_CenterIdAndRoleIn(
+                        techCenter.getCenterId(), List.of(Role.STAFF, Role.ADMIN)
+                );
+
+                // 3. Gửi thông báo cho từng người
+                for (User user : usersToNotify) {
+                    NotificationRequest notiRequest = new NotificationRequest();
+                    notiRequest.setUserId(user.getUserId());
+                    notiRequest.setTitle("Cảnh báo Tồn kho Thấp!");
+                    notiRequest.setMessage("Mặt hàng: '" + part.getPartName() +
+                            "' tại trung tâm " + techCenter.getCenterName() +
+                            " đã đạt mức tồn kho tối thiểu (" + updatedInventory.getMinQuantity() + "). Cần nhập thêm.");
+
+                    notificationService.createNotification(notiRequest);
+                }
+            }
             return toDto(savedTp);
         }
     }
