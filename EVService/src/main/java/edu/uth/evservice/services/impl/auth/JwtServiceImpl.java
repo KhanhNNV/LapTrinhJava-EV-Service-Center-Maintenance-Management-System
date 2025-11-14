@@ -1,4 +1,4 @@
-package edu.uth.evservice.services.impl.jwt;
+package edu.uth.evservice.services.impl.auth;
 
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
@@ -21,7 +21,7 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 
 import edu.uth.evservice.models.CustomerUserDetails;
-import edu.uth.evservice.services.jwt.IJwtService;
+import edu.uth.evservice.services.auth.IJwtService;
 import lombok.RequiredArgsConstructor;
 
 @Service

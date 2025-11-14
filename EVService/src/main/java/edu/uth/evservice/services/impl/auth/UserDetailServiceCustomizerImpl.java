@@ -1,4 +1,4 @@
-package edu.uth.evservice.services.impl.jwt;
+package edu.uth.evservice.services.impl.auth;
 
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

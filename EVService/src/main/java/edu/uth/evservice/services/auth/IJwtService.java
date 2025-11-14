@@ -1,4 +1,4 @@
-package edu.uth.evservice.services.jwt;
+package edu.uth.evservice.services.auth;
 
 import java.text.ParseException;
 

@@ -18,9 +18,9 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import edu.uth.evservice.services.impl.oauth2.CustomOAuth2UserService;
-import edu.uth.evservice.services.impl.oauth2.CustomOidcUserService;
-import edu.uth.evservice.services.impl.oauth2.OAuthenticationSuccessHandler;
+import edu.uth.evservice.services.impl.auth.oauth2.CustomOAuth2UserService;
+import edu.uth.evservice.services.impl.auth.oauth2.CustomOidcUserService;
+import edu.uth.evservice.services.impl.auth.oauth2.helpers.OAuthenticationSuccessHandler;
 import lombok.RequiredArgsConstructor;
 
 
@@ -83,7 +83,9 @@ public class SecurityConfig {
 
                 //- Cho phép tất cả request auth đều có thể truy cập bỏi bất cứ ai
                 .requestMatchers("/auth/**", "/oauth2/**","/login/oauth/code/**").permitAll()
-
+                //- Cho phép các cổng thanh toán gọi IPN và Return URLs
+                .requestMatchers("/api/payments/ipn/**", "/api/payments/return/**").permitAll().requestMatchers("/api/payments/ipn/**", "/api/payments/return/**").permitAll()
+                
                 //~ Tất cả các request khác đều yêu cầu phải xác thực JWT
                 .anyRequest().authenticated()
 

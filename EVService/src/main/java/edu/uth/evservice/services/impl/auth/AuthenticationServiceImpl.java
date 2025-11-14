@@ -1,4 +1,4 @@
-package edu.uth.evservice.services.impl.jwt;
+package edu.uth.evservice.services.impl.auth;
 
 
 import org.springframework.security.authentication.AuthenticationManager;
@@ -19,8 +19,8 @@ import edu.uth.evservice.requests.jwt.LoginRequest;
 import edu.uth.evservice.requests.jwt.RefreshTokenRequest;
 import edu.uth.evservice.requests.jwt.RegisterRequest;
 import edu.uth.evservice.services.IUserService;
-import edu.uth.evservice.services.jwt.IAuthenticaionService;
-import edu.uth.evservice.services.jwt.IJwtService;
+import edu.uth.evservice.services.auth.IAuthenticaionService;
+import edu.uth.evservice.services.auth.IJwtService;
 import lombok.RequiredArgsConstructor;
 
 @Service

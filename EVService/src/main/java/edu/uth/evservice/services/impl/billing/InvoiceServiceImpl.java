@@ -1,4 +1,4 @@
-package edu.uth.evservice.services.impl;
+package edu.uth.evservice.services.impl.billing;
 
 import edu.uth.evservice.dtos.InvoiceDto;
 import edu.uth.evservice.dtos.TicketPartDto;
@@ -11,8 +11,8 @@ import edu.uth.evservice.models.enums.ServiceTicketStatus;
 import edu.uth.evservice.repositories.*;
 import edu.uth.evservice.requests.CreateInvoiceRequest;
 import edu.uth.evservice.requests.NotificationRequest;
-import edu.uth.evservice.services.IInvoiceService;
 import edu.uth.evservice.services.INotificationService;
+import edu.uth.evservice.services.billing.IInvoiceService;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
@@ -71,7 +71,7 @@ public class InvoiceServiceImpl implements IInvoiceService {
                 .invoiceDate(LocalDate.now())
                 .totalAmount(grandTotal)
                 .paymentStatus(PaymentStatus.PENDING)
-                .paymentMethod(PaymentMethod.CASH) // vì lỗi khi tạo hóa đơn bắt buộc paymentMehod ko đc null nên gán tạm ai làm phần này fix lại dùm:))
+                .paymentMethod(PaymentMethod.UNSPECIFIED)
                 .serviceTicket(serviceTicket)
                 .user(customer)
                 .build();
