@@ -57,6 +57,7 @@ export default function AuthPage() {
     handleForgotPasswordSubmit,
     handleForgotPasswordDone,
     switchToForgotPassword,
+    isLoading,
   } = useAuthForm();
 
   const showTabs =
@@ -132,6 +133,7 @@ export default function AuthPage() {
               onNext={handleRegisterInfoNext}
               onSocial={handleSocialLogin}
               onFieldFocus={handleRegFieldFocus}
+              isLoading={isLoading}
             />
           )}
           {regStep === 3 && (
@@ -167,6 +169,7 @@ export default function AuthPage() {
               errors={loginErrors} // Có thể dùng chung errors với login
               onFieldFocus={handleLoginFieldFocus}
               onBackToLogin={switchToLogin}
+              isLoading={isLoading}
             />
           )}
           {forgotPasswordStep === 2 && (

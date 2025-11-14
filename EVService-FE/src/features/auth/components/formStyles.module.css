@@ -206,28 +206,59 @@
 }
 
 /* START: CSS cho Loader */
-.loader {
-  border: 4px solid #f3f3f3; /* Light grey */
-  border-top: 4px solid #3498db; /* Blue */
-  border-radius: 50%;
-  width: 24px; /* Kích thước nhỏ */
-  height: 24px;
-  animation: spin 1s linear infinite;
-  margin-right: 10px; /* Căn cách với chữ */
-}
-
-/* Hiệu ứng xoay */
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-/* Tùy chỉnh nút khi loading */
-.btnLoading {
-  display: flex; /* Để icon và chữ nằm cạnh nhau */
-  align-items: center;
+.loaderContainer {
+  display: flex;
   justify-content: center;
-  opacity: 0.7; /* Làm mờ nút */
-  cursor: not-allowed; /* Cấm click */
+  align-items: center;
+  padding: 10px 0; /* Cho loader có chút không gian */
+}
+
+/* HTML: <div class="loader"></div> */
+.loader {
+  display: flex;
+  width: 50px;
+  aspect-ratio: 1;
+  animation: l10-0 1.5s infinite linear;
+}
+.loader:before,
+.loader:after {
+  content: "";
+  width: 50%;
+  background: #514b82; /* Bạn có thể đổi màu này cho hợp lý */
+  clip-path: polygon(0 0, 100% 50%, 0% 100%);
+  animation: inherit;
+  animation-name: l10-1;
+  transform-origin: bottom left;
+}
+.loader:before {
+  clip-path: polygon(0 50%, 100% 0, 100% 100%);
+  transform-origin: bottom right;
+  --s: -1;
+}
+@keyframes l10-0 {
+  0%,
+  34.99% {
+    transform: scaley(1);
+  }
+  35%,
+  70% {
+    transform: scaley(-1);
+  }
+  90%,
+  100% {
+    transform: scaley(-1) rotate(180deg);
+  }
+}
+
+@keyframes l10-1 {
+  0%,
+  10%,
+  70%,
+  100% {
+    transform: translateY(-100%) rotate(calc(var(--s, 1) * 135deg));
+  }
+  35% {
+    transform: translateY(0%) rotate(0deg);
+  }
 }
 /* END: CSS cho Loader */

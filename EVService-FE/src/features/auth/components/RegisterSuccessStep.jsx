@@ -26,7 +26,7 @@ export default function RegisterSuccessStep({ onDone }) {
   return (
     <div className={styles.successContent}>
       <div className={styles.successIcon}>
-        <span className="material-icons">mark_email_read</span> {/* Thay icon */}
+        <span className="material-icons">mark_email_read</span > {/* Thay icon */}
       </div>
       <h2 className={styles.successTitle}>Xác thực Email của bạn!</h2>
       <p className={styles.successText}>

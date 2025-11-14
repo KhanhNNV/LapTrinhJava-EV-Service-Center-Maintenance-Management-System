@@ -7,7 +7,8 @@ export default function ForgotPasswordForm({
   onSubmit,
   errors = {},
   onFieldFocus,
-  onBackToLogin
+  onBackToLogin,
+  isLoading = false,
 }) {
 
   const handleKeyDown = (event) => {
@@ -48,9 +49,15 @@ export default function ForgotPasswordForm({
         )}
       </div>
 
-      <button className={formStyles.btnPrimary} onClick={onSubmit}>
-        GỬI LIÊN KẾT ĐẶT LẠI
-      </button>
+      {isLoading ? (
+          <div className={formStyles.loaderContainer}>
+            <div className={formStyles.loader}></div>
+          </div>
+        ) : (
+          <button className={formStyles.btnPrimary} onClick={onSubmit}>
+            GỬI LIÊN KẾT ĐẶT LẠI
+          </button>
+        )}
 
       <p className={formStyles.textCenter} style={{ marginTop: '1rem' }}>
         <a

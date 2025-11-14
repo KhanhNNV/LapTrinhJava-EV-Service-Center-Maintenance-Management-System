@@ -29,6 +29,7 @@ export default function RegisterFormInfo({
   termsViewed, 
   onTermsClick,
   onFieldFocus,
+  isLoading = false,
 }) {
   const [showPwd, setShowPwd] = useState(false);
   const [showPwd2, setShowPwd2] = useState(false);
@@ -368,9 +369,15 @@ const handlePhoneChange = (e) => {
         )}
       </div>
 
-      <button className={formStyles.btnPrimary} onClick={onNext}>
-        TIẾP TỤC
-      </button>
+      {isLoading ? (
+          <div className={formStyles.loaderContainer}>
+            <div className={formStyles.loader}></div>
+          </div>
+        ) : (
+          <button className={formStyles.btnPrimary} onClick={onNext}>
+            TIẾP TỤC
+          </button>
+        )}
 
 
 
