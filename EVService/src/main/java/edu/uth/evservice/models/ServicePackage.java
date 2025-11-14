@@ -33,4 +33,8 @@ public class ServicePackage {
 
     @OneToMany(mappedBy = "servicePackage", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CustomerPackageContract> customerPackageContracts = new ArrayList<>();
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "package_service_item", joinColumns = @JoinColumn(name = "package_id"), inverseJoinColumns = @JoinColumn(name = "item_id"))
+    private List<ServiceItem> serviceItems = new ArrayList<>();
 }

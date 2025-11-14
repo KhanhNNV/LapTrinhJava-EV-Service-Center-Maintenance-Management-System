@@ -12,6 +12,7 @@ import edu.uth.evservice.models.User;
 @Repository
 public interface IUserRepository extends JpaRepository<User, Integer> {
     Optional<User> findByUsername(String username);
+    Optional<User> findByUserId(Integer userId);
 
     Optional<User> findByUsernameOrEmail(String username, String email);
 

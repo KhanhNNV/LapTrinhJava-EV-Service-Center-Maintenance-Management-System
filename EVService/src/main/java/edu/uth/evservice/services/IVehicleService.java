@@ -9,14 +9,14 @@ public interface IVehicleService {
     // Đăng ký
 
     // Lấy danh sách xe CỦA TÔI (customer)
-    List<VehicleDto> getMyVehicles(String customerUsername);
+    List<VehicleDto> getMyVehicles(Integer UserId);
 
     // Lấy chi tiết 1 xe CỦA TÔI (customer)
-    VehicleDto getMyVehicleById(Integer vehicleId, String customerUsername);
+    VehicleDto getMyVehicleById(Integer vehicleId, Integer UserId);
 
     // Cập nhật 1 xe CỦA TÔI (customer)
-    VehicleDto updateMyVehicle(Integer vehicleId, VehicleRequest request, String customerUsername);
+    VehicleDto updateMyVehicle(Integer vehicleId, VehicleRequest request, Integer UserId);
 
     // Xóa 1 xe CỦA TÔI (customer)
-    void deleteMyVehicle(Integer vehicleId, String customerUsername);
+    void deleteMyVehicle(Integer vehicleId, Integer UserId);
 }

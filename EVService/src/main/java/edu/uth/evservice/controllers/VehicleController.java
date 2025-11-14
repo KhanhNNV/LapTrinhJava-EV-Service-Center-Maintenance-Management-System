@@ -31,10 +31,9 @@ public class VehicleController {
     // đăng ký xe đ bảo dưỡng cho customer
     @PostMapping
     public ResponseEntity<VehicleDto> registerVehicleForCustomer(@Valid @RequestBody VehicleRequest request,Authentication authentication) {
-        Integer customerId = Integer.parseInt(authentication.getName());
-
+        Integer UserId = Integer.parseInt(authentication.getName());
         // Gọi phương thức mới, an toàn hơn
-        VehicleDto createdVehicle = vehicleService.registerVehicle(request, customerId);
+        VehicleDto createdVehicle = vehicleService.registerVehicle(request, UserId);
 
         return new ResponseEntity<>(createdVehicle, HttpStatus.CREATED);
     }
@@ -42,35 +41,35 @@ public class VehicleController {
     // GET /api/vehicles (Lấy tất cả xe của tôi)
     @GetMapping
     @PreAuthorize("hasAnyRole('CUSTOMER','STAFF','TECHNICIAN','ADMIN')") 
-    public ResponseEntity<List<VehicleDto>> getMyVehicles() {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        List<VehicleDto> vehicles = vehicleService.getMyVehicles(username);
+    public ResponseEntity<List<VehicleDto>> getMyVehicles(Authentication authentication) {
+        Integer UserId = Integer.parseInt(authentication.getName());
+        List<VehicleDto> vehicles = vehicleService.getMyVehicles(UserId);
         return ResponseEntity.ok(vehicles);
     }
 
     // GET /api/vehicles/{id} (Lấy 1 xe của tôi)
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('CUSTOMER','STAFF','TECHNICIAN','ADMIN')") 
-    public ResponseEntity<VehicleDto> getMyVehicleById(@PathVariable("id") Integer id) {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        VehicleDto vehicle = vehicleService.getMyVehicleById(id, username);
+    public ResponseEntity<VehicleDto> getMyVehicleById(@PathVariable("id") Integer id, Authentication authentication) {
+        Integer UserId = Integer.parseInt(authentication.getName());
+        VehicleDto vehicle = vehicleService.getMyVehicleById(id, UserId);
         return ResponseEntity.ok(vehicle);
     }
 
     // PUT /api/vehicles/{id} (Cập nhật 1 xe của tôi)
     @PutMapping("/{id}")
     public ResponseEntity<VehicleDto> updateMyVehicle(@PathVariable("id") Integer id,
-                                                      @Valid @RequestBody VehicleRequest request) {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        VehicleDto updatedVehicle = vehicleService.updateMyVehicle(id, request, username);
+                                                      @Valid @RequestBody VehicleRequest request, Authentication authentication) {
+        Integer UserId = Integer.parseInt(authentication.getName());                                            
+        VehicleDto updatedVehicle = vehicleService.updateMyVehicle(id, request, UserId);
         return ResponseEntity.ok(updatedVehicle);
     }
 
     // DELETE /api/vehicles/{id} (Xóa 1 xe của tôi)
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteMyVehicle(@PathVariable("id") Integer id) {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        vehicleService.deleteMyVehicle(id, username);
+    public ResponseEntity<Void> deleteMyVehicle(@PathVariable("id") Integer id, Authentication authentication) {
+        Integer UserId = Integer.parseInt(authentication.getName()); 
+        vehicleService.deleteMyVehicle(id, UserId);
         return ResponseEntity.noContent().build(); // Trả về 204 No Content
     }
 }

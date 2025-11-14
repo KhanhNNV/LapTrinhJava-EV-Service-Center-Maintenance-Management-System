@@ -1,12 +1,20 @@
 package edu.uth.evservice.controllers;
 
+import edu.uth.evservice.dtos.ProfitReportDto;
+import edu.uth.evservice.dtos.SalaryDto;
 import edu.uth.evservice.models.enums.Role;
 import edu.uth.evservice.requests.CreateUserRequest;
+import edu.uth.evservice.services.IProfitReportService;
+import edu.uth.evservice.services.ISalaryService;
 import edu.uth.evservice.services.IUserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.YearMonth;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/users")
@@ -14,6 +22,8 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final IUserService userService;
+    private final ISalaryService salaryService;
+    private final IProfitReportService profitReportService;
     // Tìm kiếm user theo username hoặc fullname (chữ thường)
     @GetMapping("/search")
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
@@ -73,5 +83,20 @@ public class UserController {
     public ResponseEntity<?> createStaff(@RequestBody CreateUserRequest request) {
         request.setRole(Role.STAFF.name());
         return ResponseEntity.ok(userService.createUser(request));
+    }
+    //In danh sách lương của tất cả nhân viên trong một tháng
+
+
+    @GetMapping("/calculate")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<SalaryDto>> calculateSalaries(
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM") YearMonth month) {
+        return ResponseEntity.ok(salaryService.calculateMonthlySalaries(month));
+    }
+    //Báo cáo lợi nhuận trong 1 tháng
+    @GetMapping("/profit")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ProfitReportDto getMonthlyProfit(@RequestParam int year, @RequestParam int month) {
+        return profitReportService.getMonthlyProfitReport(year, month);
     }
 }

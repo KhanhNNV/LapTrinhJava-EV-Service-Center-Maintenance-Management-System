@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import edu.uth.evservice.dtos.AppointmentDto;
+import edu.uth.evservice.dtos.TechnicianWithCertificateDto;
 import edu.uth.evservice.requests.AppointmentRequest;
 import edu.uth.evservice.requests.AssignTechnicianRequest;
 import edu.uth.evservice.services.IAppointmentService;
@@ -32,7 +33,7 @@ public class AppointmentController {
         @GetMapping("/status/{status}")
         @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
         public ResponseEntity<List<AppointmentDto>> getAppointmentsByStatus(@PathVariable String status) {
-        
+
                 return ResponseEntity.ok(appointmentService.getAppointmentsByStatus(status));
         }
 
@@ -40,15 +41,15 @@ public class AppointmentController {
         @PostMapping
         @PreAuthorize("hasAnyRole('CUSTOMER')")
         public ResponseEntity<AppointmentDto> createMyAppointment(
-                                @RequestBody AppointmentRequest request,
-                                Authentication authentication) {
-        
-        Integer customerId = Integer.parseInt(authentication.getName());
+                        @RequestBody AppointmentRequest request,
+                        Authentication authentication) {
 
-        AppointmentDto newAppointment = appointmentService.createAppointmentForCustomer(
-                                customerId, 
+                Integer customerId = Integer.parseInt(authentication.getName());
+
+                AppointmentDto newAppointment = appointmentService.createAppointmentForCustomer(
+                                customerId,
                                 request);
-        return new ResponseEntity<>(newAppointment, HttpStatus.CREATED);
+                return new ResponseEntity<>(newAppointment, HttpStatus.CREATED);
         }
 
         // Customer cancel appointment
@@ -58,7 +59,8 @@ public class AppointmentController {
                         @PathVariable Integer appointmentId,
                         Authentication authentication) {
                 Integer customerId = Integer.parseInt(authentication.getName());
-                AppointmentDto canceledAppointment = appointmentService.cancelAppointmentForCustomer(appointmentId,customerId);
+                AppointmentDto canceledAppointment = appointmentService.cancelAppointmentForCustomer(appointmentId,
+                                customerId);
                 return ResponseEntity.ok(canceledAppointment);
         }
 
@@ -81,6 +83,16 @@ public class AppointmentController {
                 return ResponseEntity.ok(result);
         }
 
+        // Lấy danh sách kỹ thuật viên gợi ý cho lịch hẹn
+        @GetMapping("/{appointmentId}/suggestedTechnicians")
+        @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+        public ResponseEntity<List<TechnicianWithCertificateDto>> getSuggestedTechniciansForAppointment(
+                        @PathVariable Integer appointmentId) {
+                List<TechnicianWithCertificateDto> suggestedTechnicians = appointmentService
+                                .getSuggestedTechniciansForAppointment(appointmentId);
+                return ResponseEntity.ok(suggestedTechnicians);
+        }
+
         // phan cong lich hen cho technician
         @PutMapping("/{appointmentId}/assignTechnician")
         @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
@@ -98,7 +110,7 @@ public class AppointmentController {
         public ResponseEntity<List<AppointmentDto>> getApointmentsByTechnician(Authentication authentication) {
                 Integer technicianId = Integer.parseInt(authentication.getName());
                 List<AppointmentDto> appointments = appointmentService
-                    .getAppointmentByTechinician(technicianId);
+                                .getAppointmentByTechinician(technicianId);
                 return ResponseEntity.ok(appointments);
         }
 
