@@ -117,4 +117,5 @@ dist-ssr
 ################
 EVService\src\main\resources\refresh-token.txt
 EVService\src\main\resources\credentials.json
+
 EVService\src\main\resources\application-dev.properties
