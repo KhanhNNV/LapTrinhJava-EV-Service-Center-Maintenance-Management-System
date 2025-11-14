@@ -1,0 +1,117 @@
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ProtectedRoute } from "./components/ProtectedRoute";
+import { CustomerLayout } from "./layouts/CustomerLayout";
+import { StaffLayout } from "./layouts/StaffLayout";
+import { AdminLayout } from "./layouts/AdminLayout";
+import { TechnicianLayout } from "./layouts/TechnicianLayout";
+import Index from "./pages/Index";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import CustomerDashboard from "./pages/customer/Dashboard";
+import Vehicles from "./pages/customer/Vehicles";
+import Appointments from "./pages/customer/Appointments";
+import History from "./pages/customer/History";
+import StaffDashboard from "./pages/staff/Dashboard";
+import StaffAppointments from "./pages/staff/Appointments";
+import StaffCustomers from "./pages/staff/Customers";
+import StaffServiceTickets from "./pages/staff/ServiceTickets";
+import StaffMessages from "./pages/staff/Messages";
+import AdminDashboard from "./pages/admin/Dashboard";
+import AdminUsers from "./pages/admin/Users";
+import AdminServiceCenters from "./pages/admin/ServiceCenters";
+import AdminPartsInventory from "./pages/admin/PartsInventory";
+import AdminServicePackages from "./pages/admin/ServicePackages";
+import AdminAnalytics from "./pages/admin/Analytics";
+import TechnicianDashboard from "./pages/technician/Dashboard";
+import TechnicianMyAppointments from "./pages/technician/MyAppointments";
+import TechnicianServiceTickets from "./pages/technician/ServiceTickets";
+import NotFound from "./pages/NotFound";
+
+const queryClient = new QueryClient();
+
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <TooltipProvider>
+      <Toaster />
+      <Sonner />
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          
+          {/* Customer Routes */}
+          <Route
+            path="/dashboard/customer"
+            element={
+              <ProtectedRoute allowedRoles={['CUSTOMER']}>
+                <CustomerLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<CustomerDashboard />} />
+            <Route path="vehicles" element={<Vehicles />} />
+            <Route path="appointments" element={<Appointments />} />
+            <Route path="history" element={<History />} />
+          </Route>
+
+          {/* Staff Routes */}
+          <Route
+            path="/dashboard/staff"
+            element={
+              <ProtectedRoute allowedRoles={['STAFF']}>
+                <StaffLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<StaffDashboard />} />
+            <Route path="appointments" element={<StaffAppointments />} />
+            <Route path="customers" element={<StaffCustomers />} />
+            <Route path="tickets" element={<StaffServiceTickets />} />
+            <Route path="messages" element={<StaffMessages />} />
+          </Route>
+
+          {/* Admin Routes */}
+          <Route
+            path="/dashboard/admin"
+            element={
+              <ProtectedRoute allowedRoles={['ADMIN']}>
+                <AdminLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<AdminDashboard />} />
+            <Route path="users" element={<AdminUsers />} />
+            <Route path="service-centers" element={<AdminServiceCenters />} />
+            <Route path="parts" element={<AdminPartsInventory />} />
+            <Route path="packages" element={<AdminServicePackages />} />
+            <Route path="analytics" element={<AdminAnalytics />} />
+          </Route>
+
+          {/* Technician Routes */}
+          <Route
+            path="/dashboard/technician"
+            element={
+              <ProtectedRoute allowedRoles={['TECHNICIAN']}>
+                <TechnicianLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<TechnicianDashboard />} />
+            <Route path="appointments" element={<TechnicianMyAppointments />} />
+            <Route path="tickets" element={<TechnicianServiceTickets />} />
+          </Route>
+
+          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </BrowserRouter>
+    </TooltipProvider>
+  </QueryClientProvider>
+);
+
+export default App;

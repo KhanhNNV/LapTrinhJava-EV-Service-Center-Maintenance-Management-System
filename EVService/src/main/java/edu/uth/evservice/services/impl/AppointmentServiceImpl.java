@@ -152,16 +152,20 @@ public class AppointmentServiceImpl implements IAppointmentService {
                 .orElseThrow(
                         () -> new ResourceNotFoundException("Không tìm thấy nhân viên với username: " + staffId));
 
-        // kiem tra neu appointment da bi huy hoac da xac nhan
+        // kiem tra neu appointment da bi huy
         if (appointment.getStatus() == AppointmentStatus.CANCELED) {
-            throw new IllegalStateException("Không thể xác nhận lịch hẹn đã bị hủy.");
+        throw new IllegalStateException("Không thể xác nhận lịch hẹn đã bị hủy.");
         }
-        if (appointment.getStatus() == AppointmentStatus.CONFIRMED) {
-            throw new IllegalStateException("Lịch hẹn đã được xác nhận từ trước.");
-        }
+        // if (appointment.getStatus() == AppointmentStatus.CONFIRMED) {
+        // throw new IllegalStateException("Lịch hẹn đã được xác nhận từ trước.");
+        // }
 
-        if (appointment.getStatus() == AppointmentStatus.CHECKED_IN) {
-            throw new IllegalStateException("Lịch hẹn đã được checked-in.");
+        // if (appointment.getStatus() == AppointmentStatus.CHECKED_IN) {
+        // throw new IllegalStateException("Lịch hẹn đã được checked-in.");
+        // }
+
+        if (appointment.getStatus() != AppointmentStatus.PENDING) {
+            throw new IllegalStateException("Lịch hẹn đã được xác nhận.");
         }
 
         appointment.setStaff(staff);
