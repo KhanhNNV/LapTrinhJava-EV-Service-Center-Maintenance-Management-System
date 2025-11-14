@@ -19,18 +19,18 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CustomOidcUserService implements OAuth2UserService<OidcUserRequest, OidcUser>{
     /**
-     *. 1. 📨 NHẬN userRequest (chứa clientRegistration + authorization code)
+     *. 1. NHẬN userRequest (chứa clientRegistration + authorization code)
      *.    ↓
-     *. 2. 🔗 GỬI request đến tokenUri của Google:
+     *. 2. GỬI request đến tokenUri của Google:
      *.    POST https://oauth2.googleapis.com/token
      *.    ↓  
-     *. 3. 🔑 NHẬN access_token + id_token từ Google
+     *. 3. NHẬN access_token + id_token từ Google
      *.    ↓
-     *. 4. 🔐 VERIFY JWT SIGNATURE của id_token
+     *. 4. VERIFY JWT SIGNATURE của id_token
      *.    - Kiểm tra chữ ký số để xác thực token
      *.    - Verify issuer, audience, expiration
      *.    ↓
-     *. 5. 📄 EXTRACT STANDARD CLAIMS từ id_token:
+     *. 5. EXTRACT STANDARD CLAIMS từ id_token:
      *.    {
      *.      "iss": "https://accounts.google.com",
      *.      "sub": "123456789",
@@ -43,11 +43,11 @@ public class CustomOidcUserService implements OAuth2UserService<OidcUserRequest,
      *.      "email_verified": true
      *.    }
      *.    ↓
-     *. 6. 🎭 BIẾN ĐỔI thành object OidcUser
+     *. 6. BIẾN ĐỔI thành object OidcUser
      *.    - OidcUser kế thừa OAuth2User + có thêm ID Token claims
      *.    - Chứa Standard Claims được xác thực
      *.    ↓
-     *. 7. ✅ TRẢ VỀ OidcUser với authenticated claims
+     *. 7. TRẢ VỀ OidcUser với authenticated claims
      */
     private final OidcUserService oidcDelegate = new OidcUserService();
     //~ Class helper
