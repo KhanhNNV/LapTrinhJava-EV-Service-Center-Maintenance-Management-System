@@ -9,7 +9,7 @@ import lombok.Getter;
 public class VnPayConfig {
     @Value("${VNPAY.VERSION}")
     private String vnpayVersion;
-    @Value("${VNPAY.COMMEND}")
+    @Value("${VNPAY.COMMAND}")
     private String vnpayCommand;
     @Value("${VNPAY.TMN-CODE}")
     private String vnpayTmnCode;
