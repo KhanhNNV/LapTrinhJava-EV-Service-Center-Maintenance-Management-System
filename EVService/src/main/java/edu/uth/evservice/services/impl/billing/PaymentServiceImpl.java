@@ -3,6 +3,7 @@ package edu.uth.evservice.services.impl.billing;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import edu.uth.evservice.config.payment.VnPayConfig;
@@ -31,11 +32,16 @@ public class PaymentServiceImpl implements IPaymentService {
     private final VnPayHelper vnPayHelper;
     private final VnPayConfig vnPayConfig;
 
-    //. Hàm kiểm tra hóa đơn có hợp lệ để thanh toán không
-    private Invoice validateInvoice(Integer invoiceId) {
+    //.(HELPER) Hàm kiểm tra hóa đơn có hợp lệ để thanh toán không
+    private Invoice validateInvoice(Integer invoiceId, Integer customerId) {
+        //~ Kiểm tra đơn có tồn tịa không
         Invoice invoice = invoiceRepository.findById(invoiceId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy hóa đơn với ID: " + invoiceId));
-
+        //~ Kiểm tra đơn phải quyền sở hữu khách hàng không
+        if (!invoice.getUser().getUserId().equals(customerId)) {
+            throw new AccessDeniedException("Bạn không có quyền thanh toán hóa đơn này.");
+        }
+        
         if (invoice.getPaymentStatus() == PaymentStatus.PAID) {
             throw new IllegalStateException("Hóa đơn này đã được thanh toán.");
         }
@@ -45,7 +51,7 @@ public class PaymentServiceImpl implements IPaymentService {
         return invoice;
     }
 
-    //. Tạo và lưu giao dịch vào CSDL (pending)
+    //.(HELPER) Tạo và lưu bản ghi giao dịch với trạng thái PENDING trong CSDL
     private PaymentTransaction createPendingTransaction(Invoice invoice, String orderId, PaymentGateway gateway) {
         PaymentTransaction transaction = PaymentTransaction.builder()
                 .invoice(invoice)
@@ -60,9 +66,10 @@ public class PaymentServiceImpl implements IPaymentService {
 
     @Override
     @Transactional
-    public PaymentDto createVnPayPayment(Integer invoiceId, HttpServletRequest request) {
+    //. KHỞI TẠO QUÁ TRÌNH THANH TOÁN CỦA VNPAY & TRẢ VỀ URL THANH TOÁN
+    public PaymentDto createVnPayPayment(Integer invoiceId, HttpServletRequest request,Integer customerId) {
         //~ Kiểm tra nghiệp vụ
-        Invoice invoice = this.validateInvoice(invoiceId);
+        Invoice invoice = this.validateInvoice(invoiceId, customerId);
 
         //~ Tạo OrderId
         String orderId = "EV_INV_" + invoiceId + "_" + System.currentTimeMillis();
@@ -74,10 +81,12 @@ public class PaymentServiceImpl implements IPaymentService {
         //~ thì giá trị này có thể là IP của proxy chứ không phải IP người dùng.
         String ipAddress = request.getRemoteAddr();
 
+        //~ Tạo và trả về URL
         return vnPayHelper.createPaymentUrl(invoice, orderId, ipAddress);
     }
 
     @Override
+    //. XỮ LÝ CALLBACK TỪ VNPAY ĐỂ CẬP NHẬT TRẠNG THÁI THANH TOÁN
     public Map<String, String> processVnPayIpn(Map<String, String> ipnParams) {
         try{
             //- Kiểm tra có chữ ký của VNPAY không
@@ -92,6 +101,7 @@ public class PaymentServiceImpl implements IPaymentService {
             //~ Tách dữ liệu cần hash ra (loại bỏ thằng vnp_SecureHash)
             Map<String, String> dataToHash = new HashMap<>(ipnParams);
             dataToHash.remove("vnp_SecureHash");
+            dataToHash.remove("vnp_SecureHashType");
 
             //~ Tạo một querystring mới để test thử chữ ký chính xác chứu
             String queryStringToHash = vnPayHelper.buildQueryString(dataToHash);

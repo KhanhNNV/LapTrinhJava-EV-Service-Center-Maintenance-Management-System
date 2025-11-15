@@ -93,11 +93,12 @@ public class VnPayHelper {
         //~ Tạo query và sắp xếp và chữ ký
         String queryString = this.buildQueryString(vnpayParams);
         String hashData = this.hmacSHA512(vnPayConfig.getVnpayHashSecret(),queryString);
-        String paymentUrl = vnPayConfig.getVnpayUrl() + "?" + queryString + "&vnp_CreateDate=" + hashData;
+        String paymentUrl = vnPayConfig.getVnpayUrl() + "?" + queryString + "&vnp_SecureHash=" + hashData;
 
         return PaymentDto.builder()
                         .paymentUrl(paymentUrl)
                         .qrCodeUrl(paymentUrl)
+                        .orderId(orderId)
                         .build();
     }
     
