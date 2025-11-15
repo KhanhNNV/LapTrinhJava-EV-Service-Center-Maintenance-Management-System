@@ -1,73 +1,71 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import api from "@/services/auth/api";
+import { CheckCircle, XCircle, Loader2 } from "lucide-react";
 
-const VerifyEmailPage: React.FC = () => {
+export default function VerifyEmailPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const [status, setStatus] = useState<"LOADING" | "SUCCESS" | "ERROR">(
-    "LOADING"
+  const token = searchParams.get("token");
+
+  const [status, setStatus] = useState<"loading" | "success" | "error">(
+    "loading"
   );
 
   useEffect(() => {
-    const token = searchParams.get("token");
     if (!token) {
-      setStatus("ERROR");
+      setStatus("error");
       return;
     }
 
-    const verify = async () => {
-      try {
-        await api.post("/auth/verify-email", { token });
-        setStatus("SUCCESS");
-      } catch (error) {
-        console.error(error);
-        setStatus("ERROR");
-      }
-    };
+    api
+      .post("/auth/verify-email", { token })
+      .then(() => setStatus("success"))
+      .catch(() => setStatus("error"));
+  }, [token]);
 
-    verify();
-  }, [searchParams]);
+  useEffect(() => {
+    if (status === "success") {
+      const timer = setTimeout(() => {
+        navigate("/login");
+      }, 3000);
 
-  if (status === "LOADING") {
+      return () => clearTimeout(timer); // cleanup khi component unmount
+    }
+  }, [status, navigate]);
+
+  if (status === "loading") {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p>Đang xác thực email của bạn...</p>
+        <Loader2 className="w-12 h-12 animate-spin text-blue-600" />
       </div>
     );
   }
 
-  if (status === "ERROR") {
+  if (status === "error") {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center">
-        <h1 className="text-xl font-semibold mb-2">Xác thực thất bại</h1>
-        <p className="text-muted-foreground mb-4">
-          Liên kết xác thực không hợp lệ hoặc đã hết hạn.
-        </p>
-        <button
-          className="px-4 py-2 rounded bg-primary text-primary-foreground"
-          onClick={() => navigate("/login")}
-        >
-          Quay lại đăng nhập
-        </button>
+      <div className="min-h-screen bg-red-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl p-8 text-center max-w-md">
+          <XCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+          <h1 className="text-xl font-bold">Liên kết không hợp lệ</h1>
+          <button
+            onClick={() => navigate("/auth/resend-verification")}
+            className="mt-4 text-blue-600 hover:underline"
+          >
+            Gửi lại email
+          </button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center">
-      <h1 className="text-xl font-semibold mb-2">Xác thực thành công!</h1>
-      <p className="text-muted-foreground mb-4">
-        Email của bạn đã được xác nhận. Bạn có thể đăng nhập ngay bây giờ.
-      </p>
-      <button
-        className="px-4 py-2 rounded bg-primary text-primary-foreground"
-        onClick={() => navigate("/login")}
-      >
-        Đến trang đăng nhập
-      </button>
+    <div className="min-h-screen bg-green-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl p-8 text-center max-w-md">
+        <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
+        <h1 className="text-xl font-bold">Xác thực thành công!</h1>
+        <p className="text-gray-600 mt-2">Chuyển đến đăng nhập sau 3s...</p>
+      </div>
     </div>
   );
-};
-
-export default VerifyEmailPage;
+}

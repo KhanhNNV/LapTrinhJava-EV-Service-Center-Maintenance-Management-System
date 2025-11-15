@@ -2,10 +2,12 @@
 import { useState } from "react";
 import api from "@/services/auth/api";
 import { useNavigate } from "react-router-dom";
+import EmailSentPage from "./EmailSentPage";
 
 const ForgotPasswordPage: React.FC = () => {
   const [email, setEmail] = useState("");
   const [isSending, setIsSending] = useState(false);
+  const [showSentPage, setShowSentPage] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -13,15 +15,19 @@ const ForgotPasswordPage: React.FC = () => {
     setIsSending(true);
     try {
       await api.post("/auth/forgot-password", { email });
-      navigate("/auth/reset-password-sent?email=" + encodeURIComponent(email));
+      setShowSentPage(true); // HIỂN THỊ TRANG "ĐÃ GỬI"
     } catch (error) {
       console.error(error);
-      // Không nên báo "email không tồn tại" để tránh lộ thông tin
-      navigate("/auth/reset-password-sent");
+      alert("Đã có lỗi xảy ra. Vui lòng thử lại.");
     } finally {
       setIsSending(false);
     }
   };
+
+  // Nếu đã gửi → hiển thị trang thành công
+  if (showSentPage) {
+    return <EmailSentPage />;
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4">

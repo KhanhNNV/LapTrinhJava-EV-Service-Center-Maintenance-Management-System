@@ -149,13 +149,12 @@ export default function Register() {
         phoneNumber: formData.phoneNumber,
         address: formData.address,
       });
-
-      toast.success("Đăng ký thành công! Vui lòng đăng nhập.");
-      navigate("/login");
+      navigate("/auth/email-sent", { state: { email: formData.email } });
+      //toast.success("Đăng ký thành công! Vui lòng đăng nhập.");
+      //navigate("/login");
     } catch (error: any) {
       toast.error(
-        error?.response?.data?.message ||
-          "Đăng ký thất bại. Vui lòng thử lại."
+        error?.response?.data?.message || "Đăng ký thất bại. Vui lòng thử lại."
       );
     } finally {
       setIsLoading(false);
@@ -353,9 +352,7 @@ export default function Register() {
                     type="button"
                     className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground"
                     onClick={() => setShowPwd2((prev) => !prev)}
-                    aria-label={
-                      showPwd2 ? "Ẩn mật khẩu" : "Hiện mật khẩu"
-                    }
+                    aria-label={showPwd2 ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
                   >
                     {showPwd2 ? (
                       <EyeOff className="w-4 h-4" />
@@ -367,9 +364,7 @@ export default function Register() {
                 {formData.confirmPassword &&
                   formData.password &&
                   formData.confirmPassword !== formData.password && (
-                    <p className="text-xs text-red-500">
-                      Mật khẩu không khớp
-                    </p>
+                    <p className="text-xs text-red-500">Mật khẩu không khớp</p>
                   )}
               </div>
 
@@ -461,9 +456,7 @@ export default function Register() {
               </div>
 
               <div className="text-center text-sm pt-2">
-                <span className="text-muted-foreground">
-                  Đã có tài khoản?{" "}
-                </span>
+                <span className="text-muted-foreground">Đã có tài khoản? </span>
                 <Link to="/login" className="text-primary hover:underline">
                   Đăng nhập ngay
                 </Link>

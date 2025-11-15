@@ -31,10 +31,10 @@ import TechnicianMyAppointments from "./pages/technician/MyAppointments";
 import TechnicianServiceTickets from "./pages/technician/ServiceTickets";
 import NotFound from "./pages/NotFound";
 import AuthCallbackPage from "./pages/auth/AuthCallbackPage";
-import VerifyEmailPending from "./pages/auth/VerifyEmailPending";
 import VerifyEmailPage from "./pages/auth/VerifyEmailPage";
 import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/auth/ResetPasswordPage";
+import EmailVerificationSentPage from "./pages/auth/EmailVerificationSentPage";
 
 const queryClient = new QueryClient();
 
@@ -49,11 +49,11 @@ const App = () => (
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/auth/callback" element={<AuthCallbackPage />} />
-          <Route
-            path="/auth/verify-email-pending"
-            element={<VerifyEmailPending />}
-          />
           <Route path="/auth/verify-email" element={<VerifyEmailPage />} />
+          <Route
+            path="/auth/email-sent"
+            element={<EmailVerificationSentPage />}
+          />
           <Route
             path="/auth/forgot-password"
             element={<ForgotPasswordPage />}

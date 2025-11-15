@@ -1,10 +1,10 @@
-import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
@@ -13,17 +13,17 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog';
+} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Calendar, Plus, Clock, MapPin } from 'lucide-react';
-import api from '@/services/auth/api';
-import { toast } from 'sonner';
+} from "@/components/ui/select";
+import { Calendar, Plus, Clock, MapPin } from "lucide-react";
+import api from "@/services/auth/api";
+import { toast } from "sonner";
 
 import { ENDPOINTS } from "@/config/endpoints";
 
@@ -31,17 +31,17 @@ export default function Appointments() {
   const queryClient = useQueryClient();
   const [isBookingDialogOpen, setIsBookingDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
-    vehicleId: '',
-    serviceType: '',
-    appointmentDate: '',
-    appointmentTime: '',
-    note: '',
-    centerId: '',
-    contractId: '',
+    vehicleId: "",
+    serviceType: "",
+    appointmentDate: "",
+    appointmentTime: "",
+    note: "",
+    centerId: "",
+    contractId: "",
   });
 
   const { data: vehicles } = useQuery({
-    queryKey: ['customer-vehicles'],
+    queryKey: ["customer-vehicles"],
     queryFn: async () => {
       const response = await api.get(ENDPOINTS.vehicles.list.url);
       return response.data;
@@ -49,39 +49,39 @@ export default function Appointments() {
   });
 
   const { data: appointments, isLoading } = useQuery({
-    queryKey: ['customer-appointments'],
+    queryKey: ["customer-appointments"],
     queryFn: async () => {
-      const response = await api.get('/api/appointments/myAppointments');
+      const response = await api.get("/api/appointments/myAppointments");
       return response.data;
     },
   });
 
   const bookAppointmentMutation = useMutation({
     mutationFn: async (data: any) => {
-      const response = await api.post('/api/appointments', {
+      const response = await api.post("/api/appointments", {
         ...data,
         appointmentDate: `${data.appointmentDate}T${data.appointmentTime}`,
-        centerId : 1, // tạm thời fix centerId = 1
-        contractId : 1, // tạm thời fix contractId = 1
+        centerId: 1, // tạm thời fix centerId = 1
+        contractId: 1, // tạm thời fix contractId = 1
       });
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['customer-appointments'] });
-      toast.success('Đã đặt lịch hẹn thành công!');
+      queryClient.invalidateQueries({ queryKey: ["customer-appointments"] });
+      toast.success("Đã đặt lịch hẹn thành công!");
       setIsBookingDialogOpen(false);
       setFormData({
-        vehicleId: '',
-        serviceType: '',
-        appointmentDate: '',
-        appointmentTime: '',
-        note: '',
-        centerId: '',
-        contractId: '',
+        vehicleId: "",
+        serviceType: "",
+        appointmentDate: "",
+        appointmentTime: "",
+        note: "",
+        centerId: "",
+        contractId: "",
       });
     },
     onError: () => {
-      toast.error('Không thể đặt lịch. Vui lòng thử lại.');
+      toast.error("Không thể đặt lịch. Vui lòng thử lại.");
     },
   });
 
@@ -92,22 +92,22 @@ export default function Appointments() {
 
   const getStatusColor = (status: string) => {
     const colors: { [key: string]: string } = {
-      PENDING: 'bg-accent/10 text-accent',
-      CONFIRMED: 'bg-secondary/10 text-secondary',
-      IN_PROGRESS: 'bg-primary/10 text-primary',
-      COMPLETED: 'bg-muted text-muted-foreground',
-      CANCELLED: 'bg-destructive/10 text-destructive',
+      PENDING: "bg-accent/10 text-accent",
+      CONFIRMED: "bg-secondary/10 text-secondary",
+      IN_PROGRESS: "bg-primary/10 text-primary",
+      COMPLETED: "bg-muted text-muted-foreground",
+      CANCELLED: "bg-destructive/10 text-destructive",
     };
-    return colors[status] || 'bg-muted text-muted-foreground';
+    return colors[status] || "bg-muted text-muted-foreground";
   };
 
   const getStatusText = (status: string) => {
     const texts: { [key: string]: string } = {
-      PENDING: 'Chờ xác nhận',
-      CONFIRMED: 'Đã xác nhận',
-      IN_PROGRESS: 'Đang bảo dưỡng',
-      COMPLETED: 'Hoàn thành',
-      CANCELLED: 'Đã hủy',
+      PENDING: "Chờ xác nhận",
+      CONFIRMED: "Đã xác nhận",
+      IN_PROGRESS: "Đang bảo dưỡng",
+      COMPLETED: "Hoàn thành",
+      CANCELLED: "Đã hủy",
     };
     return texts[status] || status;
   };
@@ -122,7 +122,10 @@ export default function Appointments() {
           </p>
         </div>
 
-        <Dialog open={isBookingDialogOpen} onOpenChange={setIsBookingDialogOpen}>
+        <Dialog
+          open={isBookingDialogOpen}
+          onOpenChange={setIsBookingDialogOpen}
+        >
           <DialogTrigger asChild>
             <Button className="bg-gradient-primary shadow-glow">
               <Plus className="w-4 h-4 mr-2" />
@@ -142,7 +145,9 @@ export default function Appointments() {
                   <Label htmlFor="vehicle">Chọn xe</Label>
                   <Select
                     value={formData.vehicleId}
-                    onValueChange={(value) => setFormData({ ...formData, vehicleId: value })}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, vehicleId: value })
+                    }
                     required
                   >
                     <SelectTrigger>
@@ -162,18 +167,28 @@ export default function Appointments() {
                   <Label htmlFor="serviceType">Loại dịch vụ</Label>
                   <Select
                     value={formData.serviceType}
-                    onValueChange={(value) => setFormData({ ...formData, serviceType: value })}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, serviceType: value })
+                    }
                     required
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Chọn dịch vụ" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="PERIODIC_MAINTENANCE">Bảo dưỡng định kỳ</SelectItem>
-                      <SelectItem value="REPAIR">Sửa chữa</SelectItem>
-                      <SelectItem value="INSPECTION">Kiểm tra tổng quát</SelectItem>
-                      <SelectItem value="BATTERY_CHECK">Kiểm tra pin</SelectItem>
-                      <SelectItem value="SOFTWARE_UPDATE">Cập nhật phần mềm</SelectItem>
+                      <SelectItem value="PERIODIC_MAINTENANCE">
+                        Bảo dưỡng định kỳ
+                      </SelectItem>
+                      <SelectItem value="Sửa chữa">Sửa chữa</SelectItem>
+                      <SelectItem value="INSPECTION">
+                        Kiểm tra tổng quát
+                      </SelectItem>
+                      <SelectItem value="BATTERY_CHECK">
+                        Kiểm tra pin
+                      </SelectItem>
+                      <SelectItem value="SOFTWARE_UPDATE">
+                        Cập nhật phần mềm
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -185,9 +200,14 @@ export default function Appointments() {
                       id="appointmentDate"
                       type="date"
                       value={formData.appointmentDate}
-                      onChange={(e) => setFormData({ ...formData, appointmentDate: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          appointmentDate: e.target.value,
+                        })
+                      }
                       required
-                      min={new Date().toISOString().split('T')[0]}
+                      min={new Date().toISOString().split("T")[0]}
                     />
                   </div>
                   <div className="space-y-2">
@@ -196,7 +216,12 @@ export default function Appointments() {
                       id="appointmentTime"
                       type="time"
                       value={formData.appointmentTime}
-                      onChange={(e) => setFormData({ ...formData, appointmentTime: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          appointmentTime: e.target.value,
+                        })
+                      }
                       required
                     />
                   </div>
@@ -208,14 +233,22 @@ export default function Appointments() {
                     id="notes"
                     placeholder="Mô tả vấn đề hoặc yêu cầu đặc biệt..."
                     value={formData.note}
-                    onChange={(e) => setFormData({ ...formData, note: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, note: e.target.value })
+                    }
                     rows={3}
                   />
                 </div>
               </div>
               <DialogFooter>
-                <Button type="submit" className="bg-gradient-primary" disabled={bookAppointmentMutation.isPending}>
-                  {bookAppointmentMutation.isPending ? 'Đang đặt...' : 'Đặt lịch hẹn'}
+                <Button
+                  type="submit"
+                  className="bg-gradient-primary"
+                  disabled={bookAppointmentMutation.isPending}
+                >
+                  {bookAppointmentMutation.isPending
+                    ? "Đang đặt..."
+                    : "Đặt lịch hẹn"}
                 </Button>
               </DialogFooter>
             </form>
@@ -236,7 +269,10 @@ export default function Appointments() {
       ) : appointments && appointments.length > 0 ? (
         <div className="space-y-4">
           {appointments.map((appointment: any) => (
-            <Card key={appointment.id} className="shadow-card hover:shadow-glow transition-shadow">
+            <Card
+              key={appointment.id}
+              className="shadow-card hover:shadow-glow transition-shadow"
+            >
               <CardContent className="pt-6">
                 <div className="flex items-start justify-between">
                   <div className="flex items-start gap-4 flex-1">
@@ -246,16 +282,24 @@ export default function Appointments() {
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
                         <h3 className="font-semibold text-lg">
-                          {appointment.serviceType || 'Bảo dưỡng định kỳ'}
+                          {appointment.serviceType || "Bảo dưỡng định kỳ"}
                         </h3>
-                        <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor(appointment.status)}`}>
+                        <span
+                          className={`text-xs px-2 py-1 rounded-full ${getStatusColor(
+                            appointment.status
+                          )}`}
+                        >
                           {getStatusText(appointment.status)}
                         </span>
                       </div>
                       <div className="space-y-1 text-sm text-muted-foreground">
                         <div className="flex items-center gap-2">
                           <Clock className="w-4 h-4" />
-                          <span>{new Date(appointment.appointmentDate).toLocaleString('vi-VN')}</span>
+                          <span>
+                            {new Date(
+                              appointment.appointmentDate
+                            ).toLocaleString("vi-VN")}
+                          </span>
                         </div>
                         {appointment.serviceCenter && (
                           <div className="flex items-center gap-2">
@@ -264,13 +308,19 @@ export default function Appointments() {
                           </div>
                         )}
                         {appointment.note && (
-                          <p className="mt-2 text-foreground">{appointment.note}</p>
+                          <p className="mt-2 text-foreground">
+                            {appointment.note}
+                          </p>
                         )}
                       </div>
                     </div>
                   </div>
-                  {appointment.status === 'PENDING' && (
-                    <Button variant="outline" size="sm" className="hover:bg-destructive/10 hover:text-destructive">
+                  {appointment.status === "PENDING" && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="hover:bg-destructive/10 hover:text-destructive"
+                    >
                       Hủy lịch
                     </Button>
                   )}
@@ -287,7 +337,10 @@ export default function Appointments() {
             <p className="text-muted-foreground mb-4">
               Đặt lịch hẹn bảo dưỡng đầu tiên của bạn
             </p>
-            <Button className="bg-gradient-primary" onClick={() => setIsBookingDialogOpen(true)}>
+            <Button
+              className="bg-gradient-primary"
+              onClick={() => setIsBookingDialogOpen(true)}
+            >
               <Plus className="w-4 h-4 mr-2" />
               Đặt lịch ngay
             </Button>

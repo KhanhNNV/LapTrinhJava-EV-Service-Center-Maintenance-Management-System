@@ -80,14 +80,14 @@ export default function Login() {
       const status = error?.response?.status;
       let message = "Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.";
 
-     if (status === 401 || status === 403 || status === 404) {
-    message = "Sai Tên đăng nhập hoặc Mật khẩu.";
-  } else if (!error?.response) {
-    message = "Không thể kết nối tới server. Vui lòng thử lại.";
-  }
+      if (status === 401 || status === 403 || status === 404) {
+        message = "Sai Tên đăng nhập hoặc Mật khẩu.";
+      } else if (!error?.response) {
+        message = "Không thể kết nối tới server. Vui lòng thử lại.";
+      }
 
-  setErrors({ general: message });
-  toast.error(message);
+      setErrors({ general: message });
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }
@@ -120,9 +120,7 @@ export default function Login() {
               EV Service
             </span>
           </Link>
-          <p className="text-muted-foreground mt-2">
-            Đăng nhập vào hệ thống
-          </p>
+          <p className="text-muted-foreground mt-2">Đăng nhập vào hệ thống</p>
         </div>
 
         <Card className="shadow-card">
@@ -203,7 +201,7 @@ export default function Login() {
                   className="text-primary hover:underline"
                   onClick={() => {
                     // TODO: điều hướng sang trang forgot password khi bạn làm xong
-                    // navigate('/forgot-password');
+                    navigate("/auth/forgot-password");
                   }}
                 >
                   Quên mật khẩu?
