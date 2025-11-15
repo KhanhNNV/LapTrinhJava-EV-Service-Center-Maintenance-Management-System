@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.nimbusds.jose.JOSEException;
@@ -21,12 +21,15 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 
 import edu.uth.evservice.models.CustomerUserDetails;
+import edu.uth.evservice.requests.jwt.RegisterRequest;
 import edu.uth.evservice.services.jwt.IJwtService;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class JwtServiceImpl implements IJwtService {
+
+    private final PasswordEncoder passwordEncoder;
 
     // . 3 biến này lấy ở thằng resources/application.properties
     @Value("${jwt.access-token.expiration-time}")
@@ -52,11 +55,11 @@ public class JwtServiceImpl implements IJwtService {
     @Override
     // . Tạo chuỗi JWT Access Token
     public String generateAccessToken(Authentication authenication) {
-        //Spring lấy danh sách các GrantedAuthority này từ Authentication object
+        // Spring lấy danh sách các GrantedAuthority này từ Authentication object
         // ví dụ: scope = "ROLE_TECHNICIAN"
         String scope = authenication.getAuthorities().stream()
-                        .map(GrantedAuthority::getAuthority)
-                        .collect(Collectors.joining(" ")); //~ Một list danh danh sách quyền
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.joining(" ")); // ~ Một list danh danh sách quyền
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + accessTime); // ~ THỜI GIAN HIỆN TẠI + KHOẢNG THỜI GIAN ACCESS TỒN
                                                                 // TẠI
@@ -149,6 +152,33 @@ public class JwtServiceImpl implements IJwtService {
     public Object getClaim(String token, String claimName) throws ParseException {
         SignedJWT signedJWT = SignedJWT.parse(token);
         return signedJWT.getJWTClaimsSet().getClaim(claimName);
+    }
+
+    @Override
+    public String generateVerificationToken(RegisterRequest request) {
+        Date now = new Date();
+        Date expiry = new Date(now.getTime() + 24 * 60 * 60 * 1000); // 24h
+
+        JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
+                .subject(request.getEmail())
+                .issueTime(now)
+                .expirationTime(expiry)
+                .claim("type", "verification")
+                .claim("username", request.getUsername())
+                .claim("fullName", request.getFullName())
+                .claim("password", passwordEncoder.encode(request.getPassword())) // encode ở đây
+                .claim("role", "CUSTOMER")
+                .build();
+
+        try {
+            JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
+            SignedJWT signedJWT = new SignedJWT(header, claimsSet);
+            JWSSigner signer = new MACSigner(keySecret.getBytes(StandardCharsets.UTF_8));
+            signedJWT.sign(signer);
+            return signedJWT.serialize();
+        } catch (JOSEException e) {
+            throw new RuntimeException("Không thể tạo token xác thực", e);
+        }
     }
 
 }

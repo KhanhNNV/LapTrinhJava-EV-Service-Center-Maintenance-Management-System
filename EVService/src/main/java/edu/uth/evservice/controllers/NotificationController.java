@@ -18,16 +18,16 @@ import edu.uth.evservice.services.INotificationService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/notification")
+@RequestMapping("/api/notifications")
 @RequiredArgsConstructor
 public class NotificationController {
     private final INotificationService notificationService;
 
     @GetMapping
-    public ResponseEntity<List<NotificationDto>> getAllNotification(){
+    public ResponseEntity<List<NotificationDto>> getAllNotification() {
         return ResponseEntity.ok(notificationService.getAllNotifications());
     }
-    
+
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<NotificationDto>> getNotificationsByUser(@PathVariable int userId) {
         return ResponseEntity.ok(notificationService.getNotificationsByUser(userId));

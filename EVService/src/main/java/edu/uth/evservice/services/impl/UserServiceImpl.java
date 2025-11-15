@@ -4,6 +4,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
 import edu.uth.evservice.dtos.UserDto;
 import edu.uth.evservice.exception.ResourceNotFoundException;
 import edu.uth.evservice.models.ServiceCenter;
@@ -16,8 +19,6 @@ import edu.uth.evservice.services.IUserService;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
 
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -59,7 +60,8 @@ public class UserServiceImpl implements IUserService {
                 throw new IllegalArgumentException("Staff và Technician bắt buộc phải có centerId.");
             }
             center = serviceCenterRepository.findById(request.getCenterId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy Service Center với ID: " + request.getCenterId()));
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Không tìm thấy Service Center với ID: " + request.getCenterId()));
         }
 
         User user = User.builder()
@@ -152,7 +154,8 @@ public class UserServiceImpl implements IUserService {
         // Cập nhật center nếu có
         if (request.getCenterId() != null) {
             ServiceCenter center = serviceCenterRepository.findById(request.getCenterId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy Service Center với ID: " + request.getCenterId()));
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Không tìm thấy Service Center với ID: " + request.getCenterId()));
             user.setServiceCenter(center);
         }
 
@@ -217,9 +220,9 @@ public class UserServiceImpl implements IUserService {
                 .username(user.getUsername())
                 .fullName(user.getFullName())
                 .email(user.getEmail())
-                .phoneNumber(user.getPhoneNumber())
-                .address(user.getAddress())
-                .role(user.getRole())
+                .phoneNumber(user.getPhoneNumber() != null ? user.getPhoneNumber() : null)
+                .address(user.getAddress() != null ? user.getAddress() : null)
+                .role(user.getRole().name())
                 .build();
     }
 }
