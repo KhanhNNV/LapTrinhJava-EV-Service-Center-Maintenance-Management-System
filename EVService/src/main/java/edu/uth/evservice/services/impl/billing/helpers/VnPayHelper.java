@@ -88,6 +88,7 @@ public class VnPayHelper {
         vnpayParams.put("vnp_ReturnUrl", vnPayConfig.getVnpayReturnUrl());
         vnpayParams.put("vnp_IpAddr", ipAddress);
         vnpayParams.put("vnp_CreateDate",vnpayCreateDate);
+        vnpayParams.put("vnp_IpnUrl", vnPayConfig.getVnpayIpnUrl());
 
 
         //~ Tạo query và sắp xếp và chữ ký
@@ -97,7 +98,6 @@ public class VnPayHelper {
 
         return PaymentDto.builder()
                         .paymentUrl(paymentUrl)
-                        .qrCodeUrl(paymentUrl)
                         .orderId(orderId)
                         .build();
     }
