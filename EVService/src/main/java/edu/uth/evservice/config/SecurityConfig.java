@@ -82,9 +82,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
 
                         // - Cho phép tất cả request auth đều có thể truy cập bỏi bất cứ ai
-                        .requestMatchers("/auth/**", "/oauth2/**", "/login/oauth/code/**").permitAll()
                         // - Cho phép các cổng thanh toán gọi IPN và Return URLs
-                        .requestMatchers("/api/payments/vnpay-ipn", "/api/payments/vnpay-return").permitAll()
+                        .requestMatchers("/auth/**", "/oauth2/**", "/login/oauth/code/**","/api/payments/vnpay-ipn", "/api/payments/vnpay-return").permitAll()
+
                         // ~ Tất cả các request khác đều yêu cầu phải xác thực JWT
                         .anyRequest().authenticated()
 
