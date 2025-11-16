@@ -33,4 +33,7 @@ public interface IUserRepository extends JpaRepository<User, Integer> {
     //
     List<User> findByServiceCenter_CenterIdAndRoleIn(Integer centerId, List<Role> roles);
 
+    List<User> findByServiceCenter_CenterIdAndRole(Integer centerId, Role roles);
+
+
 }

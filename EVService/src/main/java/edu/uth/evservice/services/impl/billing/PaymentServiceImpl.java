@@ -25,7 +25,7 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class PaymentServiceImpl implements IPaymentService {
-    
+
     private final IInvoiceRepository invoiceRepository;
     private final IPaymentTransactionRepository transactionRepository;
     private final VnPayHelper vnPayHelper;
@@ -66,7 +66,7 @@ public class PaymentServiceImpl implements IPaymentService {
 
         //~ Tạo OrderId
         String orderId = "EV_INV_" + invoiceId + "_" + System.currentTimeMillis();
-        
+
         //~ Xử lý CSDL
         this.createPendingTransaction(invoice, orderId, PaymentGateway.VNPAY);
 
@@ -97,13 +97,13 @@ public class PaymentServiceImpl implements IPaymentService {
             String queryStringToHash = vnPayHelper.buildQueryString(dataToHash);
             //~ Thực hiện tạo chữ ký từ thằng queryString mới để so sánh với thằng vnp_SecureHash
             String calculateHash = vnPayHelper.hmacSHA512(vnPayConfig.getVnpayHashSecret(), queryStringToHash);
-            
+
             //~ So sánh các chữ ký mới vừa tạo với thằng vpn_SecureHash lấy từ đầu hàm
             if(!calculateHash.equals(receiveHash)){
                 throw new SecurityException("Khong dung ma VNPAY");
             }
 
-            //- Nếu đúng chữ ký của VNPAY (XỮ LÝ NGHIỆP VỤ) 
+            //- Nếu đúng chữ ký của VNPAY (XỮ LÝ NGHIỆP VỤ)
             //~ Lấy thông tin Transaction từ database theo orderId
             String orderId = ipnParams.get("vnp_TxnRef");
             PaymentTransaction transaction = transactionRepository.findByOrderId(orderId)
@@ -111,7 +111,7 @@ public class PaymentServiceImpl implements IPaymentService {
                         return new ResourceNotFoundException("OrderNotFound");
                     });
 
-            //~ Kiểm tra xem tra xem tra dữ liệu có bị trùng lặp không lỡ 
+            //~ Kiểm tra xem tra xem tra dữ liệu có bị trùng lặp không lỡ
             if (transaction.getStatus() == TransactionStatus.SUCCESS) {
                 return Map.of("RspCode", "02", "Message", "Order da duoc hoan thanh");
             }

@@ -83,7 +83,7 @@ public class Appointment {
     CustomerPackageContract contract;
 
     @OneToOne(mappedBy = "appointment", cascade = CascadeType.ALL)
-    ServiceTicket serviceTickets;
+    ServiceTicket serviceTicket;
 
     @Column(name = "created_at")
     LocalDateTime createdAt;

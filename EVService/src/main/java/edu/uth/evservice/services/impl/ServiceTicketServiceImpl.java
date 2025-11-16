@@ -1,11 +1,9 @@
 package edu.uth.evservice.services.impl;
 
-import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -13,23 +11,21 @@ import edu.uth.evservice.models.enums.Role;
 import edu.uth.evservice.dtos.*;
 import edu.uth.evservice.exception.ResourceNotFoundException;
 import edu.uth.evservice.models.*;
-import edu.uth.evservice.models.enums.Role;
 import edu.uth.evservice.repositories.*;
 import edu.uth.evservice.requests.AddServiceItemRequest;
 import edu.uth.evservice.requests.UpdatePartQuantityRequest;
-import edu.uth.evservice.dtos.TechnicianPerformanceDto;
 import edu.uth.evservice.requests.NotificationRequest;
 import edu.uth.evservice.services.INotificationService;
+import edu.uth.evservice.services.ai.ServiceItemAIService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import edu.uth.evservice.dtos.ServiceTicketDto;
 import edu.uth.evservice.dtos.ServiceTicketPartDto;
 import edu.uth.evservice.dtos.SuggestedPartsDto;
-import edu.uth.evservice.dtos.TechnicianPerformanceDto;
 import edu.uth.evservice.dtos.TicketPartDto;
 import edu.uth.evservice.dtos.TicketServiceItemDto;
-import edu.uth.evservice.exception.ResourceNotFoundException;
 import edu.uth.evservice.models.Appointment;
 import edu.uth.evservice.models.CustomerPackageContract;
 import edu.uth.evservice.models.Inventory;
@@ -55,9 +51,7 @@ import edu.uth.evservice.repositories.IServiceTicketRepository;
 import edu.uth.evservice.repositories.ITicketPartRepository;
 import edu.uth.evservice.repositories.ITicketServiceItemRepository;
 import edu.uth.evservice.repositories.IUserRepository;
-import edu.uth.evservice.requests.AddServiceItemRequest;
 import edu.uth.evservice.requests.ServiceTicketRequest;
-import edu.uth.evservice.requests.UpdatePartQuantityRequest;
 import edu.uth.evservice.services.IServiceTicketService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -65,6 +59,7 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class ServiceTicketServiceImpl implements IServiceTicketService {
 
     private final IServiceTicketRepository ticketRepo;
@@ -80,6 +75,9 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
     private final IInventoryRepository inventoryRepo;
     private final ITicketPartRepository ticketPartRepo;
     private final IServiceItemPartRepository suggestionRepo;
+
+    //ai
+    private final ServiceItemAIService serviceItemAIService;
 
     @Override
     public List<ServiceTicketDto> getAllTickets() {
@@ -218,40 +216,40 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
         ServiceTicket ticket = ticketRepo.findById(ticketId)
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy vé dịch vụ"));
 
-    // 4. KIỂM TRA LOGIC: Phiếu có đang 'IN_PROGRESS' không?
-    if (ticket.getStatus() != ServiceTicketStatus.IN_PROGRESS) {
-        throw new IllegalStateException("Chỉ có thể hoàn thành các phiếu đang ở trạng thái 'IN_PROGRESS'.");
-    }
+        // 4. KIỂM TRA LOGIC: Phiếu có đang 'IN_PROGRESS' không?
+        if (ticket.getStatus() != ServiceTicketStatus.IN_PROGRESS) {
+            throw new IllegalStateException("Chỉ có thể hoàn thành các phiếu đang ở trạng thái 'IN_PROGRESS'.");
+        }
 
-    // 5. CẬP NHẬT PHIẾU
-    ticket.setStatus(ServiceTicketStatus.COMPLETED); // Đổi trạng thái
-    ticket.setEndTime(LocalDateTime.now()); // Ghi lại thời gian hoàn thành
+        // 5. CẬP NHẬT PHIẾU
+        ticket.setStatus(ServiceTicketStatus.COMPLETED); // Đổi trạng thái
+        ticket.setEndTime(LocalDateTime.now()); // Ghi lại thời gian hoàn thành
 
-    ServiceTicket savedTicket = ticketRepo.save(ticket);
+        ServiceTicket savedTicket = ticketRepo.save(ticket);
 
-    // === 6. PHẦN CODE GỬI THÔNG BÁO ===
-        //  Lấy ra Appointment cha
-    Appointment appointment = savedTicket.getAppointment();
-        // 3.2. Cập nhật trạng thái của Appointment cha
-    appointment.setStatus(AppointmentStatus.COMPLETED);// Doi trang thai
-    appointment.setUpdatedAt(LocalDateTime.now());
+        // === 6. PHẦN CODE GỬI THÔNG BÁO ===
+            //  Lấy ra Appointment cha
+        Appointment appointment = savedTicket.getAppointment();
+            // 3.2. Cập nhật trạng thái của Appointment cha
+        appointment.setStatus(AppointmentStatus.COMPLETED);// Doi trang thai
+        appointment.setUpdatedAt(LocalDateTime.now());
 
-    appointmentRepo.save(appointment);
-    // Lấy thông tin khách hàng từ lịch hẹn liên quan
-    User customer = savedTicket.getAppointment().getCustomer();
+        appointmentRepo.save(appointment);
+        // Lấy thông tin khách hàng từ lịch hẹn liên quan
+        User customer = savedTicket.getAppointment().getCustomer();
 
-    NotificationRequest customerNoti = new NotificationRequest();
-    customerNoti.setUserId(customer.getUserId()); // ID người nhận (Khách hàng)
-    customerNoti.setTitle("Dịch vụ của bạn đã hoàn tất!");
-    customerNoti.setMessage("Dịch vụ cho xe [" + savedTicket.getAppointment().getVehicle().getLicensePlate() +
-            "] (Phiếu #" + savedTicket.getTicketId() + ") đã được hoàn thành. " +
-            "Vui lòng đợi thông báo hóa đơn để thanh toán.");
+        NotificationRequest customerNoti = new NotificationRequest();
+        customerNoti.setUserId(customer.getUserId()); // ID người nhận (Khách hàng)
+        customerNoti.setTitle("Dịch vụ của bạn đã hoàn tất!");
+        customerNoti.setMessage("Dịch vụ cho xe [" + savedTicket.getAppointment().getVehicle().getLicensePlate() +
+                "] (Phiếu #" + savedTicket.getTicketId() + ") đã được hoàn thành. " +
+                "Vui lòng đợi thông báo hóa đơn để thanh toán.");
 
-    notificationService.createNotification(customerNoti); // Gửi đi
-    // ===================================
+        notificationService.createNotification(customerNoti); // Gửi đi
 
-    // 7. Trả về kết quả
-    return toDto(savedTicket); // Giả sử bạn có hàm toDto
+
+        // 7. Trả về kết quả
+        return toDto(savedTicket); // Giả sử bạn có hàm toDto
 }
 
     // kiem tra quyen so huu ticket cua tech
@@ -594,4 +592,6 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
         }
         return center;
     }
+
+
 }
