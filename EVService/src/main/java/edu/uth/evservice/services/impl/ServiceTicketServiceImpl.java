@@ -247,7 +247,6 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
 
         notificationService.createNotification(customerNoti); // Gửi đi
 
-        learnFromCompletedTicket(savedTicket);
 
         // 7. Trả về kết quả
         return toDto(savedTicket); // Giả sử bạn có hàm toDto
@@ -595,28 +594,4 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
     }
 
 
-    // Thêm method sau khi hoàn thành ticket
-    private void learnFromCompletedTicket(ServiceTicket ticket) {
-        try {
-            log.info("AI learning from completed ticket: {}", ticket.getTicketId());
-
-            // Chỉ học nếu ticket có service items và parts
-            if (ticket.getTicketServiceItems() != null && !ticket.getTicketServiceItems().isEmpty() &&
-                    ticket.getTicketParts() != null && !ticket.getTicketParts().isEmpty()) {
-
-
-                // Tự động cập nhật suggestions sau mỗi 20 tickets hoàn thành
-                if (shouldUpdateSuggestions()) {
-                    serviceItemAIService.autoUpdateServiceItemSuggestions();
-                }
-            }
-        } catch (Exception e) {
-            log.warn("AI learning failed for ticket {}: {}", ticket.getTicketId(), e.getMessage());
-        }
-    }
-
-    private boolean shouldUpdateSuggestions() {
-        long completedCount = ticketRepo.countByStatus(ServiceTicketStatus.COMPLETED);
-        return completedCount % 20 == 0; // Cập nhật sau mỗi 20 tickets
-    }
 }

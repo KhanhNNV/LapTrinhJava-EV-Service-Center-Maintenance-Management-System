@@ -14,9 +14,7 @@ import java.util.List;
 public interface IServiceTicketRepository extends JpaRepository<ServiceTicket, Integer> {
 
     List<ServiceTicket> findByStatusAndEndTimeBetween(ServiceTicketStatus status, LocalDateTime start, LocalDateTime end);
-
-    // Đếm số lượng tickets theo status
-    long countByStatus(ServiceTicketStatus status);
+    
 
     // Tìm tickets theo technician
     List<ServiceTicket> findByTechnician_UserId(Integer technicianId);
