@@ -166,6 +166,7 @@ public class JwtServiceImpl implements IJwtService {
                 .claim("type", "verification")
                 .claim("username", request.getUsername())
                 .claim("fullName", request.getFullName())
+                .claim("email", request.getEmail())
                 .claim("password", passwordEncoder.encode(request.getPassword())) // encode ở đây
                 .claim("role", "CUSTOMER")
                 .build();
