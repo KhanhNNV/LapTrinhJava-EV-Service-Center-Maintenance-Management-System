@@ -15,20 +15,6 @@ public interface IServiceTicketRepository extends JpaRepository<ServiceTicket, I
 
     List<ServiceTicket> findByStatusAndEndTimeBetween(ServiceTicketStatus status, LocalDateTime start, LocalDateTime end);
 
-    // Sửa tên property từ serviceCenter thành center
-    @Query("SELECT st FROM ServiceTicket st WHERE st.status = :status AND st.appointment.center.centerId = :centerId AND st.endTime BETWEEN :start AND :end")
-    List<ServiceTicket> findByStatusAndAppointment_Center_CenterIdAndEndTimeBetween(
-            @Param("status") ServiceTicketStatus status,
-            @Param("centerId") Integer centerId,
-            @Param("start") LocalDateTime start,
-            @Param("end") LocalDateTime end);
-
-    @Query("SELECT st FROM ServiceTicket st WHERE st.appointment.center.centerId = :centerId AND st.endTime BETWEEN :start AND :end")
-    List<ServiceTicket> findByAppointment_Center_CenterIdAndEndTimeBetween(
-            @Param("centerId") Integer centerId,
-            @Param("start") LocalDateTime start,
-            @Param("end") LocalDateTime end);
-
     // Đếm số lượng tickets theo status
     long countByStatus(ServiceTicketStatus status);
 

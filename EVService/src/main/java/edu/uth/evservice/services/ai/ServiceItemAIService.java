@@ -26,13 +26,13 @@ public class ServiceItemAIService {
     /**
      * Phân tích dữ liệu lịch sử để học patterns giữa ServiceItem và Parts
      */
-    public ServiceItemPatternAnalysis analyzeServiceItemPatterns(Integer centerId, LocalDateTime startDate, LocalDateTime endDate) {
-        log.info("Analyzing service item patterns for center {} from {} to {}", centerId, startDate, endDate);
+    public ServiceItemPatternAnalysis analyzeServiceItemPatterns(LocalDateTime startDate, LocalDateTime endDate) {
+        log.info("Analyzing service item patterns for center {} from {} to {}", startDate, endDate);
 
         // Lấy tất cả completed tickets trong khoảng thời gian
         List<ServiceTicket> completedTickets = ticketRepository
-                .findByStatusAndAppointment_Center_CenterIdAndEndTimeBetween(
-                        ServiceTicketStatus.COMPLETED, centerId, startDate, endDate);
+                .findByStatusAndEndTimeBetween(
+                        ServiceTicketStatus.COMPLETED, startDate, endDate);
 
         log.info("Found {} completed tickets for analysis", completedTickets.size());
 
@@ -43,7 +43,6 @@ public class ServiceItemAIService {
         log.info("Analysis completed. Found patterns for {} service items", itemPartPatterns.size());
 
         return ServiceItemPatternAnalysis.builder()
-                .centerId(centerId)
                 .analysisDate(LocalDateTime.now())
                 .itemPartPatterns(itemPartPatterns)
                 .itemCoOccurrence(itemCoOccurrence)
@@ -145,7 +144,7 @@ public class ServiceItemAIService {
     /**
      * Sử dụng AI để đề xuất parts cho một ServiceItem dựa trên patterns
      */
-    public AIServiceItemSuggestion generateAISuggestionsForServiceItem(Integer serviceItemId, Integer centerId) {
+    public AIServiceItemSuggestion generateAISuggestionsForServiceItem(Integer serviceItemId) {
         ServiceItem serviceItem = serviceItemRepository.findById(serviceItemId)
                 .orElseThrow(() -> new RuntimeException("ServiceItem not found with ID: " + serviceItemId));
 
@@ -155,7 +154,7 @@ public class ServiceItemAIService {
         LocalDateTime endDate = LocalDateTime.now();
         LocalDateTime startDate = endDate.minusMonths(6);
 
-        ServiceItemPatternAnalysis analysis = analyzeServiceItemPatterns(centerId, startDate, endDate);
+        ServiceItemPatternAnalysis analysis = analyzeServiceItemPatterns(startDate, endDate);
         List<PartUsage> historicalPatterns = analysis.getItemPartPatterns().getOrDefault(serviceItem, new ArrayList<>());
 
         log.info("Found {} historical patterns for service item {}", historicalPatterns.size(), serviceItem.getItemName());
@@ -227,7 +226,6 @@ public class ServiceItemAIService {
                     .totalSuggestions(0)
                     .overallConfidenceScore(0.3)
                     .generatedDate(LocalDateTime.now())
-                    .centerId(null)
                     .historicalDataSize(0)
                     .analysisPeriod("Không có dữ liệu lịch sử")
                     .build();
@@ -251,7 +249,6 @@ public class ServiceItemAIService {
                 .totalSuggestions(0)
                 .overallConfidenceScore(0.0)
                 .generatedDate(LocalDateTime.now())
-                .centerId(null)
                 .historicalDataSize(0)
                 .analysisPeriod("Không có dữ liệu")
                 .build();
@@ -334,7 +331,6 @@ public class ServiceItemAIService {
                 .totalSuggestions(suggestions.size())
                 .overallConfidenceScore(calculateOverallConfidence(suggestions))
                 .generatedDate(LocalDateTime.now())
-                .centerId(analysis.getCenterId())
                 .historicalDataSize(analysis.getTotalTicketsAnalyzed())
                 .analysisPeriod("6 tháng gần nhất")
                 .build();
@@ -406,7 +402,6 @@ public class ServiceItemAIService {
                 .totalSuggestions(suggestions.size())
                 .overallConfidenceScore(0.6)
                 .generatedDate(LocalDateTime.now())
-                .centerId(analysis.getCenterId())
                 .historicalDataSize(analysis.getTotalTicketsAnalyzed())
                 .analysisPeriod("6 tháng gần nhất")
                 .build();
@@ -415,19 +410,18 @@ public class ServiceItemAIService {
     /**
      * Tự động cập nhật suggestions vào database khi có đủ dữ liệu
      */
-    public void autoUpdateServiceItemSuggestions(Integer centerId) {
-        log.info("Auto-updating service item suggestions for center {}", centerId);
+    public void autoUpdateServiceItemSuggestions() {
 
         List<ServiceItem> allServiceItems = serviceItemRepository.findAll();
         LocalDateTime endDate = LocalDateTime.now();
         LocalDateTime startDate = endDate.minusMonths(3); // Phân tích 3 tháng gần nhất
 
-        ServiceItemPatternAnalysis analysis = analyzeServiceItemPatterns(centerId, startDate, endDate);
+        ServiceItemPatternAnalysis analysis = analyzeServiceItemPatterns(startDate, endDate);
 
         for (ServiceItem serviceItem : allServiceItems) {
             List<PartUsage> patterns = analysis.getItemPartPatterns().getOrDefault(serviceItem, new ArrayList<>());
             if (!patterns.isEmpty()) {
-                AIServiceItemSuggestion suggestion = generateAISuggestionsForServiceItem(serviceItem.getItemId(), centerId);
+                AIServiceItemSuggestion suggestion = generateAISuggestionsForServiceItem(serviceItem.getItemId());
                 log.info("Auto-generated {} suggestions for service item: {}",
                         suggestion.getTotalSuggestions(), serviceItem.getItemName());
 

@@ -1,4 +1,4 @@
-package edu.uth.evservice.config;
+package edu.uth.evservice.config.ai;
 
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.context.annotation.Bean;

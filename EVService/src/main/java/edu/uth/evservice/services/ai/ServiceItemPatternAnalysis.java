@@ -15,7 +15,6 @@ import java.util.Map;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ServiceItemPatternAnalysis {
-    private Integer centerId;
     private LocalDateTime analysisDate;
     private Map<ServiceItem, List<PartUsage>> itemPartPatterns;
     private Map<String, Double> itemCoOccurrence;

@@ -54,10 +54,6 @@ public class AIServiceItemSuggestion {
      */
     private LocalDateTime generatedDate;
 
-    /**
-     * ID trung tâm dịch vụ
-     */
-    private Integer centerId;
 
     /**
      * Số lượng dữ liệu lịch sử được phân tích
