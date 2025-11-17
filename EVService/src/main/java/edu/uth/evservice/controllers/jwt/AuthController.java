@@ -18,7 +18,6 @@ import edu.uth.evservice.services.auth.IAuthenticaionService;
 import edu.uth.evservice.requests.jwt.ResendVerificationRequest;
 import edu.uth.evservice.requests.jwt.ResetPasswordRequest;
 import edu.uth.evservice.requests.jwt.VerifyEmailRequest;
-import edu.uth.evservice.services.jwt.IAuthenticaionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
