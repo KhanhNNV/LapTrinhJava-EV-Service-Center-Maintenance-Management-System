@@ -63,7 +63,7 @@
 
 import { useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { authService } from "@/services/auth/auth";
+import { authService } from "@/services/auth.ts";
 
 type Role = "CUSTOMER" | "STAFF" | "TECHNICIAN" | "ADMIN";
 

@@ -104,7 +104,7 @@
 // src/pages/auth/ResetPasswordPage.tsx
 import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import api from "@/services/auth/api";
+import api from "@/services/api.ts";
 import { Zap, Eye, EyeOff, AlertCircle, CheckCircle } from "lucide-react";
 
 const ResetPasswordPage: React.FC = () => {

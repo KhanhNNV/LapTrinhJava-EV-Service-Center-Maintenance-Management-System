@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import api from "@/services/auth/api";
+import api from "@/services/api.ts";
 import { useToast } from "@/hooks/use-toast";
-import { authService } from "@/services/auth/auth";
+import { authService } from "@/services/auth.ts";
 import { Calendar, User, Car, MapPin } from "lucide-react";
 
 interface Appointment {

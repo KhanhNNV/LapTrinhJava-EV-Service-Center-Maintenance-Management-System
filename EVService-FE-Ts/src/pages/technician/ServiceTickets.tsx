@@ -6,9 +6,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import api from "@/services/auth/api";
+import api from "@/services/api.ts";
 import { useToast } from "@/hooks/use-toast";
-import { authService } from "@/services/auth/auth";
+import { authService } from "@/services/auth.ts";
 import { Wrench, Plus, CheckCircle } from "lucide-react";
 
 interface ServiceTicket {

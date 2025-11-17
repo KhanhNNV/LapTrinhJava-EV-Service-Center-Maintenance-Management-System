@@ -49,7 +49,7 @@ public class AuthenticationServiceImpl implements IAuthenticaionService {
     @Value("${app.verify-email-url}")
     private String verifyEmailUrl;
 
-    @Value("${app.reset-password-url")
+    @Value("${app.reset-password-url}")
     private String resetPasswordUrl;
 
     public JwtDto loginRequest(LoginRequest loginRequest) {

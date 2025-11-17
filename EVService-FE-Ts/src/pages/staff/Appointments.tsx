@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import api from "@/services/auth/api";
+import api from "@/services/api.ts";
 import { useToast } from "@/hooks/use-toast";
 import { Calendar, User, Car } from "lucide-react";
 

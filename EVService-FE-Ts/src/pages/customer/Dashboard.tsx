@@ -11,7 +11,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
-import api from '@/services/auth/api';
+import api from '@/services/api.ts';
 import { toast } from 'sonner';
 
 export default function CustomerDashboard() {

@@ -3,10 +3,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import api from "@/services/auth/api";
+import api from "@/services/api.ts";
 import { useToast } from "@/hooks/use-toast";
 import { Send, User } from "lucide-react";
-import { authService } from "@/services/auth/auth";
+import { authService } from "@/services/auth.ts";
 
 interface Conversation {
   id: number;

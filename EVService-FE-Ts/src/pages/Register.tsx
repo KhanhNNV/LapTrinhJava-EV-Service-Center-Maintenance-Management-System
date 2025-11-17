@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Zap, Loader2, Eye, EyeOff } from "lucide-react";
-import { authService } from "@/services/auth/auth";
+import { authService } from "@/services/auth.ts";
 import { toast } from "sonner";
 
 // Nếu bạn có icon riêng thì import thêm

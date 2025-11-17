@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/card";
 import { Zap, Loader2, Eye, EyeOff } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
-import { authService } from "@/services/auth/auth";
+import { authService } from "@/services/auth.ts";
 import { toast } from "sonner";
 
 // Nếu bạn đã có sẵn icon riêng cho Google/Facebook/GitHub thì có thể import:

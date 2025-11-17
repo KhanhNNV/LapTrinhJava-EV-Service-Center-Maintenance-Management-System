@@ -1,6 +1,6 @@
 // src/pages/ForgotPasswordPage.tsx
 import { useState } from "react";
-import api from "@/services/auth/api";
+import api from "@/services/api.ts";
 import { useNavigate } from "react-router-dom";
 import EmailSentPage from "./EmailSentPage";
 

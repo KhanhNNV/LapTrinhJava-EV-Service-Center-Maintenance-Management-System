@@ -1,5 +1,5 @@
-import api from "./api";
-import { parseJwt } from "@/utils/decodeJWT";
+import api from "./api.ts";
+import { parseJwt } from "@/utils/decodeJWT.ts";
 
 export interface LoginCredentials {
   username: string; // form của bạn dùng "username"

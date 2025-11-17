@@ -71,7 +71,7 @@
 import { useState } from "react";
 import { CheckCircle, Mail, RefreshCw, Loader2 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
-import api from "@/services/auth/api";
+import api from "@/services/api.ts";
 
 interface LocationState {
   email: string;

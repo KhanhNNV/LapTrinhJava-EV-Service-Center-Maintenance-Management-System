@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import api from "@/services/auth/api";
+import api from "@/services/api.ts";
 import { CheckCircle, XCircle, Loader2 } from "lucide-react";
 
 export default function VerifyEmailPage() {
