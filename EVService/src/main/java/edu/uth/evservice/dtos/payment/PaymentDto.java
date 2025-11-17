@@ -6,6 +6,6 @@ import lombok.Data;
 @Builder
 @Data
 public class PaymentDto {
+    private String orderId; //~ Mã đơn hàng
     private String paymentUrl; //~ Link đầy đủ cho redirect 
-    private String qrCodeUrl;  //~ Link để tạo mã QR 
 }
