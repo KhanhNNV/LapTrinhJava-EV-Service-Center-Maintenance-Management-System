@@ -1,5 +1,10 @@
 package edu.uth.evservice.exception;
 
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,15 +15,12 @@ import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ConstraintViolationException;
-
-import java.time.LocalDateTime;
-import java.util.*;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -51,8 +53,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String>> handleValidationErrors(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
-        ex.getBindingResult().getFieldErrors().forEach(error ->
-                errors.put(error.getField(), error.getDefaultMessage()));
+        ex.getBindingResult().getFieldErrors()
+                .forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
         return ResponseEntity.badRequest().body(errors);
     }
 
@@ -60,8 +62,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<Map<String, String>> handleConstraintViolation(ConstraintViolationException ex) {
         Map<String, String> errors = new HashMap<>();
-        ex.getConstraintViolations().forEach(v ->
-                errors.put(v.getPropertyPath().toString(), v.getMessage()));
+        ex.getConstraintViolations().forEach(v -> errors.put(v.getPropertyPath().toString(), v.getMessage()));
         return ResponseEntity.badRequest().body(errors);
     }
 
@@ -86,7 +87,8 @@ public class GlobalExceptionHandler {
                 "Phương thức HTTP này không được hỗ trợ cho endpoint này.");
     }
 
-    // Content-Type không được hỗ trợ (ví dụ gửi JSON nhưng endpoint chỉ nhận form-data)
+    // Content-Type không được hỗ trợ (ví dụ gửi JSON nhưng endpoint chỉ nhận
+    // form-data)
     @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
     public ResponseEntity<Object> handleMediaTypeNotSupported(HttpMediaTypeNotSupportedException ex) {
         return buildResponse(HttpStatus.UNSUPPORTED_MEDIA_TYPE,
@@ -112,7 +114,6 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.CONFLICT, ex.getMessage());
     }
 
-
     // Body request bị thiếu hoặc không parse được
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex) {
@@ -132,10 +133,8 @@ public class GlobalExceptionHandler {
                 HttpStatus.INTERNAL_SERVER_ERROR,
                 ex.getMessage() != null
                         ? ex.getMessage()
-                        : "Đã xảy ra lỗi runtime không xác định."
-        );
+                        : "Đã xảy ra lỗi runtime không xác định.");
     }
-
 
     // Lỗi chung (catch-all)
     @ExceptionHandler(Exception.class)

@@ -17,7 +17,7 @@ import java.util.List;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Table(name = "users")
-public class User{
+public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -48,6 +48,9 @@ public class User{
     @Column(name = "role", nullable = false)
     Role role;
 
+    @Column(name = "enabled", nullable = false)
+    private boolean enabled = false; // mặc định chưa kích hoạt
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "center_id")
     ServiceCenter serviceCenter;
@@ -75,7 +78,6 @@ public class User{
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     List<Message> messages = new ArrayList<>();
-
 
     @OneToMany(mappedBy = "technician", cascade = CascadeType.ALL, orphanRemoval = true)
     List<TechnicianCertificate> technicianCertificates = new ArrayList<>();

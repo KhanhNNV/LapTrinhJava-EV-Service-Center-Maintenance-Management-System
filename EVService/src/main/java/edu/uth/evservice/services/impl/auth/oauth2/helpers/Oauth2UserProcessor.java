@@ -59,10 +59,6 @@ public class Oauth2UserProcessor {
             }
             newUserRequest.setUsername(usernameReg);
 
-            newUserRequest.setPhoneNumber("S" + UUID.randomUUID().toString().substring(0, 12));
-
-            newUserRequest.setAddress("(Social Login)");
-
             newUserRequest.setFullName (fullName);
 
             newUserRequest.setRole(Role.CUSTOMER.name());// -> Mặc định vẫn là Customer

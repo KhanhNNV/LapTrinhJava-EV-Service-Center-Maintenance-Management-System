@@ -2,7 +2,6 @@ package edu.uth.evservice.controllers;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -19,13 +18,14 @@ import edu.uth.evservice.dtos.ServiceCenterDto;
 import edu.uth.evservice.requests.ServiceCenterRequest;
 import edu.uth.evservice.services.IServiceCenterService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("api/service-centers")
+@RequiredArgsConstructor
 public class ServiceCenterController {
 
-    @Autowired
-    private IServiceCenterService serviceCenterService;
+    private final IServiceCenterService serviceCenterService;
 
     // CREATE: Chỉ ADMIN mới có quyền tạo trung tâm dịch vụ
     @PostMapping

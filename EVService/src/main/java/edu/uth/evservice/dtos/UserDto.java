@@ -1,7 +1,10 @@
 package edu.uth.evservice.dtos;
 
-import edu.uth.evservice.models.enums.Role;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 
 @Setter
@@ -17,5 +20,5 @@ public class UserDto {
     String email;
     String phoneNumber;
     String address;
-    Role role;
+    String role;
 }

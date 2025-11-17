@@ -29,6 +29,15 @@ public class AppointmentController {
 
         private final IAppointmentService appointmentService;
 
+        // Customer lay danh sach lich hen cua minh
+        @GetMapping("/myAppointments")
+        @PreAuthorize("hasAnyRole('CUSTOMER')")
+        public ResponseEntity<List<AppointmentDto>> getMyAppointments(Authentication authentication) {
+                Integer customerId = Integer.parseInt(authentication.getName());
+                List<AppointmentDto> myAppointments = appointmentService.getByCustomer(customerId);
+                return ResponseEntity.ok(myAppointments);
+        }
+
         // lay danh sach lich hen theo trang thai (admin/staff)
         @GetMapping("/status/{status}")
         @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
