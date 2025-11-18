@@ -1,166 +1,177 @@
 import { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import api from "@/services/api.ts";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+} from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { authService } from "@/services/auth.ts";
-import { Calendar, User, Car, MapPin } from "lucide-react";
-
-interface Appointment {
-  id: number;
-  appointmentDate: string;
-  status: string;
-  serviceType: string;
-  vehicle: { brand: string; model: string; licensePlate: string };
-  user: { fullName: string; phoneNumber: string };
-  serviceCenter: { name: string; address: string };
-}
+import { authService } from "@/services/auth";
+import { Calendar, Info, User, Car, MapPin, Loader2 } from "lucide-react";
+import { technicianService, Appointment, AppointmentDetailData } from "@/services/appointmentTechinicianService.ts";
 
 export default function TechnicianMyAppointments() {
-  const { toast } = useToast();
-  const currentUser = authService.getCurrentUser();
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
+    const { toast } = useToast();
+    const currentUser = authService.getCurrentUser();
 
-  useEffect(() => {
-    fetchAppointments();
-  }, []);
+    // State danh sách
+    const [appointments, setAppointments] = useState<Appointment[]>([]);
 
-  const fetchAppointments = async () => {
-    try {
-      const response = await api.get("/api/appointments/technician");
-      const myAppointments = response.data.filter(
-        (a: any) => a.technicianId === currentUser?.id
-      );
-      setAppointments(myAppointments);
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch appointments",
-        variant: "destructive",
-      });
-    }
-  };
+    // State lưu toàn bộ object của appontment đang chọn
+    const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
 
-  const checkInAppointment = async (id: number) => {
-    try {
-      await api.put(`/api/appointments/${id}/check-in`);
-      toast({
-        title: "Success",
-        description: "Customer checked in",
-      });
-      fetchAppointments();
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to check in",
-        variant: "destructive",
-      });
-    }
-  };
+    // State cho Dialog chi tiết
+    const [selectedId, setSelectedId] = useState<number | null>(null);
+    const [details, setDetails] = useState<AppointmentDetailData | null>(null);
+    const [isLoadingDetails, setIsLoadingDetails] = useState(false);
 
-  const createServiceTicket = async (appointmentId: number) => {
-    try {
-      await api.post(`/api/service-tickets/technician/${appointmentId}/create-service-ticket`);
-      toast({
-        title: "Success",
-        description: "Service ticket created",
-      });
-      fetchAppointments();
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to create service ticket",
-        variant: "destructive",
-      });
-    }
-  };
+    useEffect(() => {
+        if (currentUser?.id) fetchAppointments();
+    }, [currentUser?.id]);
 
-  const statusColors: Record<string, string> = {
-    CONFIRMED: "bg-blue-500",
-    CHECKED_IN: "bg-orange-500",
-    IN_PROGRESS: "bg-yellow-500",
-    COMPLETED: "bg-green-500",
-  };
+    const fetchAppointments = async () => {
+        try {
+            const data = await technicianService.getMyAppointments(currentUser?.id);
+            setAppointments(data);
+        } catch (error) {
+            toast({ title: "Error", description: "Failed to load list", variant: "destructive" });
+        }
+    };
 
-  return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight">My Appointments</h2>
-        <p className="text-muted-foreground">
-          Appointments assigned to you
-        </p>
-      </div>
+    // Hàm xử lý khi bấm "View Details"
+    const handleViewDetails = async (appt: Appointment) => {
+        setSelectedId(appt.appointmentId);
+        setSelectedAppointment(appt);
+        setDetails(null);
+        setIsLoadingDetails(true);
 
-      <div className="grid gap-4">
-        {appointments.map((appointment) => (
-          <Card key={appointment.id} className="hover:shadow-md transition-shadow">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg">
-                  {appointment.serviceType}
-                </CardTitle>
-                <Badge className={statusColors[appointment.status]}>
-                  {appointment.status}
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2 text-sm">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <span>{new Date(appointment.appointmentDate).toLocaleString()}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <User className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <p>{appointment.user.fullName}</p>
-                      <p className="text-muted-foreground">{appointment.user.phoneNumber}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <Car className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <p>{appointment.vehicle.brand} {appointment.vehicle.model}</p>
-                      <p className="text-muted-foreground">{appointment.vehicle.licensePlate}</p>
-                    </div>
-                  </div>
-                </div>
+        try {
+            const data = await technicianService.getAppointmentDetails(
+                appt.customerId,
+                appt.vehicleId,
+            );
+            setDetails(data);
+        } catch (error) {
+            toast({ title: "Error", description: "Failed to load details", variant: "destructive" });
+            setSelectedId(null);
+            setSelectedAppointment(null);
+        } finally {
+            setIsLoadingDetails(false);
+        }
+    };
 
-                <div className="space-y-3">
-                  <div className="flex items-start gap-2 text-sm">
-                    <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
-                    <div>
-                      <p className="font-medium">{appointment.serviceCenter.name}</p>
-                      <p className="text-muted-foreground">{appointment.serviceCenter.address}</p>
-                    </div>
-                  </div>
+    const getStatusText = (status: string) => {
+        const texts: any = {
+            PENDING: "Chờ xác nhận",
+            CONFIRMED: "Đã xác nhận",
+            IN_PROGRESS: "Đang bảo dưỡng",
+            COMPLETED: "Hoàn thành",
+            CANCELLED: "Đã hủy",
+        };
+        return texts[status] || status;
+    };
 
-                  <div className="flex flex-col gap-2 pt-2">
-                    {appointment.status === "CONFIRMED" && (
-                      <Button
-                        onClick={() => checkInAppointment(appointment.id)}
-                        className="w-full"
-                      >
-                        Check In Customer
-                      </Button>
+    const statusColors: Record<string, string> = {
+        CONFIRMED: "bg-blue-500",
+        CHECKED_IN: "bg-orange-500",
+        IN_PROGRESS: "bg-yellow-500",
+        COMPLETED: "bg-green-500",
+    };
+
+    return (
+        <div className="space-y-6">
+            <h2 className="text-3xl font-bold">LỊCH HẸN</h2>
+
+            {/* DANH SÁCH LỊCH ĐƯỢC PHÂN CÔNG */}
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {appointments.map((appt) => (
+                    <Card key={appt.appointmentId} className="hover:shadow-md flex flex-col h-full">
+                        <CardHeader className="pb-2">
+                            <div className="flex justify-between items-start">
+                                <CardTitle className="text-lg">{appt.serviceType}</CardTitle>
+                                <Badge className={statusColors[appt.status]}>{getStatusText(appt.status)}</Badge>
+                            </div>
+                        </CardHeader>
+                        <CardContent className="text-sm space-y-2 flex-1">
+                            <div className="flex items-center gap-2">
+                                <Calendar className="h-4 w-4 text-muted-foreground" />
+                                {new Date(appt.appointmentDate).toLocaleString()}
+                            </div>
+                            {appt.note && (
+                                <p className="text-muted-foreground italic line-clamp-2">
+                                    Note: "{appt.note}"
+                                </p>
+                            )}
+                        </CardContent>
+                        <CardFooter>
+                            <Button variant="outline" className="w-full" onClick={() => handleViewDetails(appt)}>
+                                <Info className="mr-2 h-4 w-4" /> Xem chi tiết & tạo phiếu dịch vụ
+                            </Button>
+                        </CardFooter>
+                    </Card>
+                ))}
+            </div>
+
+            {/* DIALOG CHI TIẾT */}
+            <Dialog open={!!selectedId} onOpenChange={(open) => !open && setSelectedId(null)}>
+                <DialogContent className="sm:max-w-[500px]">
+                    <DialogHeader>
+                        <DialogTitle>Chi tiết lịch hẹn</DialogTitle>
+                        <DialogDescription>Thông tin khách hàng và xe</DialogDescription>
+                    </DialogHeader>
+
+                    {isLoadingDetails ? (
+                        <div className="flex justify-center py-8">
+                            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                        </div>
+                    ) : details && selectedAppointment ? (
+                        <div className="space-y-4">
+                            {/* Thông tin Khách hàng */}
+                            <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
+                                <User className="h-5 w-5 text-primary mt-0.5" />
+                                <div>
+                                    <p className="font-semibold">{details.user.fullName}</p>
+                                    <p className="text-sm text-muted-foreground">Số điện thoại: {details.user.phoneNumber}</p>
+                                </div>
+                            </div>
+
+                            {/* Thông tin Xe */}
+                            <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
+                                <Car className="h-5 w-5 text-primary mt-0.5" />
+                                <div>
+                                    <p className="font-semibold">{details.vehicle.brand} {details.vehicle.model}</p>
+                                    <p className="text-sm text-muted-foreground">Biển số xe: {details.vehicle.licensePlate}</p>
+                                </div>
+                            </div>
+
+                            {/* ghi chú của khách hàng */}
+                            <div className="flex flex-col gap-2 rounded-lg border border-blue-100 bg-blue-50 p-3 dark:border-blue-900 dark:bg-blue-950/20">
+                                <p className="font-semibold text-blue-700 dark:text-blue-300 shrink-0">
+                                    Ghi chú của khách hàng:
+                                </p>
+
+                                {/* Thay đổi quan trọng ở đây: */}
+                                <div className="max-h-[100px] w-full overflow-y-auto rounded border border-blue-200 bg-white p-2 dark:bg-black/20">
+                                    <p className="text-sm text-blue-900 dark:text-blue-100 whitespace-pre-wrap break-all">
+                                        {selectedAppointment.note}
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Các nút hành động*/}
+                            <div className="pt-4 flex gap-2">
+                                <Button className="flex-1">Tạo phiếu dịch vụ</Button>
+                            </div>
+                        </div>
+                    ) : (
+                        <p className="text-red-500">Lỗi khi tải chi tiết.</p>
                     )}
-                    {appointment.status === "CHECKED_IN" && (
-                      <Button
-                        onClick={() => createServiceTicket(appointment.id)}
-                        className="w-full"
-                      >
-                        Start Service
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    </div>
-  );
+                </DialogContent>
+            </Dialog>
+        </div>
+    );
 }

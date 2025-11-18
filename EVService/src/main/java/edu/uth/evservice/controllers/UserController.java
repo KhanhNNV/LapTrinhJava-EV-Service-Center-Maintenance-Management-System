@@ -48,7 +48,7 @@ public class UserController {
 
     // Tìm user theo ID
     @GetMapping("/{id:\\d+}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF','TECHNICIAN')")
     public ResponseEntity<?> getUserById(@PathVariable Integer id) {
         return ResponseEntity.ok(userService.getUserById(id));
     }

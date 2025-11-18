@@ -49,10 +49,18 @@ public class VehicleController {
 
     // GET /api/vehicles/{id} (Lấy 1 xe của tôi)
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('CUSTOMER','STAFF','TECHNICIAN','ADMIN')") 
+    @PreAuthorize("hasAnyRole('CUSTOMER')")
     public ResponseEntity<VehicleDto> getMyVehicleById(@PathVariable("id") Integer id, Authentication authentication) {
         Integer UserId = Integer.parseInt(authentication.getName());
         VehicleDto vehicle = vehicleService.getMyVehicleById(id, UserId);
+        return ResponseEntity.ok(vehicle);
+    }
+
+    // Lấy xe cho phần quản lý (theo id xe)
+    @GetMapping("/manage/{id}")
+    @PreAuthorize("hasAnyRole('STAFF','TECHNICIAN','ADMIN')")
+    public ResponseEntity<VehicleDto> getVehicleById(@PathVariable("id") Integer id) {
+        VehicleDto vehicle = vehicleService.getVehicleById(id);
         return ResponseEntity.ok(vehicle);
     }
 
