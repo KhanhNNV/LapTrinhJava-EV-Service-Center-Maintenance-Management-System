@@ -57,7 +57,7 @@ public class VehicleServiceImpl implements IVehicleService {
                 .licensePlate(request.getLicensePlate())
                 .recentMaintenanceDate(request.getRecentMaintenanceDate())
                 .user(customer) // Gán chủ xe là người đang đăng nhập
-                .serviceCenter(center) // Gán trung tâm dịch vụ
+                // .serviceCenter(center) // Gán trung tâm dịch vụ
                 .vehicleType(request.getVehicleType())
                 .build();
 

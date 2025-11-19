@@ -10,10 +10,10 @@ export interface VehicleDto {
     model: string;
     brand: string;
     licensePlate: string;
-    recentMaintenanceDate: string;
+    recentMaintenanceDate: string; 
     userId: number;
-    centerId: number;
-    vehicleType: string; // Enum VehicleType
+    // centerId: number;
+    vehicleType: string;
 }
 
 // Khớp với ServicePackageDto.java
@@ -27,21 +27,71 @@ export interface ServicePackageDto {
 
 // Khớp với AppointmentDto.java
 export interface AppointmentDto {
-    appointmentId: number; // Backend là appointmentId
+    appointmentId: number;
     appointmentDate: string;
     appointmentTime: string;
     serviceType: string;
-    status: string;
+    status: string; // PENDING, CONFIRMED, ...
     note: string;
     customerId: number;
-    staffId?: number;
     vehicleId: number;
+    // Yêu cầu: hiển thị chi tiết (sẽ dùng trong History)
     centerId: number;
     technicianId?: number;
-    // ... các trường khác nếu cần
+    staffId?: number;
+    contractId?: number;
+    createdAt?: string;
+    updatedAt?: string;
 }
 
 // --- HOOKS ---
+// 2. Thêm các Hooks xử lý xe (Tách logic khỏi Page)
+export function useAddVehicle() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (data: any) => {
+            // Xử lý logic data ngay tại service
+            const payload = { ...data, centerId: parseInt(data.centerId) };
+            const res = await api.post("/api/vehicles", payload);
+            return res.data;
+        },
+        onSuccess: () => {
+            toast.success("Thêm xe thành công");
+            queryClient.invalidateQueries({ queryKey: ["customer-vehicles"] });
+        },
+        onError: (err: any) => toast.error(err?.response?.data?.message || "Lỗi thêm xe")
+    });
+}
+
+export function useUpdateVehicle() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async ({ id, data }: { id: number; data: any }) => {
+            const payload = { ...data, centerId: parseInt(data.centerId) };
+            const res = await api.put(`/api/vehicles/${id}`, payload);
+            return res.data;
+        },
+        onSuccess: () => {
+            toast.success("Cập nhật xe thành công");
+            queryClient.invalidateQueries({ queryKey: ["customer-vehicles"] });
+        },
+        onError: (err: any) => toast.error(err?.response?.data?.message || "Lỗi cập nhật xe")
+    });
+}
+
+export function useDeleteVehicle() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (id: number) => {
+            await api.delete(`/api/vehicles/${id}`);
+        },
+        onSuccess: () => {
+            toast.success("Xóa xe thành công");
+            queryClient.invalidateQueries({ queryKey: ["customer-vehicles"] });
+        },
+        onError: () => toast.error("Không thể xóa xe")
+    });
+}
 
 export function useCustomerVehicles() {
     return useQuery<VehicleDto[]>({
