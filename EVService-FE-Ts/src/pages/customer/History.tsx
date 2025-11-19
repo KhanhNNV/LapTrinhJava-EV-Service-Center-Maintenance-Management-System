@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { useCenters, CenterDto } from '@/services/appointmentService.ts';
 import { 
     Dialog, 
     DialogContent, 
@@ -17,6 +18,7 @@ import {
     AppointmentDto, 
     VehicleDto 
 } from '@/services/appointmentService.ts';
+import { useServicePackages, ServicePackageDto } from '@/services/appointmentService.ts';
 
 export default function History() {
   // 1. Lấy dữ liệu lịch hẹn
@@ -24,6 +26,10 @@ export default function History() {
   
   // 2. Lấy dữ liệu xe để map ID -> Biển số
   const { data: vehicles } = useCustomerVehicles();
+
+  const { data: centers } = useCenters();
+
+  const { data: servicePackages } = useServicePackages();
 
   // State để quản lý modal chi tiết
   const [selectedAppointment, setSelectedAppointment] = useState<AppointmentDto | null>(null);
@@ -56,6 +62,12 @@ export default function History() {
     };
     return texts[status] || status;
   };
+
+  // Thêm helper function để lấy description từ serviceType
+const getServiceDescription = (serviceType: string) => {
+  const servicePackage = servicePackages?.find(pkg => pkg.packageName === serviceType);
+  return servicePackage?.description || serviceType; // Fallback về serviceType nếu không tìm thấy
+};
 
   return (
     <div className="space-y-6">
@@ -157,96 +169,100 @@ export default function History() {
                 <DialogDescription>Thông tin đầy đủ về lịch sử dịch vụ</DialogDescription>
             </DialogHeader>
             
-            {selectedAppointment && (
-                <div className="grid grid-cols-1 gap-4 py-4 text-sm">
-                    {/* Nhóm thông tin chính */}
-                    <div className="bg-gray-50 p-3 rounded-lg space-y-2 border border-gray-100">
-                        <div className="font-semibold text-gray-900 mb-2">Thông tin chung</div>
-                        <div className="grid grid-cols-3 gap-2">
-                            <span className="text-gray-500 col-span-1">Mã lịch hẹn:</span>
-                            <span className="col-span-2 font-medium">{selectedAppointment.appointmentId}</span>
-                            
-                            <span className="text-gray-500 col-span-1">Dịch vụ:</span>
-                            <span className="col-span-2 font-medium">{selectedAppointment.serviceType}</span>
-                            
-                            <span className="text-gray-500 col-span-1">Trạng thái:</span>
-                            <span className={`col-span-2 font-medium ${selectedAppointment.status === 'COMPLETED' ? 'text-green-600' : 'text-red-600'}`}>
-                                {getStatusText(selectedAppointment.status)}
-                            </span>
+ {selectedAppointment && (
+  <div className="grid grid-cols-1 gap-4 py-4 text-sm">
+    {/* Nhóm thông tin chính */}
+    <div className="bg-gray-50 p-3 rounded-lg space-y-2 border border-gray-100">
+      <div className="font-semibold text-gray-900 mb-2">Thông tin chung</div>
+      <div className="grid grid-cols-3 gap-2">
+        <span className="text-gray-500 col-span-1">Mã lịch hẹn:</span>
+        <span className="col-span-2 font-medium">{selectedAppointment.appointmentId}</span>
+        
+        <span className="text-gray-500 col-span-1">Dịch vụ:</span>
+        <span className="col-span-2 font-medium">
+          {getServiceDescription(selectedAppointment.serviceType)}
+        </span>
+        
+        <span className="text-gray-500 col-span-1">Trạng thái:</span>
+        <span className={`col-span-2 font-medium ${selectedAppointment.status === 'COMPLETED' ? 'text-green-600' : 'text-red-600'}`}>
+          {getStatusText(selectedAppointment.status)}
+        </span>
 
-                            <span className="text-gray-500 col-span-1">Thời gian:</span>
-                            <span className="col-span-2 font-medium">
-                                {selectedAppointment.appointmentTime} - {new Date(selectedAppointment.appointmentDate).toLocaleDateString('vi-VN')}
-                            </span>
-                        </div>
-                    </div>
+        <span className="text-gray-500 col-span-1">Thời gian:</span>
+        <span className="col-span-2 font-medium">
+          {selectedAppointment.appointmentTime} - {new Date(selectedAppointment.appointmentDate).toLocaleDateString('vi-VN')}
+        </span>
 
-                    {/* Nhóm thông tin xe & địa điểm */}
-                    <div className="bg-gray-50 p-3 rounded-lg space-y-2 border border-gray-100">
-                         <div className="font-semibold text-gray-900 mb-2 flex items-center gap-2"><Car className="w-4 h-4"/> Xe & Địa điểm</div>
-                         <div className="grid grid-cols-3 gap-2">
-                            <span className="text-gray-500 col-span-1">Biển số xe:</span>
-                            <span className="col-span-2 font-medium text-blue-600">{getLicensePlate(selectedAppointment.vehicleId)}</span>
-                            
-                            <span className="text-gray-500 col-span-1">Mã xe (ID):</span>
-                            <span className="col-span-2 text-gray-700">{selectedAppointment.vehicleId}</span>
+        {/* THÊM: Tên trung tâm dịch vụ */}
+        <span className="text-gray-500 col-span-1">Trung tâm:</span>
+        <span className="col-span-2 font-medium">
+          {centers?.find(c => c.centerId === selectedAppointment.centerId)?.centerName || `Center ID: ${selectedAppointment.centerId}`}
+        </span>
+      </div>
+    </div>
 
-                            <span className="text-gray-500 col-span-1">Trung tâm:</span>
-                            <span className="col-span-2 text-gray-700">Center ID: {selectedAppointment.centerId}</span>
-                         </div>
-                    </div>
+    {/* SỬA: Nhóm thông tin xe */}
+    <div className="bg-gray-50 p-3 rounded-lg space-y-2 border border-gray-100">
+      <div className="font-semibold text-gray-900 mb-2 flex items-center gap-2"><Car className="w-4 h-4"/> Thông tin xe</div>
+      <div className="grid grid-cols-3 gap-2">
+        <span className="text-gray-500 col-span-1">Biển số xe:</span>
+        <span className="col-span-2 font-medium text-blue-600">{getLicensePlate(selectedAppointment.vehicleId)}</span>
+        
+        {/* THÊM: Hãng xe */}
+        <span className="text-gray-500 col-span-1">Hãng xe:</span>
+        <span className="col-span-2 text-gray-700">
+          {vehicles?.find(v => v.vehicleId === selectedAppointment.vehicleId)?.brand || "N/A"}
+        </span>
 
-                    {/* Nhóm nhân sự (KTV, Staff) */}
-                    <div className="bg-gray-50 p-3 rounded-lg space-y-2 border border-gray-100">
-                         <div className="font-semibold text-gray-900 mb-2 flex items-center gap-2"><User className="w-4 h-4"/> Nhân sự phụ trách</div>
-                         <div className="grid grid-cols-3 gap-2">
-                            <span className="text-gray-500 col-span-1">Kỹ thuật viên:</span>
-                            <span className="col-span-2 font-medium">
-                                {selectedAppointment.technicianName ? selectedAppointment.technicianName : (
-                                    <span className="text-gray-400 italic">Chưa cập nhật (ID: {selectedAppointment.technicianId || 'N/A'})</span>
-                                )}
-                            </span>
+        {/* THÊM: Ghi chú */}
+        <span className="text-gray-500 col-span-1">Ghi chú:</span>
+        <span className="col-span-2 italic text-gray-600">
+          {selectedAppointment.note || "Không có ghi chú kèm theo"}
+        </span>
+      </div>
+    </div>
 
-                            <span className="text-gray-500 col-span-1">Nhân viên:</span>
-                            <span className="col-span-2 font-medium">
-                                {selectedAppointment.staffName ? selectedAppointment.staffName : (
-                                    <span className="text-gray-400 italic">Chưa cập nhật (ID: {selectedAppointment.staffId || 'N/A'})</span>
-                                )}
-                            </span>
+    {/* SỬA: Nhóm nhân sự - BỎ DÒNG KHÁCH HÀNG */}
+    <div className="bg-gray-50 p-3 rounded-lg space-y-2 border border-gray-100">
+      <div className="font-semibold text-gray-900 mb-2 flex items-center gap-2"><User className="w-4 h-4"/> Nhân sự phụ trách</div>
+      <div className="grid grid-cols-3 gap-2">
+        <span className="text-gray-500 col-span-1">Kỹ thuật viên:</span>
+        <span className="col-span-2 font-medium">
+          {selectedAppointment.technicianName ? selectedAppointment.technicianName : (
+            <span className="text-gray-400 italic">Chưa cập nhật (ID: {selectedAppointment.technicianId || 'N/A'})</span>
+          )}
+        </span>
 
-                             <span className="text-gray-500 col-span-1">Khách hàng:</span>
-                            <span className="col-span-2 font-medium">
-                                {selectedAppointment.customerName ? selectedAppointment.customerName : (
-                                    <span className="text-gray-400 italic">ID: {selectedAppointment.customerId}</span>
-                                )}
-                            </span>
-                         </div>
-                    </div>
-                    
-                    {/* Ghi chú & Khác */}
-                    <div className="bg-gray-50 p-3 rounded-lg space-y-2 border border-gray-100">
-                         <div className="font-semibold text-gray-900 mb-2">Thông tin khác</div>
-                         <div className="grid grid-cols-3 gap-2">
-                            <span className="text-gray-500 col-span-1">Hợp đồng:</span>
-                            <span className="col-span-2">{selectedAppointment.contractName || `ID: ${selectedAppointment.contractId || 'N/A'}`}</span>
+        <span className="text-gray-500 col-span-1">Nhân viên:</span>
+        <span className="col-span-2 font-medium">
+          {selectedAppointment.staffName ? selectedAppointment.staffName : (
+            <span className="text-gray-400 italic">Chưa cập nhật (ID: {selectedAppointment.staffId || 'N/A'})</span>
+          )}
+        </span>
 
-                            <span className="text-gray-500 col-span-1">Ghi chú:</span>
-                            <span className="col-span-2 italic text-gray-600">{selectedAppointment.note || "Không có ghi chú"}</span>
+        {/* BỎ: Dòng khách hàng */}
+      </div>
+    </div>
+    
+    {/* SỬA: Thông tin khác - BỎ DÒNG HỢP ĐỒNG */}
+    <div className="bg-gray-50 p-3 rounded-lg space-y-2 border border-gray-100">
+      <div className="font-semibold text-gray-900 mb-2">Thông tin khác</div>
+      <div className="grid grid-cols-3 gap-2">
+        {/* BỎ: Dòng hợp đồng */}
 
-                            <span className="text-gray-500 col-span-1">Ngày tạo:</span>
-                            <span className="col-span-2 text-xs text-gray-500">
-                                {selectedAppointment.createdAt ? new Date(selectedAppointment.createdAt).toLocaleString('vi-VN') : 'N/A'}
-                            </span>
+        <span className="text-gray-500 col-span-1">Ngày tạo:</span>
+        <span className="col-span-2 text-xs text-gray-500">
+          {selectedAppointment.createdAt ? new Date(selectedAppointment.createdAt).toLocaleString('vi-VN') : 'N/A'}
+        </span>
 
-                            <span className="text-gray-500 col-span-1">Cập nhật:</span>
-                            <span className="col-span-2 text-xs text-gray-500">
-                                {selectedAppointment.updatedAt ? new Date(selectedAppointment.updatedAt).toLocaleString('vi-VN') : 'N/A'}
-                            </span>
-                         </div>
-                    </div>
-
-                </div>
-            )}
+        <span className="text-gray-500 col-span-1">Cập nhật:</span>
+        <span className="col-span-2 text-xs text-gray-500">
+          {selectedAppointment.updatedAt ? new Date(selectedAppointment.updatedAt).toLocaleString('vi-VN') : 'N/A'}
+        </span>
+      </div>
+    </div>
+  </div>
+)}
         </DialogContent>
       </Dialog>
     </div>
