@@ -4,12 +4,14 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import edu.uth.evservice.dtos.jwt.JwtDto;
+import edu.uth.evservice.requests.ChangePasswordRequest;
 import edu.uth.evservice.requests.jwt.ForgotPasswordRequest;
 import edu.uth.evservice.requests.jwt.LoginRequest;
 import edu.uth.evservice.requests.jwt.RefreshTokenRequest;
@@ -100,5 +102,17 @@ public class AuthController {
         authenticaionService.resetPassword(request.getToken(), request.getNewPassword());
         return ResponseEntity.ok(
                 Map.of("message", "Đặt lại mật khẩu thành công. Vui lòng đăng nhập lại."));
+    }
+
+
+    @PostMapping("/change-password")
+    public ResponseEntity<?> changePassword(
+            @RequestBody ChangePasswordRequest request,
+            Authentication authentication) {
+        
+        Integer userId = Integer.parseInt(authentication.getName());
+        authenticaionService.changePassword(userId, request);
+        
+        return ResponseEntity.ok(Map.of("message", "Đổi mật khẩu thành công"));
     }
 }
