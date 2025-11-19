@@ -20,6 +20,19 @@ export interface PasswordChangeForm {
   confirmPassword: string;
 }
 
+export interface User {
+  id: number;
+  fullName: string;
+  email: string;
+  phoneNumber: string;
+  role: 'CUSTOMER' | 'STAFF' | 'TECHNICIAN' | 'ADMIN';
+  createdAt?: string;
+  avatar?: string;
+  // Các trường bổ sung tùy role (optional)
+  department?: string; 
+  specialization?: string;
+}
+
 export const userService = {
 
     //~ Lấy thông tin cá nhân
@@ -54,5 +67,6 @@ export const userService = {
         return res.data;
     },
 
-    
+    //~ Hàm lấy danh sách user theo role
+
 }
