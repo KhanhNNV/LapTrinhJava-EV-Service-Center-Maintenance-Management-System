@@ -43,9 +43,27 @@ export interface AppointmentDto {
     createdAt?: string;
     updatedAt?: string;
 }
+export interface CenterDto {
+    centerId: number;
+    centerName: string;
+    address: string;
+    phoneNumber: string;
+    email: string;
+}
 
 // --- HOOKS ---
-// 2. Thêm các Hooks xử lý xe (Tách logic khỏi Page)
+// Thêm Hook lấy danh sách trung tâm
+export function useCenters() {
+    return useQuery<CenterDto[]>({
+        queryKey: ["centers"],
+        queryFn: async () => {
+            const res = await api.get("/api/service-centers"); 
+            return res.data;
+        },
+    });
+}
+
+// Thêm các Hooks xử lý xe (Tách logic khỏi Page)
 export function useAddVehicle() {
     const queryClient = useQueryClient();
     return useMutation({
@@ -135,7 +153,7 @@ export function useBookAppointment() {
                 serviceType: data.serviceType,
                 note: data.note || "",
                 vehicleId: parseInt(data.vehicleId),
-                centerId: 1,
+                centerId: parseInt(data.centerId),
                 contractId: 1,
             };
 
