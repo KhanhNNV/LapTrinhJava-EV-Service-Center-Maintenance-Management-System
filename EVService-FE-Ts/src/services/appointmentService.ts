@@ -58,7 +58,27 @@ export interface ServicePackageDto {
     duration: number;
     description: string;
 }
+export interface InvoiceDto {
+    ticketId: number;        // Thay cho invoiceId
+    appointmentId: number;
+    completedTime: string;   // Thay cho createdDate (LocalDateTime -> string)
+    
+    customerName: string;
+    customerPhone: string;
+    technicianName: string;
 
+    // Vì bạn chưa gửi DTO chi tiết của 2 list này nên tạm thời để any[]
+    serviceItems: any[]; 
+    partsUsed: any[];
+
+    serviceTotal: number;
+    partTotal: number;
+    grandTotal: number;      // Thay cho amount
+}
+export interface PaymentDto {
+    orderId: string;    // Mã đơn hàng
+    paymentUrl: string; // Link thanh toán
+}
 // --- HOOKS ---
 // Thêm Hook lấy danh sách trung tâm
 export function useCenters() {
@@ -196,5 +216,38 @@ export function useCancelAppointment() {
             const errorMessage = error?.response?.data?.message || "Không thể hủy lịch.";
             toast.error(errorMessage);
         },
+    });
+}
+
+export function useCustomerInvoices() {
+    return useQuery<InvoiceDto[]>({
+        queryKey: ["customer-invoices"],
+        queryFn: async () => {
+            // Giả định endpoint BE trả về list hóa đơn của user đang đăng nhập
+            const res = await api.get("/api/invoices/my-invoices"); 
+            return res.data;
+        },
+    });
+}
+
+export function useCreateVnPayPayment() {
+    return useMutation({
+        mutationFn: async (ticketId: number) => {
+            // Gọi API: POST /api/payments/vnpay/{ticketId}
+            // Lưu ý: Controller Java dùng @PathVariable Integer invoiceId, ở đây ta truyền ticketId vào
+            const res = await api.post(`/api/payments/vnpay/${ticketId}`);
+            return res.data; // Trả về PaymentDto { orderId, paymentUrl }
+        },
+        onSuccess: (data: PaymentDto) => {
+            if (data.paymentUrl) {
+                // Chuyển hướng sang VNPay
+                window.location.href = data.paymentUrl;
+            } else {
+                toast.error("Không nhận được link thanh toán từ hệ thống");
+            }
+        },
+        onError: (error: any) => {
+            toast.error(error?.response?.data?.message || "Lỗi tạo giao dịch thanh toán");
+        }
     });
 }

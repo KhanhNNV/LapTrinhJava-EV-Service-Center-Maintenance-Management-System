@@ -15,6 +15,7 @@ import CustomerDashboard from "./pages/customer/Dashboard";
 import Vehicles from "./pages/customer/Vehicles";
 import Appointments from "./pages/customer/Appointments";
 import History from "./pages/customer/History";
+import Payments from '@/pages/customer/Payments';
 import StaffDashboard from "./pages/staff/Dashboard";
 import StaffAppointments from "./pages/staff/Appointments";
 import StaffCustomers from "./pages/staff/Customers";
@@ -73,6 +74,7 @@ const App = () => (
             <Route path="vehicles" element={<Vehicles />} />
             <Route path="appointments" element={<Appointments />} />
             <Route path="history" element={<History />} />
+            <Route path="payments" element={<Payments />} />
           </Route>
 
           {/* Staff Routes */}
