@@ -21,16 +21,18 @@ export interface AppointmentDetailData {
 }
 
 export const technicianService = {
-    // 1. Chỉ lấy danh sách cơ bản (Rất nhanh)
-    getMyAppointments: async (technicianId: number | undefined) => {
+    getMyAppointments: async (technicianId: number | undefined, status?: string) => {
         if (!technicianId) return [];
-        const response = await api.get("/api/appointments/technician");
-        return response.data.filter((a: any) => a.technicianId === technicianId);
+        const params: any = { technicianId };
+        if (status && status !== "ALL") {
+            params.status = status;
+        }
+        const response = await api.get("/api/appointments/technician",{params});
+        return response.data
     },
 
-    // 2. Hàm mới: Lấy chi tiết cho 1 cuộc hẹn (Chỉ chạy khi bấm nút)
     getAppointmentDetails: async (customerId: number, vehicleId: number): Promise<AppointmentDetailData> => {
-        // Gọi song song 3 API con
+        // Gọi song song 2 API con
         const [userRes, vehicleRes] = await Promise.all([
             api.get(`/api/users/${customerId}`),
             api.get(`/api/vehicles/manage/${vehicleId}`),
