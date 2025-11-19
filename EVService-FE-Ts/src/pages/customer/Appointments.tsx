@@ -68,6 +68,10 @@ export default function Appointments() {
       (a: AppointmentDto) => !["COMPLETED", "CANCELED"].includes(a.status)
     ) || [];
 
+    const formatCurrency = (amount: number) => {
+        return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+    };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     bookAppointmentMutation.mutate(formData, {
@@ -215,24 +219,30 @@ export default function Appointments() {
                 </div>
                 {/* YÊU CẦU: Sửa loại dịch vụ */}
                 <div className="space-y-2">
-                  <Label>Loại dịch vụ</Label>
-                  <Select
-                    onValueChange={(v) =>
-                      setFormData({ ...formData, serviceType: v })
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Chọn dịch vụ" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Bảo dưỡng tổng quát">
-                        Bảo dưỡng tổng quát
-                      </SelectItem>
-                      <SelectItem value="Sửa chữa hư hỏng">
-                        Sửa chữa hư hỏng
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
+                    <Label>Gói dịch vụ</Label>
+                    <Select onValueChange={(v) => setFormData({ ...formData, serviceType: v })}>
+                        <SelectTrigger>
+                            <SelectValue placeholder="Chọn gói dịch vụ" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {/* Map dữ liệu từ API ra Option */}
+                            {servicePackages?.map((pkg: ServicePackageDto) => (
+                                // Value sẽ là packageName để gửi lên server (vì AppointmentRequest nhận String serviceType)
+                                <SelectItem key={pkg.packageId} value={pkg.packageName}>
+                                    <div className="flex flex-col items-start">
+                                        <span className="font-medium">{pkg.packageName}</span>
+                                        <span className="text-xs text-muted-foreground">
+                                            {pkg.description} - {formatCurrency(pkg.price)}
+                                        </span>
+                                    </div>
+                                </SelectItem>
+                            ))}
+                            {/* Fallback nếu chưa có gói nào trong DB */}
+                            {!servicePackages?.length && (
+                                <SelectItem value="Checking" disabled>Đang tải gói dịch vụ...</SelectItem>
+                            )}
+                        </SelectContent>
+                    </Select>
                 </div>
 
                 {/* Ngày + Giờ */}

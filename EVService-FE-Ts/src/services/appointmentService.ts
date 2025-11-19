@@ -51,6 +51,14 @@ export interface CenterDto {
     email: string;
 }
 
+export interface ServicePackageDto {
+    packageId: number;
+    packageName: string;
+    price: number;
+    duration: number;
+    description: string;
+}
+
 // --- HOOKS ---
 // Thêm Hook lấy danh sách trung tâm
 export function useCenters() {
