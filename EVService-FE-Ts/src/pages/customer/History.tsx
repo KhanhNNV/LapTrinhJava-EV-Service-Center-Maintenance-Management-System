@@ -1,17 +1,45 @@
+import { useState } from "react";
 import { Card, CardContent } from '@/components/ui/card';
-import { History as HistoryIcon, Calendar, Clock, MapPin, Car } from 'lucide-react';
-import { useCustomerAppointments, AppointmentDto } from '@/services/appointmentService.ts';
+import { Button } from '@/components/ui/button';
+import { 
+    Dialog, 
+    DialogContent, 
+    DialogHeader, 
+    DialogTitle, 
+    DialogDescription 
+} from "@/components/ui/dialog";
+import { History as HistoryIcon, Calendar, Clock, MapPin, Car, Eye, FileText, User, Wrench } from 'lucide-react'; // Import thêm icon
+
+// Import hook lấy xe để mapping biển số và type AppointmentDto
+import { 
+    useCustomerAppointments, 
+    useCustomerVehicles, 
+    AppointmentDto, 
+    VehicleDto 
+} from '@/services/appointmentService.ts';
 
 export default function History() {
-  // 1. Lấy dữ liệu từ API
+  // 1. Lấy dữ liệu lịch hẹn
   const { data: appointments, isLoading } = useCustomerAppointments();
+  
+  // 2. Lấy dữ liệu xe để map ID -> Biển số
+  const { data: vehicles } = useCustomerVehicles();
 
-  // 2. Logic lọc: Chỉ lấy COMPLETED và CANCELED
+  // State để quản lý modal chi tiết
+  const [selectedAppointment, setSelectedAppointment] = useState<AppointmentDto | null>(null);
+
+  // Logic lọc: Chỉ lấy COMPLETED và CANCELED
   const historyAppointments = appointments?.filter((a: AppointmentDto) => 
     ['COMPLETED', 'CANCELED'].includes(a.status)
   ) || [];
 
-  // Helper: Màu sắc trạng thái (chỉ cần cho Completed và Canceled)
+  // Helper: Tìm biển số xe từ ID
+  const getLicensePlate = (vehicleId: number) => {
+    const vehicle = vehicles?.find((v: VehicleDto) => v.vehicleId === vehicleId);
+    return vehicle ? vehicle.licensePlate : `ID: ${vehicleId}`;
+  };
+
+  // Helper: Màu sắc trạng thái
   const getStatusColor = (status: string) => {
     const colors: any = {
       COMPLETED: "bg-green-100 text-green-700 border-green-200",
@@ -57,7 +85,7 @@ export default function History() {
               <CardContent className="pt-6">
                 <div className="flex items-start justify-between">
                   <div className="flex items-start gap-4 flex-1">
-                    {/* Icon mờ hơn để thể hiện lịch sử */}
+                    {/* Icon */}
                     <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center border border-gray-200">
                       <HistoryIcon className="w-6 h-6 text-gray-500" />
                     </div>
@@ -73,10 +101,12 @@ export default function History() {
                       </div>
 
                       <div className="text-sm text-gray-500 space-y-1.5">
-                        <div className="flex items-center gap-2">
+                        {/* SỬA: Hiển thị Biển số thay vì ID */}
+                        <div className="flex items-center gap-2 font-medium text-blue-600">
                             <Car className="w-4 h-4" />
-                            <span>Xe ID: {appointment.vehicleId}</span>
+                            <span>Xe: {getLicensePlate(appointment.vehicleId)}</span>
                         </div>
+
                         <div className="flex items-center gap-2">
                           <Clock className="w-4 h-4" />
                           <span>
@@ -90,14 +120,14 @@ export default function History() {
                             <span>Trung tâm số {appointment.centerId}</span>
                           </div>
                         )}
-                        
-                        {/* Hiển thị note nếu có */}
-                        {appointment.note && (
-                             <p className="mt-2 text-gray-500 italic text-xs">Ghi chú: {appointment.note}</p>
-                        )}
                       </div>
                     </div>
                   </div>
+
+                  {/* THÊM: Nút xem chi tiết */}
+                  <Button variant="outline" size="sm" onClick={() => setSelectedAppointment(appointment)}>
+                    <Eye className="w-4 h-4 mr-2"/> Chi tiết
+                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -115,6 +145,110 @@ export default function History() {
           </CardContent>
         </Card>
       )}
+
+      {/* THÊM: Modal hiển thị chi tiết tất cả thuộc tính */}
+      <Dialog open={!!selectedAppointment} onOpenChange={(open) => !open && setSelectedAppointment(null)}>
+        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                    <FileText className="w-5 h-5 text-blue-600"/>
+                    Chi tiết lịch hẹn #{selectedAppointment?.appointmentId}
+                </DialogTitle>
+                <DialogDescription>Thông tin đầy đủ về lịch sử dịch vụ</DialogDescription>
+            </DialogHeader>
+            
+            {selectedAppointment && (
+                <div className="grid grid-cols-1 gap-4 py-4 text-sm">
+                    {/* Nhóm thông tin chính */}
+                    <div className="bg-gray-50 p-3 rounded-lg space-y-2 border border-gray-100">
+                        <div className="font-semibold text-gray-900 mb-2">Thông tin chung</div>
+                        <div className="grid grid-cols-3 gap-2">
+                            <span className="text-gray-500 col-span-1">Mã lịch hẹn:</span>
+                            <span className="col-span-2 font-medium">{selectedAppointment.appointmentId}</span>
+                            
+                            <span className="text-gray-500 col-span-1">Dịch vụ:</span>
+                            <span className="col-span-2 font-medium">{selectedAppointment.serviceType}</span>
+                            
+                            <span className="text-gray-500 col-span-1">Trạng thái:</span>
+                            <span className={`col-span-2 font-medium ${selectedAppointment.status === 'COMPLETED' ? 'text-green-600' : 'text-red-600'}`}>
+                                {getStatusText(selectedAppointment.status)}
+                            </span>
+
+                            <span className="text-gray-500 col-span-1">Thời gian:</span>
+                            <span className="col-span-2 font-medium">
+                                {selectedAppointment.appointmentTime} - {new Date(selectedAppointment.appointmentDate).toLocaleDateString('vi-VN')}
+                            </span>
+                        </div>
+                    </div>
+
+                    {/* Nhóm thông tin xe & địa điểm */}
+                    <div className="bg-gray-50 p-3 rounded-lg space-y-2 border border-gray-100">
+                         <div className="font-semibold text-gray-900 mb-2 flex items-center gap-2"><Car className="w-4 h-4"/> Xe & Địa điểm</div>
+                         <div className="grid grid-cols-3 gap-2">
+                            <span className="text-gray-500 col-span-1">Biển số xe:</span>
+                            <span className="col-span-2 font-medium text-blue-600">{getLicensePlate(selectedAppointment.vehicleId)}</span>
+                            
+                            <span className="text-gray-500 col-span-1">Mã xe (ID):</span>
+                            <span className="col-span-2 text-gray-700">{selectedAppointment.vehicleId}</span>
+
+                            <span className="text-gray-500 col-span-1">Trung tâm:</span>
+                            <span className="col-span-2 text-gray-700">Center ID: {selectedAppointment.centerId}</span>
+                         </div>
+                    </div>
+
+                    {/* Nhóm nhân sự (KTV, Staff) */}
+                    <div className="bg-gray-50 p-3 rounded-lg space-y-2 border border-gray-100">
+                         <div className="font-semibold text-gray-900 mb-2 flex items-center gap-2"><User className="w-4 h-4"/> Nhân sự phụ trách</div>
+                         <div className="grid grid-cols-3 gap-2">
+                            <span className="text-gray-500 col-span-1">Kỹ thuật viên:</span>
+                            <span className="col-span-2 font-medium">
+                                {selectedAppointment.technicianName ? selectedAppointment.technicianName : (
+                                    <span className="text-gray-400 italic">Chưa cập nhật (ID: {selectedAppointment.technicianId || 'N/A'})</span>
+                                )}
+                            </span>
+
+                            <span className="text-gray-500 col-span-1">Nhân viên:</span>
+                            <span className="col-span-2 font-medium">
+                                {selectedAppointment.staffName ? selectedAppointment.staffName : (
+                                    <span className="text-gray-400 italic">Chưa cập nhật (ID: {selectedAppointment.staffId || 'N/A'})</span>
+                                )}
+                            </span>
+
+                             <span className="text-gray-500 col-span-1">Khách hàng:</span>
+                            <span className="col-span-2 font-medium">
+                                {selectedAppointment.customerName ? selectedAppointment.customerName : (
+                                    <span className="text-gray-400 italic">ID: {selectedAppointment.customerId}</span>
+                                )}
+                            </span>
+                         </div>
+                    </div>
+                    
+                    {/* Ghi chú & Khác */}
+                    <div className="bg-gray-50 p-3 rounded-lg space-y-2 border border-gray-100">
+                         <div className="font-semibold text-gray-900 mb-2">Thông tin khác</div>
+                         <div className="grid grid-cols-3 gap-2">
+                            <span className="text-gray-500 col-span-1">Hợp đồng:</span>
+                            <span className="col-span-2">{selectedAppointment.contractName || `ID: ${selectedAppointment.contractId || 'N/A'}`}</span>
+
+                            <span className="text-gray-500 col-span-1">Ghi chú:</span>
+                            <span className="col-span-2 italic text-gray-600">{selectedAppointment.note || "Không có ghi chú"}</span>
+
+                            <span className="text-gray-500 col-span-1">Ngày tạo:</span>
+                            <span className="col-span-2 text-xs text-gray-500">
+                                {selectedAppointment.createdAt ? new Date(selectedAppointment.createdAt).toLocaleString('vi-VN') : 'N/A'}
+                            </span>
+
+                            <span className="text-gray-500 col-span-1">Cập nhật:</span>
+                            <span className="col-span-2 text-xs text-gray-500">
+                                {selectedAppointment.updatedAt ? new Date(selectedAppointment.updatedAt).toLocaleString('vi-VN') : 'N/A'}
+                            </span>
+                         </div>
+                    </div>
+
+                </div>
+            )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

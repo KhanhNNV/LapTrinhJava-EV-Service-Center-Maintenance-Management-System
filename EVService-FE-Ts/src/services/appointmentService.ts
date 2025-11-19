@@ -33,13 +33,23 @@ export interface AppointmentDto {
     serviceType: string;
     status: string; // PENDING, CONFIRMED, ...
     note: string;
-    customerId: number;
-    vehicleId: number;
-    // Yêu cầu: hiển thị chi tiết (sẽ dùng trong History)
+
     centerId: number;
+
+    customerId?: number;
+    customerName?: string;
+
+    vehicleId: number;
+
     technicianId?: number;
+    technicianName?: string;
+
     staffId?: number;
+    staffName?: string;
+
     contractId?: number;
+    contractName?: string;
+
     createdAt?: string;
     updatedAt?: string;
 }
