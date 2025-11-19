@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { authService } from "@/services/auth";
-import { Calendar, Info, User, Car, MapPin, Loader2,X,Filter } from "lucide-react";
+import { Calendar, Info, User, Car, MapPin, Loader2, X, Filter } from "lucide-react";
 import { technicianService, Appointment, AppointmentDetailData } from "@/services/appointmentTechinicianService.ts";
 
 export default function TechnicianMyAppointments() {
@@ -29,11 +29,11 @@ export default function TechnicianMyAppointments() {
     // State danh sách
     const [appointments, setAppointments] = useState<Appointment[]>([]);
 
-    //State lọc
+    // State lọc
     const [filterStatus, setFilterStatus] = useState<string>("ALL");
     const [isLoadingList, setIsLoadingList] = useState(false);
 
-    // State lưu toàn bộ object của appontment đang chọn
+    // State lưu toàn bộ object của appointment đang chọn
     const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
 
     // State cho Dialog chi tiết
@@ -43,19 +43,19 @@ export default function TechnicianMyAppointments() {
 
     useEffect(() => {
         if (currentUser?.id) fetchAppointments();
-    }, [currentUser?.id,filterStatus]);
+    }, [currentUser?.id, filterStatus]);
 
     const fetchAppointments = async () => {
         setIsLoadingList(true);
         try {
-            const data = await technicianService.getMyAppointments(currentUser?.id,filterStatus);
-            const  sortData = data.sort((a,b) =>
+            const data = await technicianService.getMyAppointments(currentUser?.id, filterStatus);
+            const sortData = data.sort((a, b) =>
                 new Date(b.appointmentDate).getTime() - new Date(a.appointmentDate).getTime()
             );
             setAppointments(sortData);
         } catch (error) {
             toast({ title: "Error", description: "Failed to load list", variant: "destructive" });
-        }finally {
+        } finally {
             setIsLoadingList(false);
         }
     };
@@ -134,8 +134,8 @@ export default function TechnicianMyAppointments() {
                         <Button variant="outline" size="sm" className="h-8 gap-1">
                             <Filter className="h-4 w-4" />
                             <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                                    Lọc Trạng Thái
-                                </span>
+                                Lọc Trạng Thái
+                            </span>
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
@@ -153,7 +153,6 @@ export default function TechnicianMyAppointments() {
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>
-
 
             {/* DANH SÁCH LỊCH */}
             {isLoadingList ? (
@@ -217,6 +216,24 @@ export default function TechnicianMyAppointments() {
                                     <p className="text-sm text-muted-foreground">Số điện thoại: {details.user.phoneNumber}</p>
                                 </div>
                             </div>
+                            {selectedAppointment.staffName &&(
+                                <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
+                                    <User className="h-5 w-5 text-primary mt-0.5" />
+                                    <div>
+                                        <p className="font-semibold">Nhân viên phân công</p>
+                                        <p className="text-sm text-muted-foreground">Tên: {selectedAppointment.staffName}</p>
+                                    </div>
+                                </div>
+                            )}
+                            {selectedAppointment.technicianName && (
+                                <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
+                                    <User className="h-5 w-5 text-primary mt-0.5" />
+                                    <div>
+                                        <p className="font-semibold">Kỹ thuật viên được phân công</p>
+                                        <p className="text-sm text-muted-foreground">Tên: {selectedAppointment.technicianName}</p>
+                                    </div>
+                                </div>
+                            )}
 
                             {/* Thông tin Xe */}
                             <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
@@ -228,7 +245,7 @@ export default function TechnicianMyAppointments() {
                             </div>
 
                             {/* ghi chú của khách hàng */}
-                            {selectedAppointment.note &&(
+                            {selectedAppointment.note && (
                                 <div className="flex flex-col gap-2 rounded-lg border border-blue-100 bg-blue-50 p-3 dark:border-blue-900 dark:bg-blue-950/20">
                                     <p className="font-semibold text-blue-700 dark:text-blue-300 shrink-0">
                                         Ghi chú của khách hàng:

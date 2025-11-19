@@ -27,6 +27,7 @@ public class CertificateServiceImpl implements ICertificateService {
                 .issuingOrganization(request.getIssuingOrganization())
                 .description(request.getDescription())
                 .validityPeriod(request.getValidityPeriod())
+                .certificateType(request.getCertificateType())
                 .build();
         
         return toDTO(certificateRepository.save(cert));

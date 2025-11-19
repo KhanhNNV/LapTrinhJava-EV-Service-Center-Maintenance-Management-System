@@ -1,6 +1,5 @@
 import api from "./api";
-import { authService } from "./auth";
-import { ENDPOINTS } from "@/config/endpoints.ts";
+
 
 export interface Appointment {
     appointmentId: number;
@@ -12,6 +11,9 @@ export interface Appointment {
     customerId: number;
     vehicleId: number;
     centerId: number;
+
+    staffName: string;
+    technicianName: string;
 }
 
 // Interface cho chi tiết (đầy đủ)

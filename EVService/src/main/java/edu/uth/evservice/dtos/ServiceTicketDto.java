@@ -22,7 +22,12 @@ public class ServiceTicketDto {
     private String status;
     private String notes;
 
-    private Integer appointmentId;
+    private String serviceType;
+    private String noteCus;
+    private String customerName;
+    private String staffName;
+    private String licensePlate;
+
     private Integer technicianId;
     private List<TicketServiceItemDto> items;
     private List<TicketPartDto> parts;
