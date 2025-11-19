@@ -148,7 +148,7 @@ export default function Appointments() {
             </Button>
           </DialogTrigger>
 
-          <DialogContent className="max-w-md">
+          <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto custom-scrollbar pr-6">
             <DialogHeader>
               <DialogTitle>Đặt lịch hẹn</DialogTitle>
               <DialogDescription>

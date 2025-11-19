@@ -148,7 +148,7 @@ export default function History() {
 
       {/* THÊM: Modal hiển thị chi tiết tất cả thuộc tính */}
       <Dialog open={!!selectedAppointment} onOpenChange={(open) => !open && setSelectedAppointment(null)}>
-        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto custom-scrollbar pr-6">
             <DialogHeader>
                 <DialogTitle className="flex items-center gap-2">
                     <FileText className="w-5 h-5 text-blue-600"/>
