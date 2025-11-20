@@ -37,6 +37,7 @@ import ResetPasswordPage from "./pages/auth/ResetPasswordPage";
 import EmailVerificationSentPage from "./pages/auth/EmailVerificationSentPage";
 import SettingsPage from "./pages/Setting";
 import RoleBasedUserList from "./pages/admin/users/RoleBaseUserList";
+import EmployeesSalary from "@/pages/admin/EmployeesSalary.tsx";
 
 const queryClient = new QueryClient();
 
@@ -110,6 +111,7 @@ const App = () => (
             <Route path="parts" element={<AdminPartsInventory />} />
             <Route path="packages" element={<AdminServicePackages />} />
             <Route path="analytics" element={<AdminAnalytics />} />
+              <Route path="employees-salary" element={<EmployeesSalary />} />
             <Route path="settings" element={<SettingsPage />} />
             <Route path="users/:role" element={<RoleBasedUserList />} />
 

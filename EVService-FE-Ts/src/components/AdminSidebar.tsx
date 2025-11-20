@@ -85,6 +85,28 @@ const items = [
     url: "/dashboard/admin/analytics",
     icon: BarChart3,
   },
+    {
+        title: "Báo cáo & Thống kê",
+        icon: BarChart3,
+        isActive: true,
+        items: [
+            {
+                title: "Chi tiết doanh thu",
+                url: "/dashboard/admin/revenue/details",
+                icon: BarChart3
+            },
+            {
+                title: "Lương nhân viên",
+                url: "/dashboard/admin/employees-salary",
+                icon: BarChart3
+            },
+            {
+                title: "Hiệu suất nhân viên",
+                url: "/dashboard/admin/users/staff-performance",
+                icon: BarChart3
+            }
+        ],
+    },
   {
     title: "Cài đặt hệ thống",
     url: "/dashboard/admin/settings",
