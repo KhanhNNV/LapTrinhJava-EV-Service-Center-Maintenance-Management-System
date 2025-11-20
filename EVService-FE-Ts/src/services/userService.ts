@@ -1,3 +1,4 @@
+import { config } from "process";
 import api from "./api.ts";
 import { ENDPOINTS } from "@/config/endpoints";
 
@@ -19,20 +20,26 @@ export interface PasswordChangeForm {
   newPassword: string;
   confirmPassword: string;
 }
-
+export type Role = 'CUSTOMER' | 'STAFF' | 'TECHNICIAN' | 'ADMIN';
 export interface User {
-  id: number;
+  userId: number;
+  username:String;
   fullName: string;
   email: string;
   phoneNumber: string;
-  role: 'CUSTOMER' | 'STAFF' | 'TECHNICIAN' | 'ADMIN';
+  role: Role;
   createdAt?: string;
-  avatar?: string;
-  // Các trường bổ sung tùy role (optional)
-  department?: string; 
-  specialization?: string;
-}
+  centerName?: string;
+  address?: string;
 
+}
+export interface UserResponse {
+  content: User[];
+  totalPages: number;
+  totalElements: number;
+  size: number;
+  number: number; 
+}
 export const userService = {
 
     //~ Lấy thông tin cá nhân
@@ -68,5 +75,23 @@ export const userService = {
     },
 
     //~ Hàm lấy danh sách user theo role
-
+    async getListUserByRole(
+      role: Role,
+      page: number = 1,
+      limit: number = 10
+    ): Promise<UserResponse> {
+      // Backend Spring Boot dùng page bắt đầu từ 0
+      // Frontend hiển thị bắt đầu từ 1 -> Cần trừ 1
+      const endpoint = ENDPOINTS.users.getListUserByRole;
+      const res = await api.request({
+        method:endpoint.method,
+        url:endpoint.url,
+        params: {
+          role,
+          page: page - 1, 
+          limit,
+        },
+      });
+      return res.data;
+    }
 }

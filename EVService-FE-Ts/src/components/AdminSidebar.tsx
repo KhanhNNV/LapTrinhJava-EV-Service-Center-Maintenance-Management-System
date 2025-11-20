@@ -38,6 +38,14 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"; // 1. Import thêm DropdownMenu
 
 // Menu Items
 const items = [
@@ -120,10 +128,46 @@ export function AdminSidebar() {
                 // Logic check active cho mục Cha
                 const isParentActive = item.items?.some(sub => location.pathname === sub.url);
 
-                return (
-                  <SidebarMenuItem key={item.title}>
-                    {item.items ? (
-                      // === MENU ĐA CẤP (USERS) ===
+                // TRƯỜNG HỢP 1: CÓ SUB-MENU VÀ SIDEBAR ĐANG ĐÓNG (COLLAPSED)
+                
+                if (item.items && collapsed) {
+                  return (
+                    <SidebarMenuItem key={item.title}>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <SidebarMenuButton 
+                            tooltip={item.title}
+                            className={isParentActive ? 'bg-blue-50 text-blue-700' : ''}
+                          >
+                            {item.icon && <item.icon />}
+                            <span className="sr-only">{item.title}</span>
+                          </SidebarMenuButton>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent side="right" align="start" className="min-w-[200px] ml-2">
+                          <DropdownMenuLabel>{item.title}</DropdownMenuLabel>
+                          <DropdownMenuSeparator />
+                          {item.items.map((subItem) => (
+                            <DropdownMenuItem key={subItem.title} asChild>
+                              <NavLink 
+                                to={subItem.url}
+                                className="flex items-center gap-2 cursor-pointer w-full"
+                              >
+                                {subItem.icon && <subItem.icon className="h-4 w-4 opacity-70" />}
+                                <span>{subItem.title}</span>
+                              </NavLink>
+                            </DropdownMenuItem>
+                          ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </SidebarMenuItem>
+                  );
+                }
+
+                // TRƯỜNG HỢP 2: CÓ SUB-MENU VÀ SIDEBAR ĐANG MỞ (EXPANDED)
+              
+                if (item.items) {
+                  return (
+                    <SidebarMenuItem key={item.title}>
                       <Collapsible
                         defaultOpen={item.isActive || isParentActive}
                         className="group/collapsible"
@@ -133,52 +177,50 @@ export function AdminSidebar() {
                             tooltip={item.title}
                             className={isParentActive ? 'bg-blue-50 text-blue-700 font-medium' : ''}
                           >
-                            {item.icon && <item.icon className={collapsed ? 'mx-auto' : ''} />}
-                            {!collapsed && (
-                              <>
-                                <span>{item.title}</span>
-                                <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-                              </>
-                            )}
+                            {item.icon && <item.icon />}
+                            <span>{item.title}</span>
+                            <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
                           </SidebarMenuButton>
                         </CollapsibleTrigger>
                         <CollapsibleContent>
-                          {!collapsed && (
-                            <SidebarMenuSub>
-                              {item.items.map((subItem) => (
-                                <SidebarMenuSubItem key={subItem.title}>
-                                  <SidebarMenuSubButton asChild>
-                                    <NavLink 
-                                      to={subItem.url}
-                                      className="hover:bg-muted/50"
-                                      activeClassName="bg-primary/10 text-primary font-medium"
-                                    >
-                                      {subItem.icon && <subItem.icon className="h-4 w-4 mr-2" />}
-                                      <span>{subItem.title}</span>
-                                    </NavLink>
-                                  </SidebarMenuSubButton>
-                                </SidebarMenuSubItem>
-                              ))}
-                            </SidebarMenuSub>
-                          )}
+                          <SidebarMenuSub>
+                            {item.items.map((subItem) => (
+                              <SidebarMenuSubItem key={subItem.title}>
+                                <SidebarMenuSubButton asChild>
+                                  <NavLink 
+                                    to={subItem.url}
+                                    className="hover:bg-muted/50"
+                                    activeClassName="bg-primary/10 text-primary font-medium"
+                                  >
+                                    {subItem.icon && <subItem.icon className="h-4 w-4 mr-2" />}
+                                    <span>{subItem.title}</span>
+                                  </NavLink>
+                                </SidebarMenuSubButton>
+                              </SidebarMenuSubItem>
+                            ))}
+                          </SidebarMenuSub>
                         </CollapsibleContent>
                       </Collapsible>
-                    ) : (
-                      // === MENU ĐƠN LẺ (DASHBOARD...) ===
-                      <SidebarMenuButton asChild tooltip={item.title}>
-                        <NavLink 
-                          to={item.url}
-                          end={item.url === '/dashboard/admin'}
-                          className="hover:bg-muted/50"
-                          activeClassName="bg-primary/10 text-primary font-medium"
-                        >
-                           <item.icon className={collapsed ? 'mx-auto' : 'mr-2 h-4 w-4'} />
-                           {!collapsed && <span>{item.title}</span>}
-                        </NavLink>
-                      </SidebarMenuButton>
-                    )}
+                    </SidebarMenuItem>
+                  );
+                }
+
+                // TRƯỜNG HỢP 3: MENU ĐƠN LẺ (KHÔNG CÓ CON)
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild tooltip={item.title}>
+                      <NavLink 
+                        to={item.url}
+                        end={item.url === '/dashboard/admin'}
+                        className="hover:bg-muted/50"
+                        activeClassName="bg-primary/10 text-primary font-medium"
+                      >
+                         <item.icon className={collapsed ? 'mx-auto' : 'mr-2 h-4 w-4'} />
+                         {!collapsed && <span>{item.title}</span>}
+                      </NavLink>
+                    </SidebarMenuButton>
                   </SidebarMenuItem>
-                )
+                );
               })}
             </SidebarMenu>
           </SidebarGroupContent>

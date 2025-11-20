@@ -36,6 +36,7 @@ import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/auth/ResetPasswordPage";
 import EmailVerificationSentPage from "./pages/auth/EmailVerificationSentPage";
 import SettingsPage from "./pages/Setting";
+import RoleBasedUserList from "./pages/admin/users/RoleBaseUserList";
 
 const queryClient = new QueryClient();
 
@@ -104,12 +105,14 @@ const App = () => (
             }
           >
             <Route index element={<AdminDashboard />} />
-            <Route path="users" element={<AdminUsers />} />
+
             <Route path="service-centers" element={<AdminServiceCenters />} />
             <Route path="parts" element={<AdminPartsInventory />} />
             <Route path="packages" element={<AdminServicePackages />} />
             <Route path="analytics" element={<AdminAnalytics />} />
             <Route path="settings" element={<SettingsPage />} />
+            <Route path="users/:role" element={<RoleBasedUserList />} />
+
           </Route>
 
           {/* Technician Routes */}

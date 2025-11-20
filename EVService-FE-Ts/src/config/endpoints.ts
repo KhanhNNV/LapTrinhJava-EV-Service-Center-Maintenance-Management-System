@@ -386,6 +386,10 @@ export const ENDPOINTS = {
       method: "POST" as const,
       url: "/api/users/createTechnician",
     },
+    getListUserByRole:{
+      method: "GET" as const,
+      url: "/api/users"
+    }
   },
 
   // ─── VehicleController ───────────────────────────────────────────────────

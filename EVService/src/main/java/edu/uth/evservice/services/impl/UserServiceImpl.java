@@ -241,6 +241,7 @@ public class UserServiceImpl implements IUserService {
                 .address(user.getAddress() != null ? user.getAddress() : null)
                 .role(user.getRole().name())
                 .createdAt(user.getCreatedAt())
+                .centerName(user.getServiceCenter() != null ? user.getServiceCenter().getCenterName() : null)
                 .build();
     }
 }

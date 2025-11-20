@@ -52,7 +52,21 @@ export default function AdminDashboard() {
 
   const statCards = [
     {
-      title: "Total Users",
+      title: "Khách hàng",
+      value: stats.totalUsers,
+      icon: Users,
+      color: "text-blue-500",
+      description: "All registered users",
+    },
+    {
+      title: "Nhân viên",
+      value: stats.totalUsers,
+      icon: Users,
+      color: "text-blue-500",
+      description: "All registered users",
+    },
+        {
+      title: "Kỹ thuật viên",
       value: stats.totalUsers,
       icon: Users,
       color: "text-blue-500",
@@ -98,9 +112,9 @@ export default function AdminDashboard() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight">Admin Dashboard</h2>
+        <h2 className="text-3xl font-bold tracking-tight">Tổng quát</h2>
         <p className="text-muted-foreground">
-          Overview of system performance and key metrics
+          Tổng quan về hiệu suất hệ thống và các số liệu chính
         </p>
       </div>
 

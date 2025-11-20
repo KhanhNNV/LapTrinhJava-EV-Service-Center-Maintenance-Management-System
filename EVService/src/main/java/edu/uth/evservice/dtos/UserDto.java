@@ -25,4 +25,5 @@ public class UserDto {
     String address;
     LocalDateTime createdAt;
     String role;
+    String centerName;
 }
