@@ -1,8 +1,8 @@
-import { 
-  Car, 
-  Calendar, 
-  History, 
-  Bell, 
+import {
+  Car,
+  Calendar,
+  History,
+  Bell,
   Settings,
   LogOut,
   LayoutDashboard
@@ -23,6 +23,7 @@ import {
   SidebarMenuItem,
   SidebarFooter,
   useSidebar,
+  SidebarHeader,
 } from '@/components/ui/sidebar';
 
 const menuItems = [
@@ -51,6 +52,16 @@ export function CustomerSidebar() {
 
   return (
     <Sidebar className={collapsed ? 'w-14' : 'w-64'} collapsible="icon">
+      <SidebarHeader className={`border-b border-sidebar-border p-4 flex ${collapsed ? 'justify-center' : ''}`}>
+        <div className={`flex items-center ${collapsed ? 'justify-center w-full' : 'gap-2'} font-bold text-sidebar-primary-foreground`}>
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-600 text-white">
+            EV
+          </div>
+          {!collapsed && <span className="truncate font-semibold text-blue-900">EV Service</span>}
+        </div>
+      </SidebarHeader>
+
+
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel className={collapsed ? 'text-center px-0' : ''}>
@@ -60,9 +71,9 @@ export function CustomerSidebar() {
             <SidebarMenu>
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink 
-                      to={item.url} 
+                  <SidebarMenuButton asChild tooltip={item.title}>
+                    <NavLink
+                      to={item.url}
                       end={item.url === '/dashboard/customer'}
                       className="hover:bg-muted/50"
                       activeClassName="bg-primary/10 text-primary font-medium"

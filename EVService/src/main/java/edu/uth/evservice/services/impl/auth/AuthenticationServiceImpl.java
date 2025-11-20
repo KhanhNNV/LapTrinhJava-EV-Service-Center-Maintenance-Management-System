@@ -23,6 +23,7 @@ import edu.uth.evservice.models.enums.Role;
 import edu.uth.evservice.repositories.IEmailVerificationTokenRepository;
 import edu.uth.evservice.repositories.IPasswordResetTokenRepository;
 import edu.uth.evservice.repositories.IUserRepository;
+import edu.uth.evservice.requests.ChangePasswordRequest;
 import edu.uth.evservice.requests.jwt.LoginRequest;
 import edu.uth.evservice.requests.jwt.RefreshTokenRequest;
 import edu.uth.evservice.requests.jwt.RegisterRequest;
@@ -265,5 +266,29 @@ public class AuthenticationServiceImpl implements IAuthenticaionService {
 
         // Xoá token để không dùng lại được
         passwordResetTokenRepository.delete(resetToken);
+    }
+
+
+    // ==============================================================
+    // ĐẶT LẠI MẬT KHẨU Ở SETTING
+    // ==============================================================
+    @Override
+    public void changePassword(Integer userId, ChangePasswordRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
+
+        // 1. Kiểm tra mật khẩu cũ
+        if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
+            throw new RuntimeException("Mật khẩu hiện tại không chính xác");
+        }
+
+        // 2. Kiểm tra xác nhận mật khẩu
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+            throw new RuntimeException("Mật khẩu xác nhận không khớp");
+        }
+
+        // 3. Cập nhật mật khẩu mới
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
     }
 }

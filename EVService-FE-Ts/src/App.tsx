@@ -35,6 +35,8 @@ import VerifyEmailPage from "./pages/auth/VerifyEmailPage";
 import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/auth/ResetPasswordPage";
 import EmailVerificationSentPage from "./pages/auth/EmailVerificationSentPage";
+import SettingsPage from "./pages/Setting";
+import RoleBasedUserList from "./pages/admin/users/RoleBaseUserList";
 
 const queryClient = new QueryClient();
 
@@ -73,6 +75,7 @@ const App = () => (
             <Route path="vehicles" element={<Vehicles />} />
             <Route path="appointments" element={<Appointments />} />
             <Route path="history" element={<History />} />
+            <Route path="settings" element={<SettingsPage />} />
           </Route>
 
           {/* Staff Routes */}
@@ -89,6 +92,7 @@ const App = () => (
             <Route path="customers" element={<StaffCustomers />} />
             <Route path="tickets" element={<StaffServiceTickets />} />
             <Route path="messages" element={<StaffMessages />} />
+            <Route path="settings" element={<SettingsPage />} />
           </Route>
 
           {/* Admin Routes */}
@@ -101,11 +105,14 @@ const App = () => (
             }
           >
             <Route index element={<AdminDashboard />} />
-            <Route path="users" element={<AdminUsers />} />
+
             <Route path="service-centers" element={<AdminServiceCenters />} />
             <Route path="parts" element={<AdminPartsInventory />} />
             <Route path="packages" element={<AdminServicePackages />} />
             <Route path="analytics" element={<AdminAnalytics />} />
+            <Route path="settings" element={<SettingsPage />} />
+            <Route path="users/:role" element={<RoleBasedUserList />} />
+
           </Route>
 
           {/* Technician Routes */}
@@ -120,6 +127,7 @@ const App = () => (
             <Route index element={<TechnicianDashboard />} />
             <Route path="appointments" element={<TechnicianMyAppointments />} />
             <Route path="tickets" element={<TechnicianServiceTickets />} />
+            <Route path="settings" element={<SettingsPage />} />
           </Route>
 
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
