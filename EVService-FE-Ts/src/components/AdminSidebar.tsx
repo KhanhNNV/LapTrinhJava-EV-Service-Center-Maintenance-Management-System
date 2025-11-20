@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users, Building2, Package, Wrench, BarChart3, Settings, LogOut } from "lucide-react";
+import { LayoutDashboard, Users, Building2, Package, Wrench, BarChart3, Settings, LogOut , Bell} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { NavLink } from "@/components/NavLink";
 import {
@@ -22,6 +22,7 @@ const menuItems = [
   { title: "Service Packages", url: "/dashboard/admin/packages", icon: Wrench },
   { title: "Analytics", url: "/dashboard/admin/analytics", icon: BarChart3 },
   { title: "Settings", url: "/dashboard/admin/settings", icon: Settings },
+  { title: "Thông báo", url: "/dashboard/admin/notifications", icon: Bell },
 ];
 
 export function AdminSidebar() {

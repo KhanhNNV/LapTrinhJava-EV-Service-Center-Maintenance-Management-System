@@ -1,4 +1,4 @@
-import { LayoutDashboard, Calendar, Users, Wrench, MessageSquare, Settings, LogOut } from "lucide-react";
+import { LayoutDashboard, Calendar, Users, Wrench, MessageSquare, Settings, LogOut ,Bell} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { NavLink } from "@/components/NavLink";
 import {
@@ -19,8 +19,10 @@ const menuItems = [
   { title: "Appointments", url: "/dashboard/staff/appointments", icon: Calendar },
   { title: "Customers", url: "/dashboard/staff/customers", icon: Users },
   { title: "Service Tickets", url: "/dashboard/staff/tickets", icon: Wrench },
-  { title: "Messages", url: "/dashboard/staff/messages", icon: MessageSquare },
+  { title: 'Tin nhắn hỗ trợ', url: '/dashboard/staff/messages', icon: MessageSquare },
   { title: "Settings", url: "/dashboard/staff/settings", icon: Settings },
+  { title: 'Thông báo', url: '/dashboard/staff/notifications', icon: Bell },
+
 ];
 
 export function StaffSidebar() {

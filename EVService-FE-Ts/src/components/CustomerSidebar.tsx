@@ -5,7 +5,8 @@ import {
   Bell, 
   Settings,
   LogOut,
-  LayoutDashboard
+  LayoutDashboard,
+  MessageSquare
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -32,6 +33,7 @@ const menuItems = [
   { title: 'Lịch sử', url: '/dashboard/customer/history', icon: History },
   { title: 'Thông báo', url: '/dashboard/customer/notifications', icon: Bell },
   { title: 'Cài đặt', url: '/dashboard/customer/settings', icon: Settings },
+  { title: "Hỗ trợ trực tuyến", url: "/dashboard/customer/messages", icon: MessageSquare,},
 ];
 
 export function CustomerSidebar() {

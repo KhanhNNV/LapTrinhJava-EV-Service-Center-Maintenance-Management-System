@@ -22,12 +22,14 @@ import StaffAppointments from "./pages/staff/Appointments";
 import StaffCustomers from "./pages/staff/Customers";
 import StaffServiceTickets from "./pages/staff/ServiceTickets";
 import StaffMessages from "./pages/staff/Messages";
+import StaffNotifications from "./pages/staff/Notifications";
 import AdminDashboard from "./pages/admin/Dashboard";
 import AdminUsers from "./pages/admin/Users";
 import AdminServiceCenters from "./pages/admin/ServiceCenters";
 import AdminPartsInventory from "./pages/admin/PartsInventory";
 import AdminServicePackages from "./pages/admin/ServicePackages";
 import AdminAnalytics from "./pages/admin/Analytics";
+import AdminNotifications from "./pages/admin/Notifications";
 import TechnicianDashboard from "./pages/technician/Dashboard";
 import TechnicianMyAppointments from "./pages/technician/MyAppointments";
 import TechnicianServiceTickets from "./pages/technician/ServiceTickets";
@@ -94,6 +96,7 @@ const App = () => (
             <Route path="customers" element={<StaffCustomers />} />
             <Route path="tickets" element={<StaffServiceTickets />} />
             <Route path="messages" element={<StaffMessages />} />
+            <Route path="notifications" element={<StaffNotifications />} />
           </Route>
 
           {/* Admin Routes */}
@@ -111,6 +114,7 @@ const App = () => (
             <Route path="parts" element={<AdminPartsInventory />} />
             <Route path="packages" element={<AdminServicePackages />} />
             <Route path="analytics" element={<AdminAnalytics />} />
+            <Route path="notifications" element={<AdminNotifications />} />
           </Route>
 
           {/* Technician Routes */}
