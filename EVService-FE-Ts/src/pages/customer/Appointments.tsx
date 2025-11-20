@@ -229,7 +229,7 @@ const getServiceDescription = (serviceType: string) => {
                 </div>
 
                 {/* Gói dịch vụ */}
-                <div className="space-y-2">
+                {/* <div className="space-y-2">
                   <Label>Gói dịch vụ</Label>
                   <Select
                     value={formData.serviceType}
@@ -258,6 +258,29 @@ const getServiceDescription = (serviceType: string) => {
                           Đang tải gói dịch vụ...
                         </SelectItem>
                       )}
+                    </SelectContent>
+                  </Select>
+                </div> */}
+
+                {/* Gói dịch vụ (Hardcoded) */}
+                <div className="space-y-2">
+                  <Label>Loại dịch vụ</Label>
+                  <Select
+                    value={formData.serviceType}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, serviceType: value })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Chọn loại dịch vụ" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Bảo dưỡng tổng quát">
+                        Bảo dưỡng tổng quát
+                      </SelectItem>
+                      <SelectItem value="Sửa chữa hư hỏng">
+                        Sửa chữa hư hỏng
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
