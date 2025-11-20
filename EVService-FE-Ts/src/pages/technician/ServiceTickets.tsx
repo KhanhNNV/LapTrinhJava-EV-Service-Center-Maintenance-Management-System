@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { authService } from "@/services/auth";
-import { Wrench, Plus, CheckCircle, Loader2,Eye,Trash2,Check,ChevronsUpDown,Sparkles,BrainCircuit,Info } from "lucide-react";
+import { Wrench, Plus, CheckCircle, Loader2,Eye,Trash2,Check,ChevronsUpDown,Sparkles,BrainCircuit,Info,Minus } from "lucide-react";
 import { cn } from "@/utils/utils";
 import {
     Table,
@@ -72,12 +72,20 @@ export default function TechnicianServiceTickets() {
     //State lưu số lượng đang chỉnh sửa của từng Part trong bảng gợi ý
     const [suggestionQuantities, setSuggestionQuantities] = useState<Record<number, number>>({});
 
+    // --- STATE CHO THÊM PHỤ TÙNG THỦ CÔNG ---
+    const [availableParts, setAvailableParts] = useState<Part[]>([]); // Danh sách kho
+    const [isAddPartDialogOpen, setIsAddPartDialogOpen] = useState(false);
+    const [selectedPartId, setSelectedPartId] = useState<string>(""); // Lưu partId
+    const [partQuantity, setPartQuantity] = useState<number>(1);      // Lưu số lượng nhập
+    const [openPartCombobox, setOpenPartCombobox] = useState(false);  // Đóng mở dropdown
+
 
 
     useEffect(() => {
         if (currentUser?.id) {
             fetchTickets();
             fetchItems();
+            fetchParts();
         }
     }, [currentUser?.id]);
 
@@ -113,6 +121,19 @@ export default function TechnicianServiceTickets() {
             });
         }finally {
             setIsLoading(false);
+        }
+    }
+
+    const fetchParts = async () => {
+        try {
+            const parts = await technicianTicketService.getAllParts();
+            setAvailableParts(parts);
+        } catch (error) {
+            toast({
+                title: "Error",
+                description: "Failed to fetch data",
+                variant: "destructive",
+            });
         }
     }
 
@@ -181,6 +202,41 @@ export default function TechnicianServiceTickets() {
             toast({ title: "Lỗi", description: "Không thể thêm dịch vụ", variant: "destructive" });
         }
     };
+
+    const handleAddPart = async () => {
+        if (!selectedTicket || !selectedPartId) return;
+
+        // Validation cơ bản
+        if (partQuantity <= 0) {
+            toast({ title: "Lỗi", description: "Số lượng phải lớn hơn 0", variant: "destructive" });
+            return;
+        }
+
+        try {
+            await technicianTicketService.updatePart(
+                selectedTicket.ticketId,
+                parseInt(selectedPartId),
+                partQuantity
+            );
+
+            toast({ title: "Thành công", description: "Đã thêm phụ tùng vào phiếu", className: "bg-green-600 text-white" });
+
+            // Reset form
+            setSelectedPartId("");
+            setPartQuantity(1);
+            setIsAddPartDialogOpen(false);
+
+            // Refresh lại dữ liệu phiếu
+            refreshTickets();
+            // Tùy chọn: Refresh lại kho nếu muốn cập nhật số lượng tồn ngay lập tức
+            fetchParts();
+        } catch (error: any) {
+            // Hiển thị lỗi từ Backend (ví dụ: Không đủ hàng)
+            const errorMsg = error.response?.data?.message || "Không thể thêm phụ tùng";
+            toast({ title: "Lỗi", description: errorMsg, variant: "destructive" });
+        }
+    };
+
     const handleOpenAISuggestion = async (serviceItemId: number, serviceName: string) => {
         setIsLoadingAI(true);
         setAiData(null);
@@ -240,6 +296,56 @@ export default function TechnicianServiceTickets() {
             refreshTickets();
         } catch (error) {
             toast({ title: "Lỗi", description: "Không thể thêm phụ tùng", variant: "destructive" });
+        }
+    };
+
+    const handleRemoveServiceItem = async (itemId: number, itemName: string) => {
+        if (!selectedTicket) return;
+        if (!confirm(`Bạn có chắc chắn muốn xóa dịch vụ "${itemName}" không?`)) return;
+
+        try {
+            await technicianTicketService.removeServiceItem(selectedTicket.ticketId, itemId);
+            toast({ title: "Đã xóa", description: `Đã xóa dịch vụ ${itemName}`, className: "bg-yellow-600 text-white" });
+            refreshTickets(); // Load lại dữ liệu mới nhất
+        } catch (error) {
+            toast({ title: "Lỗi", description: "Không thể xóa dịch vụ", variant: "destructive" });
+        }
+    };
+
+    // Xử lý xóa phụ tùng
+    const handleRemovePart = async (partId: number, partName: string) => {
+        if (!selectedTicket) return;
+        if (!confirm(`Bạn có chắc chắn muốn xóa phụ tùng "${partName}" không?`)) return;
+
+        try {
+            await technicianTicketService.removePart(selectedTicket.ticketId, partId);
+            toast({ title: "Đã xóa", description: `Đã xóa phụ tùng ${partName}`, className: "bg-yellow-600 text-white" });
+            refreshTickets(); // Load lại dữ liệu mới nhất
+        } catch (error) {
+            toast({ title: "Lỗi", description: "Không thể xóa phụ tùng", variant: "destructive" });
+        }
+    };
+
+    // Hàm xử lý tăng/giảm số lượng
+    const handleUpdatePartQuantity = async (partId: number, currentQuantity: number, change: number) => {
+        if (!selectedTicket) return;
+        const newQuantity = currentQuantity + change;
+
+        // Chặn không cho giảm xuống dưới 1 (muốn xóa thì dùng nút thùng rác)
+        if (newQuantity < 1) return;
+
+        try {
+            // Gọi API updatePart đã có trong service
+            await technicianTicketService.updatePart(
+                selectedTicket.ticketId,
+                partId,
+                newQuantity
+            );
+
+            // Refresh lại danh sách để cập nhật giao diện và tính lại tổng tiền
+            refreshTickets();
+        } catch (error) {
+            toast({ title: "Lỗi", description: "Không thể cập nhật số lượng", variant: "destructive" });
         }
     };
 
@@ -449,7 +555,7 @@ export default function TechnicianServiceTickets() {
                         </Card>
                     ))}
                     <Dialog open={!!selectedTicket} onOpenChange={(open) => !open && setSelectedTicket(null)}>
-                        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
                             {selectedTicket && (
                                 <>
                                     <DialogHeader>
@@ -478,6 +584,7 @@ export default function TechnicianServiceTickets() {
                                                 </Button>
                                             )}
 
+
                                             {(!selectedTicket.items || selectedTicket.items.length === 0) ? (
                                                 <p className="text-sm text-muted-foreground italic text-center py-4">Chưa có dịch vụ nào.</p>
                                             ) : (
@@ -485,15 +592,16 @@ export default function TechnicianServiceTickets() {
                                                     <TableHeader>
                                                         <TableRow>
                                                             <TableHead>Tên dịch vụ</TableHead>
-                                                            <TableHead className="text-right">Đơn giá</TableHead>
+                                                            <TableHead className="text-center">Đơn giá</TableHead>
+                                                            <TableHead className="text-right w-[100px]">Thao tác</TableHead>
                                                         </TableRow>
                                                     </TableHeader>
                                                     <TableBody>
                                                         {selectedTicket.items?.map((item: any, index: number) => (
                                                             <TableRow key={index} className="h-9">
                                                                 <TableCell className="py-1 text-sm font-medium">{item.itemName || item.name}</TableCell>
-                                                                <TableCell className="py-1 text-sm text-right">{formatMoney(item.unitPriceAtTimeOfService || item.price)}</TableCell>
-                                                                <TableCell className="py-1">
+                                                                <TableCell className="py-1 text-sm text-center">{formatMoney(item.unitPriceAtTimeOfService || item.price)}</TableCell>
+                                                                <TableCell className="py-1 text-sm text-center">
                                                                     {/* --- NÚT GỢI Ý AI --- */}
                                                                     <Button
                                                                         variant="ghost"
@@ -505,6 +613,18 @@ export default function TechnicianServiceTickets() {
                                                                     >
                                                                         <Sparkles className="w-3.5 h-3.5" />
                                                                     </Button>
+                                                                    {/* --- NÚT XÓA ITEM --- */}
+                                                                    {selectedTicket.status !== 'COMPLETED' && selectedTicket.status !== 'CANCELLED' && (
+                                                                        <Button
+                                                                            variant="ghost"
+                                                                            size="icon"
+                                                                            className="h-7 w-7 text-red-500 hover:text-red-600 hover:bg-red-100"
+                                                                            title="Xóa dịch vụ này"
+                                                                            onClick={() => handleRemoveServiceItem(item.itemId || item.id, item.itemName || item.name)}
+                                                                        >
+                                                                            <Trash2 className="w-3.5 h-3.5" />
+                                                                        </Button>
+                                                                    )}
                                                                 </TableCell>
                                                             </TableRow>
                                                         ))}
@@ -516,18 +636,26 @@ export default function TechnicianServiceTickets() {
                                         {/* --- CỘT PHẢI: LINH KIỆN (PARTS) --- */}
                                         <div className="space-y-3 border rounded-lg p-4 bg-slate-50 dark:bg-slate-900/50">
                                             <div className="flex items-center gap-2 font-semibold text-orange-600">
-                                                <div className="w-4 h-4 border-2 border-orange-600 rounded-full" /> Linh kiện thay thế
+                                                <Wrench className="w-4 h-4" /> Phụ tùng thay thế
                                             </div>
 
+                                            {/* NÚT THÊM PHỤ TÙNG */}
+                                            {selectedTicket.status !== 'COMPLETED' && selectedTicket.status !== 'CANCELLED' && (
+                                                <Button size="sm" variant="outline" onClick={() => setIsAddPartDialogOpen(true)} className="h-7 text-xs">
+                                                    <Plus className="w-3 h-3 mr-1" /> Thêm
+                                                </Button>
+                                            )}
+
                                             {(!selectedTicket.parts || selectedTicket.parts.length === 0) ? (
-                                                <p className="text-sm text-muted-foreground italic text-center py-4">Chưa có linh kiện nào.</p>
+                                                <p className="text-sm text-muted-foreground italic text-center py-4">Chưa có Phụ tùng nào.</p>
                                             ) : (
                                                 <Table>
                                                     <TableHeader>
                                                         <TableRow>
-                                                            <TableHead>Tên linh kiện</TableHead>
-                                                            <TableHead className="text-center w-[50px]">SL</TableHead>
+                                                            <TableHead>Tên phụ tùng</TableHead>
+                                                            <TableHead className="text-center w-[110px]">Số lượng</TableHead>
                                                             <TableHead className="text-right">Thành tiền</TableHead>
+                                                            <TableHead className="w-[40px]"></TableHead>
                                                         </TableRow>
                                                     </TableHeader>
                                                     <TableBody>
@@ -537,13 +665,63 @@ export default function TechnicianServiceTickets() {
                                                             const quantity = part.quantity || 0;
                                                             const price = part.unitPriceAtTimeOfService;
                                                             const total = price * quantity;
+                                                            const partIdToDelete = part.partId || part.id;
+                                                            const partId = part.partId || part.id;
+
+                                                            // Kiểm tra trạng thái để disable nút nếu phiếu đã đóng
+                                                            const isReadOnly = selectedTicket.status === 'COMPLETED' || selectedTicket.status === 'CANCELLED';
 
                                                             return (
                                                                 <TableRow key={index}>
                                                                     <TableCell className="font-medium text-sm">{name}</TableCell>
-                                                                    <TableCell className="text-center text-sm">{quantity}</TableCell>
+                                                                    {/* --- CỘT SỐ LƯỢNG CÓ NÚT TĂNG GIẢM --- */}
+                                                                    <TableCell className="text-center py-1">
+                                                                        {isReadOnly ? (
+                                                                            <span className="font-medium">{quantity}</span>
+                                                                        ) : (
+                                                                            <div className="flex items-center justify-center gap-1">
+                                                                                {/* Nút Giảm (-) */}
+                                                                                <Button
+                                                                                    variant="outline"
+                                                                                    size="icon"
+                                                                                    className="h-6 w-6 p-0 hover:bg-slate-200"
+                                                                                    onClick={() => handleUpdatePartQuantity(partId, quantity, -1)}
+                                                                                    disabled={quantity <= 1} // Disable nếu sl = 1
+                                                                                >
+                                                                                    <Minus className="h-3 w-3" />
+                                                                                </Button>
+
+                                                                                {/* Số lượng hiện tại */}
+                                                                                <span className="w-6 text-center text-sm font-medium tabular-nums">{quantity}</span>
+
+                                                                                {/* Nút Tăng (+) */}
+                                                                                <Button
+                                                                                    variant="outline"
+                                                                                    size="icon"
+                                                                                    className="h-6 w-6 p-0 hover:bg-slate-200"
+                                                                                    onClick={() => handleUpdatePartQuantity(partId, quantity, 1)}
+                                                                                >
+                                                                                    <Plus className="h-3 w-3" />
+                                                                                </Button>
+                                                                            </div>
+                                                                        )}
+                                                                    </TableCell>
                                                                     <TableCell className="text-right text-sm font-semibold">
                                                                         {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(total)}
+                                                                    </TableCell>
+                                                                    <TableCell className="py-1 text-center">
+                                                                        {/* --- NÚT XÓA PART --- */}
+                                                                        {selectedTicket.status !== 'COMPLETED' && selectedTicket.status !== 'CANCELLED' && (
+                                                                            <Button
+                                                                                variant="ghost"
+                                                                                size="icon"
+                                                                                className="h-7 w-7 text-red-500 hover:text-red-600 hover:bg-red-100"
+                                                                                title="Xóa phụ tùng này"
+                                                                                onClick={() => handleRemovePart(partIdToDelete, name)}
+                                                                            >
+                                                                                <Trash2 className="w-3.5 h-3.5" />
+                                                                            </Button>
+                                                                        )}
                                                                     </TableCell>
                                                                 </TableRow>
                                                             );
@@ -626,6 +804,118 @@ export default function TechnicianServiceTickets() {
                             <DialogFooter>
                                 <Button variant="outline" onClick={() => setIsAddServiceDialogOpen(false)}>Hủy</Button>
                                 <Button onClick={handleAddServiceItem} disabled={!selectedServiceId}>Xác nhận thêm</Button>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
+
+                    {/* --- DIALOG THÊM PHỤ TÙNG THỦ CÔNG --- */}
+                    <Dialog open={isAddPartDialogOpen} onOpenChange={setIsAddPartDialogOpen}>
+                        <DialogContent className="sm:max-w-[425px]">
+                            <DialogHeader>
+                                <DialogTitle>Thêm phụ tùng từ kho</DialogTitle>
+                            </DialogHeader>
+
+                            <div className="grid gap-4 py-2">
+                                {/* 1. COMBOBOX CHỌN PHỤ TÙNG */}
+                                <div className="grid gap-2">
+                                    <Label>Chọn phụ tùng</Label>
+                                    <Popover open={openPartCombobox} onOpenChange={setOpenPartCombobox} modal={true}>
+                                        <PopoverTrigger asChild>
+                                            <Button
+                                                variant="outline"
+                                                role="combobox"
+                                                aria-expanded={openPartCombobox}
+                                                className="w-full justify-between"
+                                            >
+                                                {selectedPartId
+                                                    ? (() => {
+                                                        const part = availableParts.find((p) => p.partId.toString() === selectedPartId);
+                                                        return part
+                                                            ? <span className="truncate block w-[280px] text-left">
+                                            {part.name}
+                                          </span>
+                                                            : "Phụ tùng không tồn tại";
+                                                    })()
+                                                    : "-- Tìm kiếm phụ tùng --"}
+                                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                            </Button>
+                                        </PopoverTrigger>
+
+                                        <PopoverContent className="w-[380px] p-0" align="start">
+                                            <Command className="overflow-hidden">
+                                                <CommandInput placeholder="Nhập tên phụ tùng..." />
+                                                <CommandList className="max-h-[200px] overflow-y-auto overscroll-contain">
+                                                    <CommandEmpty>Không tìm thấy trong kho.</CommandEmpty>
+                                                    <CommandGroup>
+                                                        {availableParts.map((part) => (
+                                                            <CommandItem
+                                                                key={part.partId}
+                                                                value={part.name}
+                                                                onSelect={() => {
+                                                                    setSelectedPartId(part.partId.toString());
+                                                                    setOpenPartCombobox(false);
+                                                                }}
+                                                                className="cursor-pointer py-1 text-sm h-9"
+                                                                disabled={part.quantityInStock <= 0} // Disable nếu hết hàng
+                                                            >
+                                                                <Check
+                                                                    className={cn(
+                                                                        "mr-2 h-4 w-4",
+                                                                        selectedPartId === part.partId.toString() ? "opacity-100" : "opacity-0"
+                                                                    )}
+                                                                />
+                                                                <div className="flex flex-1 items-center justify-between gap-2 overflow-hidden">
+                                                <span className={cn("font-medium truncate", part.quantityInStock <= 0 && "text-muted-foreground line-through")}>
+                                                    {part.name}
+                                                </span>
+
+                                                                    <div className="flex items-center gap-2">
+                                                                        {/* Badge hiển thị tồn kho */}
+                                                                        <Badge
+                                                                            variant={part.quantityInStock > 0 ? "outline" : "destructive"}
+                                                                            className="text-[10px] px-1 h-5 border-slate-300"
+                                                                        >
+                                                                            Kho: {part.quantityInStock}
+                                                                        </Badge>
+                                                                        <span className="text-muted-foreground font-mono text-xs whitespace-nowrap">
+                                                        {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(part.price)}
+                                                    </span>
+                                                                    </div>
+                                                                </div>
+                                                            </CommandItem>
+                                                        ))}
+                                                    </CommandGroup>
+                                                </CommandList>
+                                            </Command>
+                                        </PopoverContent>
+                                    </Popover>
+                                </div>
+
+                                {/* 2. Ô NHẬP SỐ LƯỢNG */}
+                                <div className="grid gap-2">
+                                    <div className="flex justify-between">
+                                        <Label>Số lượng</Label>
+                                        {selectedPartId && (
+                                            <span className="text-xs text-muted-foreground">
+                            {/* Hiển thị lại tồn kho ở đây cho tiện theo dõi */}
+                                                Tối đa: {availableParts.find(p => p.partId.toString() === selectedPartId)?.quantityInStock}
+                        </span>
+                                        )}
+                                    </div>
+                                    <Input
+                                        type="number"
+                                        min="1"
+                                        // Max theo tồn kho (tùy chọn, backend đã check rồi nhưng chặn ở FE cho tốt UX)
+                                        max={availableParts.find(p => p.partId.toString() === selectedPartId)?.quantityInStock}
+                                        value={partQuantity}
+                                        onChange={(e) => setPartQuantity(parseInt(e.target.value) || 0)}
+                                    />
+                                </div>
+                            </div>
+
+                            <DialogFooter>
+                                <Button variant="outline" onClick={() => setIsAddPartDialogOpen(false)}>Hủy</Button>
+                                <Button onClick={handleAddPart} disabled={!selectedPartId || partQuantity <= 0}>Xác nhận thêm</Button>
                             </DialogFooter>
                         </DialogContent>
                     </Dialog>

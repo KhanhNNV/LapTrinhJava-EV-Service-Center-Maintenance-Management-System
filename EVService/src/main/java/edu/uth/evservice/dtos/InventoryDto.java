@@ -20,6 +20,7 @@ public class InventoryDto {
 
     private Integer partId;
     private String partName;
+    private Double unitPrice;
     private Integer centerId;
     private String centerName;
 }

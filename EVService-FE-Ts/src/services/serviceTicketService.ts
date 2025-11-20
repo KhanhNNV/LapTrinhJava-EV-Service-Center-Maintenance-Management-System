@@ -30,9 +30,11 @@ export interface ServiceTicket {
 }
 
 export interface Part {
-    partId:number
-    partName: string;
-    unitPrice: number;
+    inventoryId: number;     // ID bản ghi kho
+    partId: number;          // ID phụ tùng (dùng để gọi API thêm/sửa)
+    name: string;            // Tên phụ tùng
+    price: number;           // Giá bán
+    quantityInStock: number; // Số lượng đang có trong kho
 }
 
 export interface ServiceItem {
@@ -88,12 +90,6 @@ export const technicianTicketService = {
         });
     },
 
-    updatePart: async (ticketId: number, partId: number, quantity: number) => {
-        return await api.put(`/api/service-tickets/${ticketId}/parts`, {
-            partId,
-            quantity,
-        });
-    },
 
     getAISuggestions: async (serviceItemId: number): Promise<AISuggestionResponse> => {
         // SỬA Ở ĐÂY: Dùng template literal `${}` để đưa ID vào đường dẫn
@@ -103,9 +99,40 @@ export const technicianTicketService = {
     },
 
     getAllParts: async (): Promise<Part[]> => {
-        const response = await api.get("/api/parts");
-        return response.data;
+        // Gọi API backend mà chúng ta vừa thảo luận
+        const response = await api.get("/api/inventories/my-center");
+
+        // Map dữ liệu từ InventoryDto (Backend) sang Interface Part (Frontend)
+        return response.data.map((item: any) => ({
+            inventoryId: item.inventoryId,
+            partId: item.partId,
+            name: item.partName,
+            price: item.unitPrice, // Đảm bảo backend trả về field này
+            quantityInStock: item.quantity
+        }));
     },
 
+    // Hàm cập nhật/thêm phụ tùng vào phiếu (Gọi API PUT)
+    updatePart: async (ticketId: number, partId: number, quantity: number) => {
+        return await api.put(`/api/service-tickets/${ticketId}/parts`, {
+            partId,
+            quantity,
+        });
+    },
+
+
+    // Hàm xóa dịch vụ (Delete Service Item)
+    removeServiceItem: async (ticketId: number, itemId: number) => {
+        return await api.delete(`/api/service-tickets/${ticketId}/service-items/${itemId}`);
+    },
+
+    // Hàm xóa phụ tùng (Delete Part)
+    // Update số lượng về 0 sẽ tự động xóa
+    removePart: async (ticketId: number, partId: number) => {
+        return await api.put(`/api/service-tickets/${ticketId}/parts`, {
+            partId: partId,
+            quantity: 0
+        });
+    },
 
 };
