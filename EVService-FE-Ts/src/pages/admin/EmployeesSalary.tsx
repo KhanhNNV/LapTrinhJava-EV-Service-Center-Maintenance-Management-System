@@ -257,7 +257,7 @@ export default function EmployeesSalary() {
             {/* --- Header và Bộ lọc --- */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h2 className="text-3xl font-bold tracking-tight">💵 Quản lý lương nhân viên</h2>
+                    <h2 className="text-3xl font-bold tracking-tight">Quản lý lương nhân viên</h2>
                     <p className="text-muted-foreground">
                         Xem và quản lý lương cơ bản và tỷ lệ thưởng của nhân viên/kỹ thuật viên.
                     </p>
@@ -269,7 +269,7 @@ export default function EmployeesSalary() {
                         <DialogTrigger asChild>
                             <Button variant="secondary">
                                 <Percent className="h-4 w-4 mr-2" />
-                                Sửa % Thưởng (Tech)
+                                Sửa Tỷ Lệ Thưởng
                             </Button>
                         </DialogTrigger>
                         {/* Dialog Chỉnh Sửa % Thưởng */}
@@ -317,7 +317,7 @@ export default function EmployeesSalary() {
                         <DialogTrigger asChild>
                             <Button variant="outline">
                                 <Users className="h-4 w-4 mr-2" />
-                                Sửa Lương Chung
+                                Sửa Lương
                             </Button>
                         </DialogTrigger>
                         {/* Dialog Chỉnh Sửa Lương CHUNG */}
@@ -385,7 +385,7 @@ export default function EmployeesSalary() {
             <div className="grid gap-4 md:grid-cols-3">
                 <Card className="shadow-lg">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Total Base Salary</CardTitle>
+                        <CardTitle className="text-sm font-medium">Tổng Lương Nhân Viên</CardTitle>
                         <DollarSign className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
@@ -395,7 +395,7 @@ export default function EmployeesSalary() {
                 </Card>
                 <Card className="shadow-lg">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Total Bonus</CardTitle>
+                        <CardTitle className="text-sm font-medium">Tổng Tiền Thưởng</CardTitle>
                         <DollarSign className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
@@ -405,7 +405,7 @@ export default function EmployeesSalary() {
                 </Card>
                 <Card className="shadow-lg">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Total Final Salary</CardTitle>
+                        <CardTitle className="text-sm font-medium">Tổng Lương Cần Trả</CardTitle>
                         <DollarSign className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
@@ -439,7 +439,7 @@ export default function EmployeesSalary() {
                                     <TableHead className="text-right">Lương cơ bản</TableHead>
                                     <TableHead className="text-right">Thưởng</TableHead>
                                     <TableHead className="text-right">Tổng lương</TableHead>
-                                    <TableHead>Action</TableHead>
+                                    <TableHead>Sửa</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>

@@ -102,7 +102,7 @@ const items = [
             },
             {
                 title: "Hiệu suất nhân viên",
-                url: "/dashboard/admin/users/staff-performance",
+                url: "/dashboard/admin/performance",
                 icon: BarChart3
             }
         ],

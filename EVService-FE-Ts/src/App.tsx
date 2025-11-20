@@ -38,6 +38,7 @@ import EmailVerificationSentPage from "./pages/auth/EmailVerificationSentPage";
 import SettingsPage from "./pages/Setting";
 import RoleBasedUserList from "./pages/admin/users/RoleBaseUserList";
 import EmployeesSalary from "@/pages/admin/EmployeesSalary.tsx";
+import Performance from "@/pages/admin/Performance.tsx";
 
 const queryClient = new QueryClient();
 
@@ -112,6 +113,7 @@ const App = () => (
             <Route path="packages" element={<AdminServicePackages />} />
             <Route path="analytics" element={<AdminAnalytics />} />
               <Route path="employees-salary" element={<EmployeesSalary />} />
+              <Route path="performance" element={<Performance />} />
             <Route path="settings" element={<SettingsPage />} />
             <Route path="users/:role" element={<RoleBasedUserList />} />
 

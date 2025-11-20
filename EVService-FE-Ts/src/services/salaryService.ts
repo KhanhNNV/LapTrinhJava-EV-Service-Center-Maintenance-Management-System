@@ -5,7 +5,7 @@ import api from "./api.ts";
 export interface SalaryItem {
     userId: number;
     fullName: string;
-    role: 'STAFF' | 'TECHNICIAN';
+    role: 'STAFF' | 'TECHNICIAN' | 'ADMIN';
     baseSalary: number;
     bonus: number;
     totalSalary: number;
