@@ -2,13 +2,13 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,DialogDescription } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { authService } from "@/services/auth";
-import { Wrench, Plus, CheckCircle, Loader2,Eye,Trash2,Check,ChevronsUpDown } from "lucide-react";
+import { Wrench, Plus, CheckCircle, Loader2,Eye,Trash2,Check,ChevronsUpDown,Sparkles,BrainCircuit,Info } from "lucide-react";
 import { cn } from "@/utils/utils";
 import {
     Table,
@@ -38,7 +38,9 @@ import {
     technicianTicketService,
     ServiceTicket,
     Part,
-    ServiceItem
+    ServiceItem,
+    AISuggestionResponse,
+    AISuggestedPart
 } from "@/services/serviceTicketService.ts";
 
 export default function TechnicianServiceTickets() {
@@ -61,6 +63,15 @@ export default function TechnicianServiceTickets() {
 
     // State cho Combobox tìm kiếm dịch vụ
     const [openCombobox, setOpenCombobox] = useState(false);
+
+    // --- STATE AI SUGGESTION  ---
+    const [aiData, setAiData] = useState<AISuggestionResponse | null>(null);
+    const [isAIDialogOpen, setIsAIDialogOpen] = useState(false); // Dialog chính (list parts)
+    const [isAnalysisDialogOpen, setIsAnalysisDialogOpen] = useState(false); // Dialog phân tích chi tiết
+    const [isLoadingAI, setIsLoadingAI] = useState(false);
+    //State lưu số lượng đang chỉnh sửa của từng Part trong bảng gợi ý
+    const [suggestionQuantities, setSuggestionQuantities] = useState<Record<number, number>>({});
+
 
 
     useEffect(() => {
@@ -170,6 +181,68 @@ export default function TechnicianServiceTickets() {
             toast({ title: "Lỗi", description: "Không thể thêm dịch vụ", variant: "destructive" });
         }
     };
+    const handleOpenAISuggestion = async (serviceItemId: number, serviceName: string) => {
+        setIsLoadingAI(true);
+        setAiData(null);
+
+        try {
+            const data = await technicianTicketService.getAISuggestions(serviceItemId);
+            setAiData(data);
+
+            // Khởi tạo state số lượng dựa trên gợi ý của AI
+            const initialQuantities: Record<number, number> = {};
+            data.suggestions.forEach(s => {
+                initialQuantities[s.partId] = s.suggestedQuantity;
+            });
+            setSuggestionQuantities(initialQuantities);
+
+            setIsAIDialogOpen(true);
+        } catch (error) {
+            toast({ title: "Lỗi", description: "Không lấy được dữ liệu AI", variant: "destructive" });
+        } finally {
+            setIsLoadingAI(false);
+        }
+    };
+
+    const handleQuantityChange = (partId: number, newQuantity: string) => {
+        const quantity = parseInt(newQuantity);
+        if (!isNaN(quantity) && quantity >= 0) {
+            setSuggestionQuantities(prev => ({
+                ...prev,
+                [partId]: quantity
+            }));
+        }
+    };
+    const handleAddSuggestedPart = async (part: AISuggestedPart) => {
+        if (!selectedTicket) return;
+
+        // Lấy số lượng người dùng đang nhập (hoặc mặc định là 1 nếu lỗi)
+        const quantityToAdd = suggestionQuantities[part.partId] || 1;
+
+        if (quantityToAdd <= 0) {
+            toast({ title: "Lỗi", description: "Số lượng phải lớn hơn 0", variant: "destructive" });
+            return;
+        }
+
+        try {
+            await technicianTicketService.updatePart(
+                selectedTicket.ticketId,
+                part.partId,
+                quantityToAdd // [MỚI] Dùng số lượng đã chỉnh sửa
+            );
+
+            toast({
+                title: "Đã thêm phụ tùng",
+                description: `Đã thêm ${quantityToAdd} x ${part.partName}`,
+                className: "bg-blue-600 text-white"
+            });
+
+            refreshTickets();
+        } catch (error) {
+            toast({ title: "Lỗi", description: "Không thể thêm phụ tùng", variant: "destructive" });
+        }
+    };
+
 
     // 2. Hoàn thành phiếu
     // const handleCompleteTicket = async (ticketId: number) => {
@@ -242,6 +315,9 @@ export default function TechnicianServiceTickets() {
     //         toast({ title: "Error", description: "Failed to complete ticket", variant: "destructive" });
     //     }
     // };
+
+    // Format tiền tệ
+    const formatMoney = (amount: number) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
 
     const statusColors: Record<string, string> = {
         PENDING: "bg-yellow-500",
@@ -413,17 +489,25 @@ export default function TechnicianServiceTickets() {
                                                         </TableRow>
                                                     </TableHeader>
                                                     <TableBody>
-                                                        {selectedTicket.items.map((item: any, index: number) => {
-
-                                                            return (
-                                                                <TableRow key={index}>
-                                                                    <TableCell className="font-medium text-sm">{item.itemName}</TableCell>
-                                                                    <TableCell className="text-right text-sm">
-                                                                        {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.unitPriceAtTimeOfService)}
-                                                                    </TableCell>
-                                                                </TableRow>
-                                                            );
-                                                        })}
+                                                        {selectedTicket.items?.map((item: any, index: number) => (
+                                                            <TableRow key={index} className="h-9">
+                                                                <TableCell className="py-1 text-sm font-medium">{item.itemName || item.name}</TableCell>
+                                                                <TableCell className="py-1 text-sm text-right">{formatMoney(item.unitPriceAtTimeOfService || item.price)}</TableCell>
+                                                                <TableCell className="py-1">
+                                                                    {/* --- NÚT GỢI Ý AI --- */}
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="icon"
+                                                                        className="h-6 w-6 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-100"
+                                                                        title="Xem gợi ý phụ tùng từ AI"
+                                                                        // Cần truyền ID của Item (chứ không phải ID dòng trong ticket nếu có sự khác biệt)
+                                                                        onClick={() => handleOpenAISuggestion(item.itemId || item.id, item.itemName || item.name)}
+                                                                    >
+                                                                        <Sparkles className="w-3.5 h-3.5" />
+                                                                    </Button>
+                                                                </TableCell>
+                                                            </TableRow>
+                                                        ))}
                                                     </TableBody>
                                                 </Table>
                                             )}
@@ -449,9 +533,9 @@ export default function TechnicianServiceTickets() {
                                                     <TableBody>
                                                         {selectedTicket.parts.map((part: any, index: number) => {
                                                             // Xử lý mapping data
-                                                            const name = part.name || part.part?.name || "N/A";
+                                                            const name = part.partName;
                                                             const quantity = part.quantity || 0;
-                                                            const price = part.price || part.part?.price || 0;
+                                                            const price = part.unitPriceAtTimeOfService;
                                                             const total = price * quantity;
 
                                                             return (
@@ -542,6 +626,170 @@ export default function TechnicianServiceTickets() {
                             <DialogFooter>
                                 <Button variant="outline" onClick={() => setIsAddServiceDialogOpen(false)}>Hủy</Button>
                                 <Button onClick={handleAddServiceItem} disabled={!selectedServiceId}>Xác nhận thêm</Button>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
+
+                    {/* ====================================================================== */}
+                    {/* --- 1. DIALOG GỢI Ý AI (DANH SÁCH PART) --- */}
+                    {/* ====================================================================== */}
+                    <Dialog open={isAIDialogOpen} onOpenChange={setIsAIDialogOpen}>
+                        <DialogContent className="sm:max-w-[600px]">
+                            {/* ... Header Dialog giữ nguyên ... */}
+
+                            {isLoadingAI ? (
+                                // ... Loading giữ nguyên ...
+                                <div className="flex justify-center p-4"><Loader2 className="animate-spin"/></div>
+                            ) : aiData ? (
+                                <div className="space-y-4">
+                                    <div className="border rounded-md overflow-hidden">
+                                        <Table>
+                                            <TableHeader className="bg-indigo-50">
+                                                <TableRow>
+                                                    <TableHead>Tên phụ tùng</TableHead>
+                                                    {/* Căn giữa tiêu đề SL */}
+                                                    <TableHead className="text-center w-[100px]">Số lượng</TableHead>
+                                                    <TableHead className="text-right">Hành động</TableHead>
+                                                </TableRow>
+                                            </TableHeader>
+                                            <TableBody>
+                                                {aiData.suggestions.map((part) => (
+                                                    <TableRow key={part.partId}>
+                                                        <TableCell className="font-medium">
+                                                            {part.partName}
+                                                            <div className="text-xs text-muted-foreground mt-0.5">
+                                                                Gợi ý gốc: {part.suggestedQuantity} | {part.importanceLevel}
+                                                            </div>
+                                                        </TableCell>
+
+                                                        {/* [MỚI] Ô INPUT SỐ LƯỢNG */}
+                                                        <TableCell className="text-center p-2">
+                                                            <Input
+                                                                type="number"
+                                                                min="1"
+                                                                className="h-8 w-20 text-center mx-auto border-indigo-200 focus-visible:ring-indigo-500"
+                                                                value={suggestionQuantities[part.partId] ?? part.suggestedQuantity}
+                                                                onChange={(e) => handleQuantityChange(part.partId, e.target.value)}
+                                                            />
+                                                        </TableCell>
+
+                                                        <TableCell className="text-right">
+                                                            <Button
+                                                                size="sm"
+                                                                className="h-8 bg-indigo-600 hover:bg-indigo-700 text-white"
+                                                                onClick={() => handleAddSuggestedPart(part)}
+                                                            >
+                                                                <Plus className="w-3 h-3 mr-1" /> Thêm
+                                                            </Button>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                ))}
+                                            </TableBody>
+                                        </Table>
+                                    </div>
+
+                                    <DialogFooter className="sm:justify-between items-center gap-2">
+                                        <Button
+                                            variant="outline"
+                                            className="text-indigo-600 border-indigo-200 hover:bg-indigo-50"
+                                            onClick={() => setIsAnalysisDialogOpen(true)}
+                                        >
+                                            <BrainCircuit className="w-4 h-4 mr-2" />
+                                            Xem chi tiết phân tích
+                                        </Button>
+                                        <Button variant="secondary" onClick={() => setIsAIDialogOpen(false)}>
+                                            Đóng
+                                        </Button>
+                                    </DialogFooter>
+                                </div>
+                            ) : (
+                                <p className="text-center text-red-500 py-4">Không có dữ liệu.</p>
+                            )}
+                        </DialogContent>
+                    </Dialog>
+
+                    {/* ====================================================================== */}
+                    {/* --- 2. DIALOG CHI TIẾT PHÂN TÍCH AI --- */}
+                    {/* ====================================================================== */}
+                    <Dialog open={isAnalysisDialogOpen} onOpenChange={setIsAnalysisDialogOpen}>
+                        <DialogContent className="sm:max-w-[700px] max-h-[85vh] overflow-y-auto">
+                            <DialogHeader>
+                                <DialogTitle className="flex items-center gap-2">
+                                    <BrainCircuit className="w-5 h-5 text-indigo-600" />
+                                    Chi tiết phân tích AI
+                                </DialogTitle>
+                                <DialogDescription>
+                                    Dữ liệu phân tích trong {aiData?.analysisPeriod} cho dịch vụ "{aiData?.serviceItemName}"
+                                </DialogDescription>
+                            </DialogHeader>
+
+                            {aiData && (
+                                <div className="space-y-6 py-2">
+                                    {/* Thống kê chung */}
+                                    <div className="grid grid-cols-3 gap-4">
+                                        <Card>
+                                            <CardContent className="p-4 pt-4 text-center">
+                                                <div className="text-2xl font-bold text-indigo-600">{aiData.totalSuggestions}</div>
+                                                <div className="text-xs text-muted-foreground">Gợi ý được tạo</div>
+                                            </CardContent>
+                                        </Card>
+                                        <Card>
+                                            <CardContent className="p-4 pt-4 text-center">
+                                                <div className="text-2xl font-bold text-green-600">{(aiData.overallConfidenceScore * 100).toFixed(0)}%</div>
+                                                <div className="text-xs text-muted-foreground">Độ tin cậy TB</div>
+                                            </CardContent>
+                                        </Card>
+                                        <Card>
+                                            <CardContent className="p-4 pt-4 text-center">
+                                                <div className="text-sm font-bold text-orange-600 truncate" title={formatMoney(aiData.totalEstimatedCost)}>
+                                                    {new Intl.NumberFormat('vi-VN', { notation: "compact", compactDisplay: "short", style: 'currency', currency: 'VND' }).format(aiData.totalEstimatedCost)}
+                                                </div>
+                                                <div className="text-xs text-muted-foreground">Ước tính chi phí</div>
+                                            </CardContent>
+                                        </Card>
+                                    </div>
+
+                                    {/* Chi tiết từng Suggestion */}
+                                    <div className="space-y-4">
+                                        <h4 className="font-semibold border-b pb-2">Giải thích chi tiết từng phụ tùng</h4>
+                                        {aiData.suggestions.map((part, idx) => (
+                                            <div key={idx} className="rounded-lg border bg-slate-50 dark:bg-slate-900 p-4 space-y-3">
+                                                <div className="flex justify-between items-start">
+                                                    <div>
+                                                        <h5 className="font-bold text-sm">{part.partName}</h5>
+                                                        <Badge variant="outline" className="mt-1 text-[10px] uppercase border-indigo-200 text-indigo-700 bg-indigo-50">
+                                                            Mức độ: {part.importanceLevel}
+                                                        </Badge>
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <span className="text-sm font-mono text-muted-foreground">{formatMoney(part.currentUnitPrice)}/cái</span>
+                                                    </div>
+                                                </div>
+
+                                                <div className="bg-white dark:bg-black border rounded p-3 text-sm space-y-2">
+                                                    <div className="flex gap-2 items-start">
+                                                        <Info className="w-4 h-4 text-blue-500 mt-0.5 shrink-0" />
+                                                        <p><span className="font-semibold">Lý do:</span> {part.reasoning}</p>
+                                                    </div>
+                                                    <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground mt-2 pt-2 border-t border-dashed">
+                                                        <div>• Đã dùng {part.historicalUsageCount} lần trong quá khứ</div>
+                                                        <div>• Tổng lượng dùng: {part.historicalTotalQuantity}</div>
+                                                        <div>• Tỉ lệ sử dụng: {(part.usageRate * 100).toFixed(1)}%</div>
+                                                        <div>• SL trung bình mỗi lần: {part.historicalAverageQuantity}</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <div className="text-xs text-muted-foreground text-center pt-4">
+                                        Dữ liệu được tạo lúc: {new Date(aiData.generatedDate).toLocaleString('vi-VN')}
+                                    </div>
+                                </div>
+                            )}
+
+                            <DialogFooter>
+                                <Button onClick={() => setIsAnalysisDialogOpen(false)}>Đóng</Button>
                             </DialogFooter>
                         </DialogContent>
                     </Dialog>
