@@ -2,6 +2,13 @@ import api from "./api.ts";
 // Giả định ENDPOINTS đã được định nghĩa
 // import { ENDPOINTS } from "@/config/endpoints";
 
+// Giả định cấu trúc User được trả về từ API cập nhật
+export interface User {
+    userId: number;
+    fullName: string;
+    // ... thêm các trường khác nếu cần
+}
+
 export interface SalaryItem {
     userId: number;
     fullName: string;
@@ -16,39 +23,56 @@ export interface SalaryItem {
 const SALARY_ENDPOINTS = {
     calculate_salary: {
         method: "GET",
-        url: "/api/users/calculate" // API được cung cấp trong yêu cầu
+        url: "/api/salary/calculate" // Đã chuyển sang SalaryController
+    },
+    technician_commission: {
+        method: "PUT",
+        url: "/api/salary/technician-commission" // Endpoint cập nhật
+    },
+    get_technician_commission: {
+        method: "GET",
+        url: "/api/salary/technician-commission" // Endpoint lấy giá trị
     }
 }
+
 export interface CommissionPayload {
     commissionRate: number; // Ví dụ: 0.3
 }
+
 export const salaryService = {
     /**
      * Cập nhật tỷ lệ hoa hồng cho Kỹ thuật viên
      * @param data Payload chứa commissionRate (ví dụ: 0.3)
      */
     async updateTechnicianCommission(data: CommissionPayload){
-        // Giả định có endpoint PUT để cập nhật tỷ lệ hoa hồng chung
-        // Ví dụ: PUT /api/salary/technician-commission
-        const endpoint = `/api/salary/technician-commission`;
-        const res = await api.request<any>({
-            method: 'PUT',
-            url: endpoint,
-            data: data,
+        const endpoint = SALARY_ENDPOINTS.technician_commission;
+
+        const payload = {
+            role: 'TECHNICIAN',
+            commissionRate: data.commissionRate
+        };
+
+        // Đã sửa lỗi: Thay thế <any> bằng <User[]> (API backend trả về List<User>)
+        const res = await api.request<User[]>({
+            method: endpoint.method,
+            url: endpoint.url,
+            data: payload,
         });
         return res.data;
     },
 
     /**
-     * Lấy tỷ lệ hoa hồng hiện tại (Giả định, nếu cần)
+     * Lấy tỷ lệ hoa hồng hiện tại
      */
     async getTechnicianCommission(): Promise<number> {
-        // Giả định API trả về commission rate (vd: {rate: 0.3})
-        // Tạm thời hardcode nếu API chưa có, hoặc trả về giá trị mặc định của backend (0.3)
-        // Trong môi trường thực tế, bạn sẽ gọi API GET ở đây.
-        // const res = await api.request<any>({ method: 'GET', url: '/api/salary/technician-commission' });
-        // return res.data.rate;
-        return 0.3;
+        const endpoint = SALARY_ENDPOINTS.get_technician_commission;
+
+        // Backend trả về { role: 'TECHNICIAN', commissionRate: number }
+        const res = await api.request<CommissionPayload>({
+            method: endpoint.method,
+            url: endpoint.url,
+        });
+        return res.data.commissionRate;
     },
     /**
      * Lấy danh sách tính lương của nhân viên/kỹ thuật viên theo tháng

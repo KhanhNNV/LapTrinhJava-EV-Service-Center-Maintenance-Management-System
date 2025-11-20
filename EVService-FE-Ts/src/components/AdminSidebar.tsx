@@ -92,7 +92,7 @@ const items = [
         items: [
             {
                 title: "Chi tiết doanh thu",
-                url: "/dashboard/admin/revenue/details",
+                url: "/dashboard/admin/details",
                 icon: BarChart3
             },
             {
