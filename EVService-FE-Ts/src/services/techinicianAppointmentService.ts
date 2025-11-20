@@ -3,10 +3,10 @@ import api from "./api";
 
 export interface Appointment {
     appointmentId: number;
-    appointmentDate: string; // Gồm cả ngày và giờ
     status: string;
     serviceType: string;
     note: string;
+    updatedAt: string;
     // Các ID để dùng khi fetch chi tiết
     customerId: number;
     vehicleId: number;
@@ -44,5 +44,11 @@ export const technicianService = {
             user: userRes.data,
             vehicle: vehicleRes.data,
         };
+    },
+    createServiceTicket: async (appointmentId: number) => {
+        // Endpoint dựa trên Controller bạn cung cấp:
+        // /api/service-tickets/technician/{appointmentId}/create-service-ticket
+        const response = await api.post(`/api/service-tickets/technician/${appointmentId}/create-service-ticket`);
+        return response.data;
     }
 };
