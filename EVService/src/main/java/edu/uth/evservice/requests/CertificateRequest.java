@@ -1,5 +1,6 @@
 package edu.uth.evservice.requests;
 
+import edu.uth.evservice.models.enums.CertificateType;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -14,5 +15,5 @@ public class CertificateRequest {
     String issuingOrganization;
     String description;
     Integer validityPeriod;
-    String sericeType;
+    CertificateType certificateType;
 }

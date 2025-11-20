@@ -17,4 +17,6 @@ public interface IInventoryRepository extends JpaRepository<Inventory, Integer> 
 
     boolean existsByPart_PartIdAndServiceCenter_CenterId(Integer partId, Integer centerId);
 
+    List<Inventory> findByServiceCenter(ServiceCenter serviceCenter);
+
 }

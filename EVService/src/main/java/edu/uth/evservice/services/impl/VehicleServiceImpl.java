@@ -111,6 +111,12 @@ public class VehicleServiceImpl implements IVehicleService {
         vehicleRepository.delete(vehicle);
     }
 
+    @Override
+    public VehicleDto getVehicleById(Integer vehicleId){
+        Vehicle vehicle=vehicleRepository.findById(vehicleId).orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy xe này"));
+        return toDTO(vehicle);
+    }
+
 
     private VehicleDto toDTO(Vehicle vehicle) {
         return VehicleDto.builder()

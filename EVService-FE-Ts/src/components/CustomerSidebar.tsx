@@ -1,12 +1,13 @@
-import { 
-  Car, 
-  Calendar, 
-  History, 
-  Bell, 
+import {
+  Car,
+  Calendar,
+  History,
+  Bell,
   Settings,
   LogOut,
   LayoutDashboard,
   CreditCard 
+  MessageSquare
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -24,6 +25,7 @@ import {
   SidebarMenuItem,
   SidebarFooter,
   useSidebar,
+  SidebarHeader,
 } from '@/components/ui/sidebar';
 
 const menuItems = [
@@ -34,6 +36,7 @@ const menuItems = [
   { title: 'Thanh toán', url: '/dashboard/customer/payments', icon: CreditCard }, 
   { title: 'Thông báo', url: '/dashboard/customer/notifications', icon: Bell },
   { title: 'Cài đặt', url: '/dashboard/customer/settings', icon: Settings },
+  { title: "Hỗ trợ trực tuyến", url: "/dashboard/customer/messages", icon: MessageSquare,},
 ];
 
 export function CustomerSidebar() {
@@ -53,6 +56,16 @@ export function CustomerSidebar() {
 
   return (
     <Sidebar className={collapsed ? 'w-14' : 'w-64'} collapsible="icon">
+      <SidebarHeader className={`border-b border-sidebar-border p-4 flex ${collapsed ? 'justify-center' : ''}`}>
+        <div className={`flex items-center ${collapsed ? 'justify-center w-full' : 'gap-2'} font-bold text-sidebar-primary-foreground`}>
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-600 text-white">
+            EV
+          </div>
+          {!collapsed && <span className="truncate font-semibold text-blue-900">EV Service</span>}
+        </div>
+      </SidebarHeader>
+
+
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel className={collapsed ? 'text-center px-0' : ''}>
@@ -62,9 +75,9 @@ export function CustomerSidebar() {
             <SidebarMenu>
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink 
-                      to={item.url} 
+                  <SidebarMenuButton asChild tooltip={item.title}>
+                    <NavLink
+                      to={item.url}
                       end={item.url === '/dashboard/customer'}
                       className="hover:bg-muted/50"
                       activeClassName="bg-primary/10 text-primary font-medium"
