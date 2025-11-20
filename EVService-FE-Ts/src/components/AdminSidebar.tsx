@@ -8,7 +8,7 @@ import {
   ChevronRight,
   User,
   Wrench,
-  BadgeCheck,
+  Briefcase,
   ShieldCheck,
   LogOut,
 } from "lucide-react";
@@ -60,7 +60,7 @@ const items = [
     isActive: true,
     items: [
       { title: "Khách hàng", url: "/dashboard/admin/users/CUSTOMER", icon: User },
-      { title: "Nhân viên", url: "/dashboard/admin/users/STAFF", icon: BadgeCheck },
+      { title: "Nhân viên", url: "/dashboard/admin/users/STAFF", icon: Briefcase},
       { title: "Kỹ thuật viên", url: "/dashboard/admin/users/TECHNICIAN", icon: Wrench },
       { title: "Quản trị viên", url: "/dashboard/admin/users/ADMIN", icon: ShieldCheck },
     ],
