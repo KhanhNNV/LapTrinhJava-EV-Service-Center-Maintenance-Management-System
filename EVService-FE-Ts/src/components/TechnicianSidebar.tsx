@@ -15,9 +15,9 @@ import { authService } from "@/services/auth.ts";
 import { useToast } from "@/hooks/use-toast";
 
 const menuItems = [
-  { title: "Dashboard", url: "/dashboard/technician", icon: LayoutDashboard },
-  { title: "My Appointments", url: "/dashboard/technician/appointments", icon: Calendar },
-  { title: "Service Tickets", url: "/dashboard/technician/tickets", icon: ClipboardList },
+  { title: "Tổng quan", url: "/dashboard/technician", icon: LayoutDashboard },
+  { title: "Lịch hẹn", url: "/dashboard/technician/appointments", icon: Calendar },
+  { title: "Phiếu dịch vụ", url: "/dashboard/technician/tickets", icon: ClipboardList },
   { title: "Settings", url: "/dashboard/technician/settings", icon: Settings },
   { title: "Thông báo", url: "/dashboard/technician/notifications", icon: Bell },
 ];

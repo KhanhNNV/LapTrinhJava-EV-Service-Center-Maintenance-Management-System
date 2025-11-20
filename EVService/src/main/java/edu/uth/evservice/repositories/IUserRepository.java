@@ -4,6 +4,9 @@ import java.util.List;
 import java.util.Optional;
 
 import edu.uth.evservice.models.enums.Role;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -35,5 +38,5 @@ public interface IUserRepository extends JpaRepository<User, Integer> {
 
     List<User> findByServiceCenter_CenterIdAndRole(Integer centerId, Role roles);
 
-
+    Page<User> findByRole(Role role, Pageable pageable);
 }

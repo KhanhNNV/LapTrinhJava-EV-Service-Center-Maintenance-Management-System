@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,30 +7,43 @@ import {
   Clock, 
   DollarSign,
   ArrowRight,
-  AlertCircle
+  AlertCircle,
+  Bike
 } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
-import api from '@/services/api.ts';
-import { toast } from 'sonner';
+import { 
+    useCustomerVehicles, 
+    useCustomerAppointments, 
+    AppointmentDto, 
+    VehicleDto 
+} from '@/services/appointmentService.ts';
 
 export default function CustomerDashboard() {
-  const { data: vehicles, isLoading: vehiclesLoading } = useQuery({
-    queryKey: ['customer-vehicles'],
-    queryFn: async () => {
-      const response = await api.get('/api/vehicles');
-      return response.data;
-    },
-    retry: 1,
-  });
+  // 1. Sử dụng Hooks từ service để tận dụng caching
+  const { data: vehicles, isLoading: vehiclesLoading } = useCustomerVehicles();
+  const { data: appointments, isLoading: appointmentsLoading } = useCustomerAppointments();
 
-  const { data: appointments, isLoading: appointmentsLoading } = useQuery({
-    queryKey: ['customer-appointments'],
-    queryFn: async () => {
-      const response = await api.get('/api/appointments/myAppointments');
-      return response.data;
-    },
-    retry: 1,
-  });
+  // 2. Logic lọc trạng thái mới
+  // Active: Tất cả trạng thái ngoại trừ COMPLETED và CANCELED
+  const activeAppointments = appointments?.filter((a: AppointmentDto) => 
+    !['COMPLETED', 'CANCELED'].includes(a.status)
+  ) || [];
+
+  // Lấy 3 lịch hẹn gần nhất để hiển thị
+  const upcomingAppointments = activeAppointments
+    .sort((a, b) => new Date(a.appointmentDate).getTime() - new Date(b.appointmentDate).getTime())
+    .slice(0, 3);
+
+  // Helper: Màu sắc trạng thái (Đồng bộ với Appointments.tsx)
+  const getStatusColor = (status: string) => {
+    const colors: any = {
+        PENDING:     "bg-yellow-100 text-yellow-700",
+        CONFIRMED:   "bg-blue-100 text-blue-700",
+        CHECKED_IN:  "bg-indigo-100 text-indigo-700",
+        ASSIGNED:    "bg-cyan-100 text-cyan-700",
+        IN_PROGRESS: "bg-purple-100 text-purple-700",
+    };
+    return colors[status] || "bg-gray-100 text-gray-700";
+  };
 
   const stats = [
     {
@@ -43,35 +55,31 @@ export default function CustomerDashboard() {
     },
     {
       title: 'Lịch hẹn sắp tới',
-      value: appointments?.filter((a: any) => a.status === 'CONFIRMED').length || 0,
+      value: activeAppointments.length, // Đếm tất cả lịch đang active
       icon: Calendar,
-      color: 'text-secondary',
-      bgColor: 'bg-secondary/10',
+      color: 'text-blue-600',
+      bgColor: 'bg-blue-50',
     },
     {
       title: 'Đang bảo dưỡng',
-      value: appointments?.filter((a: any) => a.status === 'IN_PROGRESS').length || 0,
+      value: appointments?.filter((a: AppointmentDto) => a.status === 'IN_PROGRESS').length || 0,
       icon: Clock,
-      color: 'text-accent',
-      bgColor: 'bg-accent/10',
+      color: 'text-purple-600',
+      bgColor: 'bg-purple-50',
     },
     {
       title: 'Chi phí tháng này',
-      value: '0 VND',
+      value: '0 VND', // Tạm thời hardcode vì chưa có API Transaction
       icon: DollarSign,
-      color: 'text-primary',
-      bgColor: 'bg-primary/10',
+      color: 'text-green-600',
+      bgColor: 'bg-green-50',
     },
   ];
-
-  const upcomingAppointments = appointments?.filter(
-    (a: any) => a.status === 'CONFIRMED' || a.status === 'PENDING'
-  ).slice(0, 3) || [];
 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight">Chào mừng trở lại!</h2>
+        <h2 className="text-3xl font-bold tracking-tight text-gray-900">Chào mừng trở lại!</h2>
         <p className="text-muted-foreground">
           Xem tổng quan về xe và lịch hẹn của bạn
         </p>
@@ -80,7 +88,7 @@ export default function CustomerDashboard() {
       {/* Stats Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat, index) => (
-          <Card key={index} className="shadow-card">
+          <Card key={index} className="shadow-sm border-gray-100">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
                 {stat.title}
@@ -90,7 +98,7 @@ export default function CustomerDashboard() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stat.value}</div>
+              <div className="text-2xl font-bold text-gray-900">{stat.value}</div>
             </CardContent>
           </Card>
         ))}
@@ -99,12 +107,12 @@ export default function CustomerDashboard() {
       {/* Main Content Grid */}
       <div className="grid gap-6 md:grid-cols-2">
         {/* Upcoming Appointments */}
-        <Card className="shadow-card">
+        <Card className="shadow-sm border-gray-100">
           <CardHeader>
-            <CardTitle className="flex items-center justify-between">
+            <CardTitle className="flex items-center justify-between text-lg">
               <span>Lịch hẹn sắp tới</span>
               <Link to="/dashboard/customer/appointments">
-                <Button variant="ghost" size="sm">
+                <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700">
                   Xem tất cả
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
@@ -115,32 +123,29 @@ export default function CustomerDashboard() {
             {appointmentsLoading ? (
               <div className="space-y-3">
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="h-20 bg-muted animate-pulse rounded-lg" />
+                  <div key={i} className="h-16 bg-gray-100 animate-pulse rounded-lg" />
                 ))}
               </div>
             ) : upcomingAppointments.length > 0 ? (
               <div className="space-y-3">
-                {upcomingAppointments.map((appointment: any) => (
+                {upcomingAppointments.map((appointment: AppointmentDto) => (
                   <div
-                    key={appointment.id}
-                    className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors"
+                    // FIX: Sử dụng appointmentId
+                    key={appointment.appointmentId} 
+                    className="flex items-center justify-between p-3 border border-gray-100 rounded-lg hover:bg-gray-50 transition-colors"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                        <Calendar className="w-5 h-5 text-primary" />
+                      <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center">
+                        <Calendar className="w-5 h-5 text-blue-600" />
                       </div>
                       <div>
-                        <p className="font-medium">{appointment.serviceType || 'Bảo dưỡng định kỳ'}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {new Date(appointment.appointmentDate).toLocaleDateString('vi-VN')}
+                        <p className="font-medium text-sm text-gray-900">{appointment.serviceType}</p>
+                        <p className="text-xs text-muted-foreground">
+                           {appointment.appointmentTime} - {new Date(appointment.appointmentDate).toLocaleDateString('vi-VN')}
                         </p>
                       </div>
                     </div>
-                    <span className={`text-xs px-2 py-1 rounded-full ${
-                      appointment.status === 'CONFIRMED' 
-                        ? 'bg-secondary/10 text-secondary' 
-                        : 'bg-accent/10 text-accent'
-                    }`}>
+                    <span className={`text-[10px] font-bold px-2 py-1 rounded-full ${getStatusColor(appointment.status)}`}>
                       {appointment.status}
                     </span>
                   </div>
@@ -148,10 +153,10 @@ export default function CustomerDashboard() {
               </div>
             ) : (
               <div className="text-center py-8 text-muted-foreground">
-                <Calendar className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                <Calendar className="w-12 h-12 mx-auto mb-2 opacity-20" />
                 <p>Chưa có lịch hẹn nào</p>
                 <Link to="/dashboard/customer/appointments">
-                  <Button className="mt-4 bg-gradient-primary">
+                  <Button className="mt-4 bg-[#007AFF] hover:bg-[#0066CC]">
                     Đặt lịch ngay
                   </Button>
                 </Link>
@@ -161,12 +166,12 @@ export default function CustomerDashboard() {
         </Card>
 
         {/* My Vehicles */}
-        <Card className="shadow-card">
+        <Card className="shadow-sm border-gray-100">
           <CardHeader>
-            <CardTitle className="flex items-center justify-between">
+            <CardTitle className="flex items-center justify-between text-lg">
               <span>Xe của tôi</span>
               <Link to="/dashboard/customer/vehicles">
-                <Button variant="ghost" size="sm">
+                <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700">
                   Xem tất cả
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
@@ -177,24 +182,31 @@ export default function CustomerDashboard() {
             {vehiclesLoading ? (
               <div className="space-y-3">
                 {[1, 2].map((i) => (
-                  <div key={i} className="h-20 bg-muted animate-pulse rounded-lg" />
+                  <div key={i} className="h-16 bg-gray-100 animate-pulse rounded-lg" />
                 ))}
               </div>
             ) : vehicles && vehicles.length > 0 ? (
               <div className="space-y-3">
-                {vehicles.slice(0, 3).map((vehicle: any) => (
+                {vehicles.slice(0, 3).map((vehicle: VehicleDto) => (
                   <div
-                    key={vehicle.id}
-                    className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors"
+                    // FIX: Sử dụng vehicleId
+                    key={vehicle.vehicleId}
+                    className="flex items-center justify-between p-3 border border-gray-100 rounded-lg hover:bg-gray-50 transition-colors"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                        <Car className="w-5 h-5 text-primary" />
+                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                          vehicle.vehicleType === 'ELECTRIC_CAR' ? 'bg-blue-50' : 'bg-green-50'
+                      }`}>
+                        {/* Logic Icon xe */}
+                        {vehicle.vehicleType === 'ELECTRIC_CAR' 
+                            ? <Car className="w-5 h-5 text-blue-600" /> 
+                            : <Bike className="w-5 h-5 text-green-600" />}
                       </div>
                       <div>
-                        <p className="font-medium">{vehicle.model || 'Xe điện'}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {vehicle.licensePlate || 'N/A'}
+                        {/* Hiển thị Brand + Model */}
+                        <p className="font-medium text-sm text-gray-900">{vehicle.brand} {vehicle.model}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {vehicle.licensePlate}
                         </p>
                       </div>
                     </div>
@@ -203,10 +215,10 @@ export default function CustomerDashboard() {
               </div>
             ) : (
               <div className="text-center py-8 text-muted-foreground">
-                <Car className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                <Car className="w-12 h-12 mx-auto mb-2 opacity-20" />
                 <p>Chưa có xe nào</p>
                 <Link to="/dashboard/customer/vehicles">
-                  <Button className="mt-4 bg-gradient-primary">
+                  <Button className="mt-4 bg-[#007AFF] hover:bg-[#0066CC]">
                     Thêm xe
                   </Button>
                 </Link>
@@ -216,29 +228,27 @@ export default function CustomerDashboard() {
         </Card>
       </div>
 
-      {/* Maintenance Reminders */}
-      <Card className="shadow-card border-accent">
+      {/* Maintenance Reminders - Phần này có thể phát triển thêm logic kiểm tra ngày bảo dưỡng */}
+      <Card className="shadow-sm border-orange-100 bg-orange-50/30">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <AlertCircle className="w-5 h-5 text-accent" />
+          <CardTitle className="flex items-center gap-2 text-orange-700 text-lg">
+            <AlertCircle className="w-5 h-5" />
             Nhắc nhở bảo dưỡng
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between p-3 bg-accent/5 border border-accent/20 rounded-lg">
-              <div>
-                <p className="font-medium">Bảo dưỡng định kỳ sắp đến hạn</p>
-                <p className="text-sm text-muted-foreground">
-                  Xe của bạn cần bảo dưỡng trong vòng 7 ngày tới
-                </p>
-              </div>
-              <Link to="/dashboard/customer/appointments">
-                <Button size="sm" className="bg-gradient-primary">
-                  Đặt lịch
-                </Button>
-              </Link>
+          <div className="flex items-center justify-between p-3 bg-white border border-orange-100 rounded-lg shadow-sm">
+            <div>
+              <p className="font-medium text-gray-900">Kiểm tra định kỳ</p>
+              <p className="text-sm text-muted-foreground">
+                Đừng quên đặt lịch bảo dưỡng định kỳ để đảm bảo an toàn.
+              </p>
             </div>
+            <Link to="/dashboard/customer/appointments">
+              <Button size="sm" className="bg-orange-600 hover:bg-orange-700 text-white">
+                Đặt lịch ngay
+              </Button>
+            </Link>
           </div>
         </CardContent>
       </Card>
@@ -246,14 +256,14 @@ export default function CustomerDashboard() {
       {/* Quick Actions */}
       <div className="grid gap-4 md:grid-cols-3">
         <Link to="/dashboard/customer/appointments">
-          <Card className="shadow-card hover:shadow-glow transition-shadow cursor-pointer">
+          <Card className="shadow-sm border-gray-100 hover:shadow-md transition-all cursor-pointer hover:-translate-y-1">
             <CardContent className="pt-6">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-lg bg-gradient-primary flex items-center justify-center">
-                  <Calendar className="w-6 h-6 text-primary-foreground" />
+                <div className="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center">
+                  <Calendar className="w-6 h-6 text-blue-600" />
                 </div>
                 <div>
-                  <h3 className="font-semibold">Đặt lịch hẹn</h3>
+                  <h3 className="font-semibold text-gray-900">Đặt lịch hẹn</h3>
                   <p className="text-sm text-muted-foreground">Đặt lịch bảo dưỡng mới</p>
                 </div>
               </div>
@@ -262,14 +272,14 @@ export default function CustomerDashboard() {
         </Link>
 
         <Link to="/dashboard/customer/history">
-          <Card className="shadow-card hover:shadow-glow transition-shadow cursor-pointer">
+          <Card className="shadow-sm border-gray-100 hover:shadow-md transition-all cursor-pointer hover:-translate-y-1">
             <CardContent className="pt-6">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-lg bg-gradient-secondary flex items-center justify-center">
-                  <Clock className="w-6 h-6 text-secondary-foreground" />
+                <div className="w-12 h-12 rounded-lg bg-purple-100 flex items-center justify-center">
+                  <Clock className="w-6 h-6 text-purple-600" />
                 </div>
                 <div>
-                  <h3 className="font-semibold">Lịch sử dịch vụ</h3>
+                  <h3 className="font-semibold text-gray-900">Lịch sử dịch vụ</h3>
                   <p className="text-sm text-muted-foreground">Xem lịch sử bảo dưỡng</p>
                 </div>
               </div>
@@ -278,14 +288,14 @@ export default function CustomerDashboard() {
         </Link>
 
         <Link to="/dashboard/customer/vehicles">
-          <Card className="shadow-card hover:shadow-glow transition-shadow cursor-pointer">
+          <Card className="shadow-sm border-gray-100 hover:shadow-md transition-all cursor-pointer hover:-translate-y-1">
             <CardContent className="pt-6">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <Car className="w-6 h-6 text-primary" />
+                <div className="w-12 h-12 rounded-lg bg-green-100 flex items-center justify-center">
+                  <Car className="w-6 h-6 text-green-600" />
                 </div>
                 <div>
-                  <h3 className="font-semibold">Quản lý xe</h3>
+                  <h3 className="font-semibold text-gray-900">Quản lý xe</h3>
                   <p className="text-sm text-muted-foreground">Thêm hoặc chỉnh sửa xe</p>
                 </div>
               </div>

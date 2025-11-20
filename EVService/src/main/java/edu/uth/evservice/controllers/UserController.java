@@ -2,15 +2,19 @@ package edu.uth.evservice.controllers;
 
 import edu.uth.evservice.dtos.ProfitReportDto;
 import edu.uth.evservice.dtos.SalaryDto;
+import edu.uth.evservice.dtos.UserDto;
 import edu.uth.evservice.models.enums.Role;
 import edu.uth.evservice.requests.CreateUserRequest;
 import edu.uth.evservice.services.IProfitReportService;
 import edu.uth.evservice.services.ISalaryService;
 import edu.uth.evservice.services.IUserService;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.YearMonth;
@@ -48,7 +52,7 @@ public class UserController {
 
     // Tìm user theo ID
     @GetMapping("/{id:\\d+}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF','TECHNICIAN')")
     public ResponseEntity<?> getUserById(@PathVariable Integer id) {
         return ResponseEntity.ok(userService.getUserById(id));
     }
@@ -98,5 +102,32 @@ public class UserController {
     @PreAuthorize("hasRole('ADMIN')")
     public ProfitReportDto getMonthlyProfit(@RequestParam int year, @RequestParam int month) {
         return profitReportService.getMonthlyProfitReport(year, month);
+    }
+
+    //Lấy thông tin của cá nhân
+    @GetMapping("/profile")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<UserDto> updateMyProfile(Authentication authentication) {
+        
+        Integer userId = Integer.parseInt(authentication.getName());
+        return ResponseEntity.ok(userService.getUserById(userId));
+    }
+
+    @PutMapping("/profile")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<UserDto> updateMyProfile(@RequestBody CreateUserRequest request, Authentication authentication) {
+        Integer userId = Integer.parseInt(authentication.getName());
+        return ResponseEntity.ok(userService.updateUser(userId, request));
+    }
+
+    @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Page<UserDto>> getUserByRole(
+        @RequestParam(name= "role") Role role,
+        @RequestParam(name= "page", defaultValue = "0") int page,
+        @RequestParam(name= "limit",defaultValue = "10") int limit
+    ){
+        Page<UserDto> result = userService.getListUsersByRole(role, page, limit);
+        return ResponseEntity.ok(result);
     }
 }

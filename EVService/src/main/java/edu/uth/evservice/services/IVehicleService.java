@@ -19,4 +19,7 @@ public interface IVehicleService {
 
     // Xóa 1 xe CỦA TÔI (customer)
     void deleteMyVehicle(Integer vehicleId, Integer UserId);
+
+    // lấy xe theo id cho phần quản lý
+    VehicleDto getVehicleById(Integer vehicleId);
 }
