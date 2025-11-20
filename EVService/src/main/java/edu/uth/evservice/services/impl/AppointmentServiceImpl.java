@@ -177,7 +177,8 @@ public class AppointmentServiceImpl implements IAppointmentService {
         customerNoti.setUserId(savedAppointment.getCustomer().getUserId()); // ID người nhận (Khách hàng)
         customerNoti.setTitle("Lịch hẹn của bạn đã được xác nhận!");
         customerNoti.setMessage("Lịch hẹn #" + savedAppointment.getAppointmentId() +
-                " của bạn đã được nhân viên của chúng tôi xác nhận.");
+                " đã được nhân viên xác nhận. Vui lòng đến quầy và check-in lúc " +
+                savedAppointment.getAppointmentTime() + " ngày " + savedAppointment.getAppointmentDate() + ".");
 
         notificationService.createNotification(customerNoti); // Gửi đi
 
