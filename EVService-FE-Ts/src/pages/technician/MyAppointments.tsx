@@ -20,7 +20,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { authService } from "@/services/auth";
 import { Calendar, Info, User, Car, MapPin, Loader2, X, Filter } from "lucide-react";
-import { technicianService, Appointment, AppointmentDetailData } from "@/services/appointmentTechinicianService.ts";
+import { technicianService, Appointment, AppointmentDetailData } from "@/services/techinicianAppointmentService.ts";
 
 export default function TechnicianMyAppointments() {
     const { toast } = useToast();
