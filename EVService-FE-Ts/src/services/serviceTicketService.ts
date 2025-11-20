@@ -30,11 +30,9 @@ export interface ServiceTicket {
 }
 
 export interface Part {
-    id:number
-    partname: string;
-    price: number;
-    quantity: number;
-    quantityInStock:number;
+    partId:number
+    partName: string;
+    unitPrice: number;
 }
 
 export interface ServiceItem {
