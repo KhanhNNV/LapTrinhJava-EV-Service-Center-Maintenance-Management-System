@@ -15,20 +15,25 @@ import CustomerDashboard from "./pages/customer/Dashboard";
 import Vehicles from "./pages/customer/Vehicles";
 import Appointments from "./pages/customer/Appointments";
 import History from "./pages/customer/History";
+import Notifications from "./pages/customer/Notifications";
+import CustomerChat from "./pages/customer/CustomerChat";
 import StaffDashboard from "./pages/staff/Dashboard";
 import StaffAppointments from "./pages/staff/Appointments";
 import StaffCustomers from "./pages/staff/Customers";
 import StaffServiceTickets from "./pages/staff/ServiceTickets";
 import StaffMessages from "./pages/staff/Messages";
+import StaffNotifications from "./pages/staff/Notifications";
 import AdminDashboard from "./pages/admin/Dashboard";
 import AdminUsers from "./pages/admin/Users";
 import AdminServiceCenters from "./pages/admin/ServiceCenters";
 import AdminPartsInventory from "./pages/admin/PartsInventory";
 import AdminServicePackages from "./pages/admin/ServicePackages";
 import AdminAnalytics from "./pages/admin/Analytics";
+import AdminNotifications from "./pages/admin/Notifications";
 import TechnicianDashboard from "./pages/technician/Dashboard";
 import TechnicianMyAppointments from "./pages/technician/MyAppointments";
 import TechnicianServiceTickets from "./pages/technician/ServiceTickets";
+import TechnicianNotifications from "./pages/technician/Notifications";
 import NotFound from "./pages/NotFound";
 import AuthCallbackPage from "./pages/auth/AuthCallbackPage";
 import VerifyEmailPage from "./pages/auth/VerifyEmailPage";
@@ -75,6 +80,8 @@ const App = () => (
             <Route path="vehicles" element={<Vehicles />} />
             <Route path="appointments" element={<Appointments />} />
             <Route path="history" element={<History />} />
+            <Route path="notifications" element={<Notifications />} />
+            <Route path="messages" element={<CustomerChat />} />
             <Route path="settings" element={<SettingsPage />} />
           </Route>
 
@@ -92,6 +99,7 @@ const App = () => (
             <Route path="customers" element={<StaffCustomers />} />
             <Route path="tickets" element={<StaffServiceTickets />} />
             <Route path="messages" element={<StaffMessages />} />
+            <Route path="notifications" element={<StaffNotifications />} />
             <Route path="settings" element={<SettingsPage />} />
           </Route>
 
@@ -110,6 +118,7 @@ const App = () => (
             <Route path="parts" element={<AdminPartsInventory />} />
             <Route path="packages" element={<AdminServicePackages />} />
             <Route path="analytics" element={<AdminAnalytics />} />
+            <Route path="notifications" element={<AdminNotifications />} />
             <Route path="settings" element={<SettingsPage />} />
             <Route path="users/:role" element={<RoleBasedUserList />} />
 
@@ -127,6 +136,7 @@ const App = () => (
             <Route index element={<TechnicianDashboard />} />
             <Route path="appointments" element={<TechnicianMyAppointments />} />
             <Route path="tickets" element={<TechnicianServiceTickets />} />
+            <Route path="notifications" element={<TechnicianNotifications />} />
             <Route path="settings" element={<SettingsPage />} />
           </Route>
 
