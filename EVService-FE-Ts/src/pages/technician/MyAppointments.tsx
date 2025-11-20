@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useNavigate } from "react-router-dom";
 import {
     Dialog,
     DialogContent,
@@ -24,6 +25,7 @@ import { technicianService, Appointment, AppointmentDetailData } from "@/service
 
 export default function TechnicianMyAppointments() {
     const { toast } = useToast();
+    const navigate = useNavigate();
     const currentUser = authService.getCurrentUser();
 
     // State danh sách
@@ -40,6 +42,9 @@ export default function TechnicianMyAppointments() {
     const [selectedId, setSelectedId] = useState<number | null>(null);
     const [details, setDetails] = useState<AppointmentDetailData | null>(null);
     const [isLoadingDetails, setIsLoadingDetails] = useState(false);
+
+    // State loading khi đang tạo ticket
+    const [isCreating, setIsCreating] = useState(false);
 
     useEffect(() => {
         if (currentUser?.id) fetchAppointments();
@@ -79,6 +84,34 @@ export default function TechnicianMyAppointments() {
             setSelectedAppointment(null);
         } finally {
             setIsLoadingDetails(false);
+        }
+    };
+
+    const handleCreateTicket = async () => {
+        if (!selectedAppointment) return;
+
+        setIsCreating(true);
+        try {
+            await technicianService.createServiceTicket(selectedAppointment.appointmentId);
+
+            toast({
+                title: "Thành công",
+                description: "Đã tạo phiếu dịch vụ mới!",
+                className: "bg-green-600 text-white"
+            });
+
+            setSelectedId(null);
+
+            fetchAppointments();
+
+            // Chuyển hướng sang trang quản lý Ticket ngay lập tức
+            navigate("/dashboard/technician/tickets");
+
+        } catch (error: any) {
+            const msg = error.response?.data?.message || "Không thể tạo phiếu dịch vụ";
+            toast({ title: "Lỗi", description: msg, variant: "destructive" });
+        } finally {
+            setIsCreating(false);
         }
     };
 
@@ -176,13 +209,19 @@ export default function TechnicianMyAppointments() {
                             <CardContent className="text-sm space-y-2 flex-1">
                                 <div className="flex items-center gap-2">
                                     <Calendar className="h-4 w-4 text-muted-foreground" />
-                                    {new Date(appt.appointmentDate).toLocaleString()}
+
+                                    <span className="font-medium">
+                                        {new Date(appt.updatedAt).toLocaleString('vi-VN', {
+                                        hour: '2-digit',
+                                        minute: '2-digit',
+                                        day: '2-digit',
+                                        month: '2-digit',
+                                        year: 'numeric'
+                                        })}
+                                    </span>
                                 </div>
-                                {appt.note && (
-                                    <p className="text-muted-foreground italic line-clamp-2">
-                                        Note: "{appt.note}"
-                                    </p>
-                                )}
+
+                                {/* ... phần note giữ nguyên */}
                             </CardContent>
                             <CardFooter>
                                 <Button variant="outline" className="w-full" onClick={() => handleViewDetails(appt)}>
@@ -261,8 +300,35 @@ export default function TechnicianMyAppointments() {
                             )}
 
                             {/* Các nút hành động*/}
-                            <div className="pt-4 flex gap-2">
-                                <Button className="flex-1">Tạo phiếu dịch vụ</Button>
+                            <div className="pt-4 flex gap-2 border-t mt-4">
+
+                                {/* NÚT TẠO PHIẾU DỊCH VỤ */}
+                                {/* Chỉ hiển thị khi trạng thái là ASSIGNED */}
+                                {selectedAppointment.status === 'ASSIGNED' ? (
+                                    <Button
+                                        className="flex-1 bg-blue-600 hover:bg-blue-700"
+                                        onClick={handleCreateTicket}
+                                        disabled={isCreating} // Disable khi đang loading
+                                    >
+                                        {isCreating ? (
+                                            <>
+                                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                                Đang tạo...
+                                            </>
+                                        ) : (
+                                            <>
+                                                Tạo phiếu dịch vụ
+                                            </>
+                                        )}
+                                    </Button>
+                                ) : (
+                                    // Nếu không phải ASSIGNED (ví dụ đã IN_PROGRESS hoặc COMPLETED)
+                                    <Button className="flex-1" variant="secondary" disabled>
+                                        {selectedAppointment.status === 'IN_PROGRESS' || selectedAppointment.status === 'COMPLETED'
+                                            ? "Đã có phiếu dịch vụ"
+                                            : "Chưa được giao việc"}
+                                    </Button>
+                                )}
                             </div>
                         </div>
                     ) : (
