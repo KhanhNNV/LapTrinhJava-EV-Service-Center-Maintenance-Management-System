@@ -105,7 +105,7 @@ export function AdminSidebar() {
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-600 text-white">
             EV
           </div>
-          {!collapsed && <span className="truncate font-semibold text-blue-900">Admin Portal</span>}
+          {!collapsed && <span className="truncate font-semibold text-blue-900">EV Service</span>}
         </div>
       </SidebarHeader>
 

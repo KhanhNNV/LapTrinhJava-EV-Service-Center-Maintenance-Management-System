@@ -1,5 +1,8 @@
 package edu.uth.evservice.dtos;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -20,5 +23,6 @@ public class UserDto {
     String email;
     String phoneNumber;
     String address;
+    LocalDateTime createdAt;
     String role;
 }

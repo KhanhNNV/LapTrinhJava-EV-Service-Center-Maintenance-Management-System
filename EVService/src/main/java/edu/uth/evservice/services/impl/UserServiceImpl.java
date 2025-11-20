@@ -4,6 +4,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -214,6 +218,19 @@ public class UserServiceImpl implements IUserService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public Page<UserDto> getListUsersByRole(Role role, int pages, int limit ){
+        //~ Tạo đối tượng phân trang: Trang số 'page', lấy 'limit' dòng
+        //~ Sắp xếp: Mới nhất lên đầu (createdAt giảm dần)
+        Pageable pageable = PageRequest.of(pages, limit, Sort.by("createdAt").descending());
+
+        Page<User> userPage = userRepository.findByRole(role, pageable);
+
+        return userPage.map(this::mapToDto);
+    }
+
+
+
     private UserDto mapToDto(User user) {
         return UserDto.builder()
                 .userId(user.getUserId())
@@ -223,6 +240,7 @@ public class UserServiceImpl implements IUserService {
                 .phoneNumber(user.getPhoneNumber() != null ? user.getPhoneNumber() : null)
                 .address(user.getAddress() != null ? user.getAddress() : null)
                 .role(user.getRole().name())
+                .createdAt(user.getCreatedAt())
                 .build();
     }
 }

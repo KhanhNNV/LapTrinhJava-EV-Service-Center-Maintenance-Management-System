@@ -9,6 +9,8 @@ import edu.uth.evservice.services.IProfitReportService;
 import edu.uth.evservice.services.ISalaryService;
 import edu.uth.evservice.services.IUserService;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -116,5 +118,16 @@ public class UserController {
     public ResponseEntity<UserDto> updateMyProfile(@RequestBody CreateUserRequest request, Authentication authentication) {
         Integer userId = Integer.parseInt(authentication.getName());
         return ResponseEntity.ok(userService.updateUser(userId, request));
+    }
+
+    @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Page<UserDto>> getUserByRole(
+        @RequestParam(name= "role") Role role,
+        @RequestParam(name= "page", defaultValue = "0") int page,
+        @RequestParam(name= "limit",defaultValue = "10") int limit
+    ){
+        Page<UserDto> result = userService.getListUsersByRole(role, page, limit);
+        return ResponseEntity.ok(result);
     }
 }
