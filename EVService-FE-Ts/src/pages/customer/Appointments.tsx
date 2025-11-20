@@ -30,7 +30,9 @@ import {
   Eye, 
   FileText, 
   Car, 
-  User 
+  User,
+  Filter,
+  ArrowUpDown
 } from "lucide-react";
 
 // Import types và hooks
@@ -59,6 +61,10 @@ export default function Appointments() {
     centerId: "",
   });
 
+  // State cho sorting và filtering
+  const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
+  const [statusFilter, setStatusFilter] = useState<string>("ALL");
+
   // Fetch Data
   const { data: vehicles, isLoading: isLoadingVehicles } = useCustomerVehicles();
   const { data: appointments, isLoading: isLoadingAppointments } = useCustomerAppointments();
@@ -72,6 +78,23 @@ export default function Appointments() {
   const activeAppointments = appointments?.filter(
     (a: AppointmentDto) => !["COMPLETED", "CANCELED"].includes(a.status)
   ) || [];
+
+  // --- LOGIC SẮP XẾP VÀ LỌC ---
+  const filteredAndSortedAppointments = activeAppointments
+    .filter((appointment: AppointmentDto) => {
+      if (statusFilter === "ALL") return true;
+      return appointment.status === statusFilter;
+    })
+    .sort((a: AppointmentDto, b: AppointmentDto) => {
+      const dateA = new Date(`${a.appointmentDate}T${a.appointmentTime}`);
+      const dateB = new Date(`${b.appointmentDate}T${b.appointmentTime}`);
+      
+      if (sortOrder === "newest") {
+        return dateB.getTime() - dateA.getTime(); // Mới nhất đầu tiên
+      } else {
+        return dateA.getTime() - dateB.getTime(); // Cũ nhất đầu tiên
+      }
+    });
 
   // Helper: Tìm biển số xe từ ID
   const getLicensePlate = (vehicleId: number) => {
@@ -353,6 +376,42 @@ const getServiceDescription = (serviceType: string) => {
         </Dialog>
       </div>
 
+      {/* Bộ lọc và sắp xếp */}
+      <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
+        <div className="flex items-center gap-2">
+          <Filter className="w-4 h-4 text-gray-500" />
+          <span className="text-sm font-medium text-gray-700">Lọc theo:</span>
+        </div>
+        
+        <div className="flex flex-wrap gap-3">
+          {/* Bộ lọc trạng thái */}
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Tất cả trạng thái" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ALL">Tất cả trạng thái</SelectItem>
+              <SelectItem value="PENDING">Chờ xác nhận</SelectItem>
+              <SelectItem value="CONFIRMED">Đã xác nhận</SelectItem>
+              <SelectItem value="CHECKED_IN">Đã check-in</SelectItem>
+              <SelectItem value="ASSIGNED">Đã phân công</SelectItem>
+              <SelectItem value="IN_PROGRESS">Đang bảo dưỡng</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {/* Sắp xếp thời gian */}
+          <Select value={sortOrder} onValueChange={(value: "newest" | "oldest") => setSortOrder(value)}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Sắp xếp" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="newest">Mới nhất đầu tiên</SelectItem>
+              <SelectItem value="oldest">Cũ nhất đầu tiên</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
       {/* Danh sách lịch hẹn (Active only) */}
       {isLoadingAppointments ? (
         <div className="space-y-4">
@@ -364,9 +423,9 @@ const getServiceDescription = (serviceType: string) => {
             </Card>
           ))}
         </div>
-      ) : activeAppointments.length > 0 ? (
+      ) : filteredAndSortedAppointments.length > 0 ? (
         <div className="space-y-4">
-          {activeAppointments.map((appointment: AppointmentDto) => (
+          {filteredAndSortedAppointments.map((appointment: AppointmentDto) => (
             <Card
               key={appointment.appointmentId}
               className="shadow-sm border-gray-100 hover:shadow-md transition-shadow"
@@ -470,10 +529,13 @@ const getServiceDescription = (serviceType: string) => {
           <CardContent className="py-12 text-center">
             <Calendar className="w-16 h-16 mx-auto text-gray-300 mb-4" />
             <h3 className="text-lg font-semibold text-gray-900">
-              Chưa có lịch hẹn nào
+              {statusFilter === "ALL" ? "Chưa có lịch hẹn nào" : "Không tìm thấy lịch hẹn phù hợp"}
             </h3>
             <p className="text-muted-foreground mb-6">
-              Hãy đặt lịch bảo dưỡng ngay để chăm sóc xe của bạn
+              {statusFilter === "ALL" 
+                ? "Hãy đặt lịch bảo dưỡng ngay để chăm sóc xe của bạn"
+                : "Thử thay đổi bộ lọc trạng thái để xem kết quả khác"
+              }
             </p>
             <Button
               className="bg-[#007AFF] hover:bg-[#0066CC]"

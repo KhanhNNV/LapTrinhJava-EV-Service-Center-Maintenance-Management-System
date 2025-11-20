@@ -9,7 +9,25 @@ import {
     DialogTitle, 
     DialogDescription 
 } from "@/components/ui/dialog";
-import { History as HistoryIcon, Calendar, Clock, MapPin, Car, Eye, FileText, User, Wrench } from 'lucide-react'; // Import thêm icon
+import { 
+  History as HistoryIcon, 
+  Calendar, 
+  Clock, 
+  MapPin, 
+  Car, 
+  Eye, 
+  FileText, 
+  User, 
+  Filter,
+  ArrowUpDown
+} from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 // Import hook lấy xe để mapping biển số và type AppointmentDto
 import { 
@@ -34,10 +52,31 @@ export default function History() {
   // State để quản lý modal chi tiết
   const [selectedAppointment, setSelectedAppointment] = useState<AppointmentDto | null>(null);
 
+  // State cho sorting và filtering
+  const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
+  const [statusFilter, setStatusFilter] = useState<string>("ALL");
+
   // Logic lọc: Chỉ lấy COMPLETED và CANCELED
   const historyAppointments = appointments?.filter((a: AppointmentDto) => 
     ['COMPLETED', 'CANCELED'].includes(a.status)
   ) || [];
+
+  // --- LOGIC SẮP XẾP VÀ LỌC ---
+  const filteredAndSortedAppointments = historyAppointments
+    .filter((appointment: AppointmentDto) => {
+      if (statusFilter === "ALL") return true;
+      return appointment.status === statusFilter;
+    })
+    .sort((a: AppointmentDto, b: AppointmentDto) => {
+      const dateA = new Date(`${a.appointmentDate}T${a.appointmentTime}`);
+      const dateB = new Date(`${b.appointmentDate}T${b.appointmentTime}`);
+      
+      if (sortOrder === "newest") {
+        return dateB.getTime() - dateA.getTime(); // Mới nhất đầu tiên
+      } else {
+        return dateA.getTime() - dateB.getTime(); // Cũ nhất đầu tiên
+      }
+    });
 
   // Helper: Tìm biển số xe từ ID
   const getLicensePlate = (vehicleId: number) => {
@@ -78,6 +117,39 @@ const getServiceDescription = (serviceType: string) => {
         </p>
       </div>
 
+      {/* Bộ lọc và sắp xếp */}
+      <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
+        <div className="flex items-center gap-2">
+          <Filter className="w-4 h-4 text-gray-500" />
+          <span className="text-sm font-medium text-gray-700">Lọc theo:</span>
+        </div>
+        
+        <div className="flex flex-wrap gap-3">
+          {/* Bộ lọc trạng thái */}
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Tất cả trạng thái" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ALL">Tất cả trạng thái</SelectItem>
+              <SelectItem value="COMPLETED">Đã hoàn thành</SelectItem>
+              <SelectItem value="CANCELED">Đã hủy</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {/* Sắp xếp thời gian */}
+          <Select value={sortOrder} onValueChange={(value: "newest" | "oldest") => setSortOrder(value)}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Sắp xếp" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="newest">Mới nhất đầu tiên</SelectItem>
+              <SelectItem value="oldest">Cũ nhất đầu tiên</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
       {isLoading ? (
         // Loading State
         <div className="space-y-4">
@@ -89,10 +161,10 @@ const getServiceDescription = (serviceType: string) => {
             </Card>
           ))}
         </div>
-      ) : historyAppointments.length > 0 ? (
+      ) : filteredAndSortedAppointments.length > 0 ? (
         // List Lịch sử
         <div className="space-y-4">
-          {historyAppointments.map((appointment: AppointmentDto) => (
+          {filteredAndSortedAppointments.map((appointment: AppointmentDto) => (
             <Card key={appointment.appointmentId} className="shadow-sm border-gray-100 hover:shadow-md transition-shadow opacity-90 hover:opacity-100">
               <CardContent className="pt-6">
                 <div className="flex items-start justify-between">
@@ -150,9 +222,14 @@ const getServiceDescription = (serviceType: string) => {
         <Card className="shadow-sm border-dashed border-2 border-gray-200 bg-gray-50/50">
           <CardContent className="flex flex-col items-center justify-center py-12">
             <HistoryIcon className="w-16 h-16 text-gray-300 mb-4" />
-            <h3 className="text-lg font-semibold mb-2 text-gray-900">Chưa có lịch sử</h3>
+            <h3 className="text-lg font-semibold mb-2 text-gray-900">
+              {statusFilter === "ALL" ? "Chưa có lịch sử" : "Không tìm thấy lịch sử phù hợp"}
+            </h3>
             <p className="text-muted-foreground">
-              Lịch sử dịch vụ sẽ hiển thị tại đây sau khi hoàn thành
+              {statusFilter === "ALL" 
+                ? "Lịch sử dịch vụ sẽ hiển thị tại đây sau khi hoàn thành"
+                : "Thử thay đổi bộ lọc trạng thái để xem kết quả khác"
+              }
             </p>
           </CardContent>
         </Card>
