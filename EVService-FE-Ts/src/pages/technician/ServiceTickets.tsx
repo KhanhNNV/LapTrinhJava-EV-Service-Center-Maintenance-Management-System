@@ -191,6 +191,30 @@ export default function TechnicianServiceTickets() {
         setSelectedTicket(ticket);
     };
 
+    const handleCompleteTicket = async (ticketId: number) => {
+        if (!confirm("Bạn có chắc chắn muốn hoàn thành phiếu này không? Sau khi hoàn thành, bạn sẽ không thể chỉnh sửa nữa.")) {
+            return;
+        }
+
+        try {
+            await technicianTicketService.completeTicket(ticketId);
+            toast({
+                title: "Thành công",
+                description: "Phiếu dịch vụ đã được hoàn thành!",
+                className: "bg-green-600 text-white"
+            });
+
+            refreshTickets();
+
+            if (selectedTicket?.ticketId === ticketId) {
+                setSelectedTicket(null);
+            }
+        } catch (error: any) {
+            const message = error.response?.data?.message || "Không thể hoàn thành phiếu";
+            toast({ title: "Lỗi", description: message, variant: "destructive" });
+        }
+    };
+
     const handleAddServiceItem = async () => {
         if (!selectedTicket || !selectedServiceId) return;
 
@@ -470,22 +494,10 @@ export default function TechnicianServiceTickets() {
                                             <Button
                                                 variant="default"
                                                 className="bg-green-600 hover:bg-green-700 flex-1 sm:flex-none"
-                                                // onClick={() => handleCompleteTicket(ticket.ticketId)}
+                                                onClick={() => handleCompleteTicket(ticket.ticketId)}
                                             >
                                                 <CheckCircle className="w-4 h-4 mr-2" />
                                                 Hoàn thành phiếu
-                                            </Button>
-                                        )}
-
-                                        {/* 3. Nút Xóa phiếu (Chỉ nên hiện khi trạng thái cho phép, VD: PENDING) */}
-                                        {ticket.status !== 'COMPLETED' && (
-                                            <Button
-                                                variant="destructive"
-                                                // onClick={() => handleDeleteTicket(ticket.ticketId)}
-                                                className="flex-1 sm:flex-none"
-                                            >
-                                                <Trash2 className="w-4 h-4 mr-2" />
-                                                Xóa phiếu
                                             </Button>
                                         )}
                                     </div>

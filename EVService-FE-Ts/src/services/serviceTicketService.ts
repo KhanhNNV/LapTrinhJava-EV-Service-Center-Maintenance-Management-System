@@ -131,4 +131,9 @@ export const technicianTicketService = {
         });
     },
 
+    completeTicket: async (ticketId: number): Promise<ServiceTicket> => {
+        const response = await api.put(`/api/service-tickets/technician/${ticketId}/complete`);
+        return response.data;
+    },
+
 };
