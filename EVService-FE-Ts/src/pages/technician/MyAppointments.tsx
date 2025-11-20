@@ -28,7 +28,7 @@ export default function TechnicianMyAppointments() {
 
   const fetchAppointments = async () => {
     try {
-      const response = await api.get("/api/appointments/technician");
+      const response = await api.get("/api/appointments/myAppointments");
       const myAppointments = response.data.filter(
         (a: any) => a.technicianId === currentUser?.id
       );
@@ -61,7 +61,9 @@ export default function TechnicianMyAppointments() {
 
   const createServiceTicket = async (appointmentId: number) => {
     try {
-      await api.post(`/api/service-tickets/technician/${appointmentId}/create-service-ticket`);
+      await api.post(
+        `/api/service-tickets/technician/${appointmentId}/create-service-ticket`
+      );
       toast({
         title: "Success",
         description: "Service ticket created",
@@ -87,14 +89,15 @@ export default function TechnicianMyAppointments() {
     <div className="space-y-6">
       <div>
         <h2 className="text-3xl font-bold tracking-tight">My Appointments</h2>
-        <p className="text-muted-foreground">
-          Appointments assigned to you
-        </p>
+        <p className="text-muted-foreground">Appointments assigned to you</p>
       </div>
 
       <div className="grid gap-4">
         {appointments.map((appointment) => (
-          <Card key={appointment.id} className="hover:shadow-md transition-shadow">
+          <Card
+            key={appointment.id}
+            className="hover:shadow-md transition-shadow"
+          >
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg">
@@ -110,20 +113,28 @@ export default function TechnicianMyAppointments() {
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 text-sm">
                     <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <span>{new Date(appointment.appointmentDate).toLocaleString()}</span>
+                    <span>
+                      {new Date(appointment.appointmentDate).toLocaleString()}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
                     <User className="h-4 w-4 text-muted-foreground" />
                     <div>
                       <p>{appointment.user.fullName}</p>
-                      <p className="text-muted-foreground">{appointment.user.phoneNumber}</p>
+                      <p className="text-muted-foreground">
+                        {appointment.user.phoneNumber}
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
                     <Car className="h-4 w-4 text-muted-foreground" />
                     <div>
-                      <p>{appointment.vehicle.brand} {appointment.vehicle.model}</p>
-                      <p className="text-muted-foreground">{appointment.vehicle.licensePlate}</p>
+                      <p>
+                        {appointment.vehicle.brand} {appointment.vehicle.model}
+                      </p>
+                      <p className="text-muted-foreground">
+                        {appointment.vehicle.licensePlate}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -132,8 +143,12 @@ export default function TechnicianMyAppointments() {
                   <div className="flex items-start gap-2 text-sm">
                     <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
                     <div>
-                      <p className="font-medium">{appointment.serviceCenter.name}</p>
-                      <p className="text-muted-foreground">{appointment.serviceCenter.address}</p>
+                      <p className="font-medium">
+                        {appointment.serviceCenter.name}
+                      </p>
+                      <p className="text-muted-foreground">
+                        {appointment.serviceCenter.address}
+                      </p>
                     </div>
                   </div>
 

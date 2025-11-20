@@ -34,7 +34,7 @@ export default function Login() {
   const [formData, setFormData] = useState({
     username: "",
     password: "",
-    rememberMe: false,
+    // rememberMe: false,
   });
 
   const [errors, setErrors] = useState<LoginErrors>({});

@@ -69,7 +69,7 @@
 
 // src/pages/auth/EmailVerificationSentPage.tsx
 import { useState } from "react";
-import { CheckCircle, Mail, RefreshCw, Loader2 } from "lucide-react";
+import { Zap, CheckCircle, Mail, RefreshCw, Loader2 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import api from "@/services/api.ts";
 
@@ -103,11 +103,14 @@ export default function EmailVerificationSentPage() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-cyan-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Logo */}
-        <div className="flex justify-center mb-6">
-          <div className="bg-blue-100 p-3 rounded-full">
-            <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full flex items-center justify-center text-white font-bold text-xl">
-              Lightning
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center gap-2 font-bold text-2xl mb-2">
+            <div className="w-12 h-12 rounded-lg bg-gradient-primary flex items-center justify-center shadow-glow">
+              <Zap className="w-7 h-7 text-primary-foreground" />
             </div>
+            <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+              EV Service
+            </span>
           </div>
         </div>
 

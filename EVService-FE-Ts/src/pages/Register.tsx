@@ -43,8 +43,6 @@ export default function Register() {
     fullName: "",
     username: "",
     email: "",
-    phoneNumber: "",
-    address: "",
     password: "",
     confirmPassword: "",
     acceptTerms: false,
@@ -108,12 +106,6 @@ export default function Register() {
     };
   }, [formData.password]);
 
-  // ======= Chỉ cho nhập số ở phoneNumber =======
-  const handlePhoneChange = (value: string) => {
-    const onlyDigits = value.replace(/[^0-9]/g, "");
-    setFormData((prev) => ({ ...prev, phoneNumber: onlyDigits }));
-  };
-
   // ======= Social register (OAuth2) =======
   const handleSocialRegister = (provider: "google" | "facebook" | "github") => {
     const base = "http://localhost:8080/oauth2/authorization";
@@ -146,12 +138,8 @@ export default function Register() {
         email: formData.email,
         password: formData.password,
         fullName: formData.fullName,
-        phoneNumber: formData.phoneNumber,
-        address: formData.address,
       });
-      navigate("/auth/email-sent", { state: { email: formData.email } });
-      //toast.success("Đăng ký thành công! Vui lòng đăng nhập.");
-      //navigate("/login");
+      navigate("/auth/email-verify-sent", { state: { email: formData.email } });
     } catch (error: any) {
       toast.error(
         error?.response?.data?.message || "Đăng ký thất bại. Vui lòng thử lại."
@@ -235,35 +223,6 @@ export default function Register() {
                   disabled={isLoading}
                 />
               </div>
-
-              {/* Số điện thoại */}
-              {/* <div className="space-y-2">
-                <Label htmlFor="phoneNumber">Số điện thoại</Label>
-                <Input
-                  id="phoneNumber"
-                  type="tel"
-                  placeholder="0123456789"
-                  value={formData.phoneNumber}
-                  onChange={(e) => handlePhoneChange(e.target.value)}
-                  required
-                  disabled={isLoading}
-                />
-              </div> */}
-
-              {/* Địa chỉ */}
-              {/* <div className="space-y-2">
-                <Label htmlFor="address">Địa chỉ</Label>
-                <Input
-                  id="address"
-                  type="text"
-                  placeholder="123 Đường ABC, Phường X, Quận Y, Tỉnh Z..."
-                  value={formData.address}
-                  onChange={(e) =>
-                    setFormData({ ...formData, address: e.target.value })
-                  }
-                  disabled={isLoading}
-                />
-              </div> */}
 
               {/* Mật khẩu */}
               <div className="space-y-2">

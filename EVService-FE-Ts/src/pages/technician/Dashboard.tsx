@@ -19,7 +19,7 @@ export default function TechnicianDashboard() {
     const fetchStats = async () => {
       try {
         const [appointmentsRes, ticketsRes] = await Promise.all([
-          api.get("/api/appointments/technician"),
+          api.get("/api/appointments/myAppointments"),
           api.get("/api/service-tickets"),
         ]);
 
@@ -30,14 +30,17 @@ export default function TechnicianDashboard() {
           (t: any) => t.appointment?.technicianId === currentUser?.id
         );
 
-        const completedToday = myTickets.filter((t: any) => 
-          t.status === "COMPLETED" && 
-          new Date(t.endTime).toDateString() === new Date().toDateString()
+        const completedToday = myTickets.filter(
+          (t: any) =>
+            t.status === "COMPLETED" &&
+            new Date(t.endTime).toDateString() === new Date().toDateString()
         ).length;
 
-        const activeTickets = myTickets.filter((t: any) => t.status === "IN_PROGRESS").length;
-        const pendingTasks = myAppointments.filter((a: any) => 
-          a.status === "CONFIRMED" || a.status === "CHECKED_IN"
+        const activeTickets = myTickets.filter(
+          (t: any) => t.status === "IN_PROGRESS"
+        ).length;
+        const pendingTasks = myAppointments.filter(
+          (a: any) => a.status === "CONFIRMED" || a.status === "CHECKED_IN"
         ).length;
 
         setStats({
@@ -88,7 +91,9 @@ export default function TechnicianDashboard() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight">Technician Dashboard</h2>
+        <h2 className="text-3xl font-bold tracking-tight">
+          Technician Dashboard
+        </h2>
         <p className="text-muted-foreground">
           Welcome back, {currentUser?.fullName}
         </p>
