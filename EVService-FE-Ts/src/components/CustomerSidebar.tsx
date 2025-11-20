@@ -6,6 +6,7 @@ import {
   Settings,
   LogOut,
   LayoutDashboard,
+  CreditCard 
   MessageSquare
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
@@ -32,6 +33,7 @@ const menuItems = [
   { title: 'Xe của tôi', url: '/dashboard/customer/vehicles', icon: Car },
   { title: 'Đặt lịch hẹn', url: '/dashboard/customer/appointments', icon: Calendar },
   { title: 'Lịch sử', url: '/dashboard/customer/history', icon: History },
+  { title: 'Thanh toán', url: '/dashboard/customer/payments', icon: CreditCard }, 
   { title: 'Thông báo', url: '/dashboard/customer/notifications', icon: Bell },
   { title: 'Cài đặt', url: '/dashboard/customer/settings', icon: Settings },
   { title: "Hỗ trợ trực tuyến", url: "/dashboard/customer/messages", icon: MessageSquare,},
@@ -41,7 +43,7 @@ export function CustomerSidebar() {
   const { state } = useSidebar();
   const location = useLocation();
   const navigate = useNavigate();
-  const currentPath = location.pathname;
+  const currentPath = location.pathname; // Biến này có thể dùng để check active nếu cần logic phức tạp hơn
   const user = authService.getCurrentUser();
 
   const collapsed = state === 'collapsed';
