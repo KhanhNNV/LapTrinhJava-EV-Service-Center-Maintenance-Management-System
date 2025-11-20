@@ -50,6 +50,15 @@ public class ServiceTicketController {
         List<PerformanceDto> report = ticketService.calculatePerformance(start, end);
         return ResponseEntity.ok(report);
     }
+    // lấy toàn bộ ticket của appointment
+    @GetMapping("/technician")
+    @PreAuthorize("hasRole('TECHNICIAN')")
+    public ResponseEntity<List<ServiceTicketDto>> getByTechnician(Authentication authentication) {
+        Integer technicianId = Integer.parseInt(authentication.getName());
+        List<ServiceTicketDto> serviceTicket= ticketService.getTicketsByTechnicianId(technicianId);
+        return ResponseEntity.ok(serviceTicket);
+    }
+
 
     // Tao service ticket tu appointment cua technician
     @PostMapping("/technician/{appointmentId}/create-service-ticket")

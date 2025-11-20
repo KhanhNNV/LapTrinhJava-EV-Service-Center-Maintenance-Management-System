@@ -5,6 +5,7 @@ import java.util.List;
 import edu.uth.evservice.requests.AddStockRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -41,4 +42,13 @@ public class InventoryController {
         return ResponseEntity.ok(updatedInventory);
     }
 
+    @GetMapping("/my-center")
+    @PreAuthorize("hasRole('TECHNICIAN')")
+    public ResponseEntity<List<InventoryDto>> getMyCenterInventory(Authentication authentication) {
+
+        Integer technicianId = Integer.parseInt(authentication.getName());
+
+        List<InventoryDto> inventories = inventoryService.getInventoryByTechnician(technicianId);
+        return ResponseEntity.ok(inventories);
+    }
 }

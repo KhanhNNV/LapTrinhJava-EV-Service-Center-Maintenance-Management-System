@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import edu.uth.evservice.exception.ResourceNotFoundException;
+import edu.uth.evservice.repositories.IUserRepository;
 import edu.uth.evservice.requests.AddStockRequest;
 import edu.uth.evservice.models.User;
 import edu.uth.evservice.models.enums.Role;
@@ -34,6 +35,8 @@ public class InventoryServiceImpl implements IInventoryService {
     private final IServiceCenterRepository serviceCenterRepository;
     //
     private final INotificationService notificationService;
+
+    private final IUserRepository userRepo;
 
     @Override
     public InventoryDto addStock(AddStockRequest request) {
@@ -67,11 +70,28 @@ public class InventoryServiceImpl implements IInventoryService {
         return toDto(savedInventory);
     }
 
+    @Override
+    public List<InventoryDto> getInventoryByTechnician(Integer technicianId) {
+        User technician = userRepo.findById(technicianId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy kĩ thuật viên này"));
+
+        ServiceCenter center = technician.getServiceCenter();
+        if (center == null) {
+            throw new IllegalStateException("Kỹ thuật viên này thuộc trung tâm nào");
+        }
+
+        List<Inventory> inventories = inventoryRepository.findByServiceCenter(center);
+
+        // 3. Convert sang DTO
+        return inventories.stream().map(this::toDto).collect(Collectors.toList());
+    }
+
     private InventoryDto toDto(Inventory inv) {
         return InventoryDto.builder()
                 .inventoryId(inv.getInventoryId())
                 .quantity(inv.getQuantity())
                 .minQuantity(inv.getMinQuantity())
+                .unitPrice(inv.getPart().getUnitPrice())
                 .createdAt(inv.getCreatedAt())
                 .updatedAt(inv.getUpdatedAt())
                 .partId(inv.getPart().getPartId())
