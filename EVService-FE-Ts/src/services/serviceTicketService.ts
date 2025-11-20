@@ -92,22 +92,18 @@ export const technicianTicketService = {
 
 
     getAISuggestions: async (serviceItemId: number): Promise<AISuggestionResponse> => {
-        // SỬA Ở ĐÂY: Dùng template literal `${}` để đưa ID vào đường dẫn
-        // Giả sử Controller của bạn có @RequestMapping("/api/ai/suggestions")
         const response = await api.get(`/api/ai/suggestions/${serviceItemId}`);
         return response.data;
     },
 
     getAllParts: async (): Promise<Part[]> => {
-        // Gọi API backend mà chúng ta vừa thảo luận
         const response = await api.get("/api/inventories/my-center");
 
-        // Map dữ liệu từ InventoryDto (Backend) sang Interface Part (Frontend)
         return response.data.map((item: any) => ({
             inventoryId: item.inventoryId,
             partId: item.partId,
             name: item.partName,
-            price: item.unitPrice, // Đảm bảo backend trả về field này
+            price: item.unitPrice,
             quantityInStock: item.quantity
         }));
     },

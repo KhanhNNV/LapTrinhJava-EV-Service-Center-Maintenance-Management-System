@@ -174,6 +174,16 @@ export default function TechnicianServiceTickets() {
         return texts[status] || status;
     };
 
+    const renderMarkdownText = (text: string | null | undefined) => {
+        if (!text) return null;
+        return text.split(/(\*\*.*?\*\*)/g).map((part, index) => {
+            if (part.startsWith('**') && part.endsWith('**')) {
+                return <strong key={index} className="font-bold">{part.slice(2, -2)}</strong>;
+            }
+            return <span key={index}>{part}</span>;
+        });
+    };
+
     // --- CÁC HÀM XỬ LÝ SỰ KIỆN ---
 
     // 1. Xem chi tiết (Mở Dialog hoặc chuyển trang)
@@ -238,6 +248,7 @@ export default function TechnicianServiceTickets() {
     };
 
     const handleOpenAISuggestion = async (serviceItemId: number, serviceName: string) => {
+        setIsAIDialogOpen(true);
         setIsLoadingAI(true);
         setAiData(null);
 
@@ -252,9 +263,9 @@ export default function TechnicianServiceTickets() {
             });
             setSuggestionQuantities(initialQuantities);
 
-            setIsAIDialogOpen(true);
         } catch (error) {
             toast({ title: "Lỗi", description: "Không lấy được dữ liệu AI", variant: "destructive" });
+            setIsAIDialogOpen(false);
         } finally {
             setIsLoadingAI(false);
         }
@@ -284,7 +295,7 @@ export default function TechnicianServiceTickets() {
             await technicianTicketService.updatePart(
                 selectedTicket.ticketId,
                 part.partId,
-                quantityToAdd // [MỚI] Dùng số lượng đã chỉnh sửa
+                quantityToAdd // Dùng số lượng đã chỉnh sửa
             );
 
             toast({
@@ -350,77 +361,6 @@ export default function TechnicianServiceTickets() {
     };
 
 
-    // 2. Hoàn thành phiếu
-    // const handleCompleteTicket = async (ticketId: number) => {
-    //     if (!confirm("Bạn có chắc chắn muốn hoàn thành phiếu này?")) return;
-    //
-    //     try {
-    //         await technicianTicketService.completeTicket(ticketId);
-    //         toast({ title: "Thành công", description: "Phiếu dịch vụ đã hoàn thành", className: "bg-green-600 text-white" });
-    //         refreshTickets();
-    //     } catch (error) {
-    //         toast({ title: "Lỗi", description: "Không thể hoàn thành phiếu", variant: "destructive" });
-    //     }
-    // };
-
-    // 3. Xóa phiếu
-    const handleDeleteTicket = async (ticketId: number) => {
-        if (!confirm("Cảnh báo: Hành động này không thể hoàn tác. Bạn có chắc muốn xóa phiếu này?")) return;
-
-        try {
-            // Giả định service có hàm delete (bạn cần thêm vào service nếu chưa có)
-            // await technicianTicketService.deleteTicket(ticketId);
-            console.log("Deleting ticket", ticketId);
-            toast({ title: "Thông báo", description: "API xóa chưa được cấu hình", variant: "default" });
-            // refreshTickets();
-        } catch (error) {
-            toast({ title: "Lỗi", description: "Không thể xóa phiếu", variant: "destructive" });
-        }
-    };
-
-
-    //
-    // const handleAddPart = async () => {
-    //     if (!selectedTicket || !newPart.partId) return;
-    //
-    //     try {
-    //         await technicianTicketService.addPart(selectedTicket, parseInt(newPart.partId), newPart.quantity);
-    //         toast({ title: "Success", description: "Part added successfully" });
-    //
-    //         // Reset form & Refresh data
-    //         setNewPart({ partId: "", quantity: 1 });
-    //         setIsPartDialogOpen(false);
-    //         refreshTickets();
-    //     } catch (error) {
-    //         toast({ title: "Error", description: "Failed to add part", variant: "destructive" });
-    //     }
-    // };
-    //
-    // const handleAddServiceItem = async () => {
-    //     if (!selectedTicket || !newServiceItem.itemId) return;
-    //
-    //     try {
-    //         await technicianTicketService.addServiceItem(selectedTicket, parseInt(newServiceItem.itemId));
-    //         toast({ title: "Success", description: "Service item added" });
-    //
-    //         // Reset form & Refresh data
-    //         setNewServiceItem({ itemId: "" });
-    //         setIsServiceDialogOpen(false);
-    //         refreshTickets();
-    //     } catch (error) {
-    //         toast({ title: "Error", description: "Failed to add service item", variant: "destructive" });
-    //     }
-    // };
-    //
-    // const handleCompleteTicket = async (ticketId: number) => {
-    //     try {
-    //         await technicianTicketService.completeTicket(ticketId);
-    //         toast({ title: "Success", description: "Service ticket completed" });
-    //         refreshTickets();
-    //     } catch (error) {
-    //         toast({ title: "Error", description: "Failed to complete ticket", variant: "destructive" });
-    //     }
-    // };
 
     // Format tiền tệ
     const formatMoney = (amount: number) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
@@ -898,8 +838,7 @@ export default function TechnicianServiceTickets() {
                                         {selectedPartId && (
                                             <span className="text-xs text-muted-foreground">
                             {/* Hiển thị lại tồn kho ở đây cho tiện theo dõi */}
-                                                Tối đa: {availableParts.find(p => p.partId.toString() === selectedPartId)?.quantityInStock}
-                        </span>
+                                                Tối đa: {availableParts.find(p => p.partId.toString() === selectedPartId)?.quantityInStock}</span>
                                         )}
                                     </div>
                                     <Input
@@ -921,23 +860,39 @@ export default function TechnicianServiceTickets() {
                     </Dialog>
 
                     {/* ====================================================================== */}
-                    {/* --- 1. DIALOG GỢI Ý AI (DANH SÁCH PART) --- */}
+                    {/* --- DIALOG GỢI Ý AI (DANH SÁCH PART) --- */}
                     {/* ====================================================================== */}
                     <Dialog open={isAIDialogOpen} onOpenChange={setIsAIDialogOpen}>
-                        <DialogContent className="sm:max-w-[600px]">
-                            {/* ... Header Dialog giữ nguyên ... */}
+                        <DialogContent className="sm:max-w-[650px]">
+                            <DialogHeader>
+                                <DialogTitle className="flex items-center gap-2 text-indigo-700">
+                                    <Sparkles className="w-5 h-5" />
+                                    Gợi ý phụ tùng thông minh
+                                </DialogTitle>
+                                <DialogDescription>
+                                    Dựa trên dịch vụ: <span className="font-semibold text-foreground">{aiData?.serviceItemName || "..."}</span>
+                                </DialogDescription>
+                            </DialogHeader>
 
                             {isLoadingAI ? (
-                                // ... Loading giữ nguyên ...
-                                <div className="flex justify-center p-4"><Loader2 className="animate-spin"/></div>
+                                <div className="flex flex-col items-center justify-center py-12 gap-4 min-h-[300px]">
+                                    <div className="relative">
+                                        <div className="absolute inset-0 rounded-full border-4 border-indigo-100 border-t-indigo-600 animate-spin w-14 h-14"></div>
+                                        <div className="flex items-center justify-center w-14 h-14 rounded-full">
+                                            <BrainCircuit className="w-6 h-6 text-indigo-600 animate-pulse" />
+                                        </div>
+                                    </div>
+                                    <p className="text-base font-medium text-indigo-600 animate-pulse">
+                                        AI đang phân tích dữ liệu...
+                                    </p>
+                                </div>
                             ) : aiData ? (
                                 <div className="space-y-4">
-                                    <div className="border rounded-md overflow-hidden">
+                                    <div className="border rounded-md overflow-hidden max-h-[400px] overflow-y-auto">
                                         <Table>
-                                            <TableHeader className="bg-indigo-50">
+                                            <TableHeader className="bg-indigo-50 sticky top-0 z-10">
                                                 <TableRow>
                                                     <TableHead>Tên phụ tùng</TableHead>
-                                                    {/* Căn giữa tiêu đề SL */}
                                                     <TableHead className="text-center w-[100px]">Số lượng</TableHead>
                                                     <TableHead className="text-right">Hành động</TableHead>
                                                 </TableRow>
@@ -947,12 +902,11 @@ export default function TechnicianServiceTickets() {
                                                     <TableRow key={part.partId}>
                                                         <TableCell className="font-medium">
                                                             {part.partName}
-                                                            <div className="text-xs text-muted-foreground mt-0.5">
-                                                                Gợi ý gốc: {part.suggestedQuantity} | {part.importanceLevel}
+                                                            <div className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
+                                                                <Info className="w-3 h-3" />
+                                                                Độ tin cậy: {(part.confidenceScore * 100).toFixed(0)}%
                                                             </div>
                                                         </TableCell>
-
-                                                        {/* [MỚI] Ô INPUT SỐ LƯỢNG */}
                                                         <TableCell className="text-center p-2">
                                                             <Input
                                                                 type="number"
@@ -962,7 +916,6 @@ export default function TechnicianServiceTickets() {
                                                                 onChange={(e) => handleQuantityChange(part.partId, e.target.value)}
                                                             />
                                                         </TableCell>
-
                                                         <TableCell className="text-right">
                                                             <Button
                                                                 size="sm"
@@ -976,9 +929,15 @@ export default function TechnicianServiceTickets() {
                                                 ))}
                                             </TableBody>
                                         </Table>
+                                        {aiData.suggestions.length === 0 && (
+                                            <div className="text-center py-8 text-muted-foreground">
+                                                <BrainCircuit className="w-10 h-10 mx-auto mb-2 text-gray-300" />
+                                                <p>AI không tìm thấy gợi ý phù hợp cho dịch vụ này.</p>
+                                            </div>
+                                        )}
                                     </div>
 
-                                    <DialogFooter className="sm:justify-between items-center gap-2">
+                                    <DialogFooter className="sm:justify-between items-center gap-2 border-t pt-4">
                                         <Button
                                             variant="outline"
                                             className="text-indigo-600 border-indigo-200 hover:bg-indigo-50"
@@ -993,13 +952,15 @@ export default function TechnicianServiceTickets() {
                                     </DialogFooter>
                                 </div>
                             ) : (
-                                <p className="text-center text-red-500 py-4">Không có dữ liệu.</p>
+                                <div className="text-center py-8 text-red-500">
+                                    Không có dữ liệu hoặc lỗi kết nối.
+                                </div>
                             )}
                         </DialogContent>
                     </Dialog>
 
                     {/* ====================================================================== */}
-                    {/* --- 2. DIALOG CHI TIẾT PHÂN TÍCH AI --- */}
+                    {/* --- DIALOG CHI TIẾT PHÂN TÍCH AI --- */}
                     {/* ====================================================================== */}
                     <Dialog open={isAnalysisDialogOpen} onOpenChange={setIsAnalysisDialogOpen}>
                         <DialogContent className="sm:max-w-[700px] max-h-[85vh] overflow-y-auto">
@@ -1037,6 +998,19 @@ export default function TechnicianServiceTickets() {
                                                 <div className="text-xs text-muted-foreground">Ước tính chi phí</div>
                                             </CardContent>
                                         </Card>
+                                    </div>
+
+                                    <div className="bg-indigo-50 border border-indigo-100 p-4 rounded-lg flex gap-3 items-start">
+                                        <Sparkles className="w-5 h-5 text-indigo-600 mt-0.5 shrink-0" />
+                                        <div className="space-y-1 w-full">
+                                            <h4 className="text-sm font-semibold text-indigo-900">
+                                                Tổng quan từ AI
+                                            </h4>
+                                            {/* Sử dụng whitespace-pre-wrap để giữ xuống dòng nếu có */}
+                                            <div className="text-sm text-indigo-800 leading-relaxed whitespace-pre-wrap">
+                                                {aiData.aiReasoning ? renderMarkdownText(aiData.aiReasoning) : "Không có dữ liệu phân tích."}
+                                            </div>
+                                        </div>
                                     </div>
 
                                     {/* Chi tiết từng Suggestion */}
