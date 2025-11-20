@@ -1,20 +1,30 @@
 package edu.uth.evservice.controllers;
 
+import java.time.YearMonth;
+import java.util.List;
+
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import edu.uth.evservice.dtos.ProfitReportDto;
 import edu.uth.evservice.dtos.SalaryDto;
+import edu.uth.evservice.dtos.UserDto;
 import edu.uth.evservice.models.enums.Role;
 import edu.uth.evservice.requests.CreateUserRequest;
 import edu.uth.evservice.services.IProfitReportService;
 import edu.uth.evservice.services.ISalaryService;
 import edu.uth.evservice.services.IUserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
-
-import java.time.YearMonth;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/users")
@@ -24,6 +34,7 @@ public class UserController {
     private final IUserService userService;
     private final ISalaryService salaryService;
     private final IProfitReportService profitReportService;
+
     // Tìm kiếm user theo username hoặc fullname (chữ thường)
     @GetMapping("/search")
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
@@ -38,13 +49,12 @@ public class UserController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> getUsersByRole(@PathVariable String role) {
         try {
-            Role userRole = Role.valueOf(role.toUpperCase()); //Chuyển sang Enum
+            Role userRole = Role.valueOf(role.toUpperCase()); // Chuyển sang Enum
             return ResponseEntity.ok(userService.getUsersByRole(userRole));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body("Role không hợp lệ: " + role);
         }
     }
-
 
     // Tìm user theo ID
     @GetMapping("/{id:\\d+}")
@@ -55,9 +65,9 @@ public class UserController {
 
     // Cập nhật user theo ID
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> updateUser(@PathVariable Integer id,
-                                        @RequestBody CreateUserRequest request) {
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+    public ResponseEntity<UserDto> updateUser(@PathVariable Integer id,
+            @RequestBody CreateUserRequest request) {
         return ResponseEntity.ok(userService.updateUser(id, request));
     }
 
@@ -84,8 +94,7 @@ public class UserController {
         request.setRole(Role.STAFF.name());
         return ResponseEntity.ok(userService.createUser(request));
     }
-    //In danh sách lương của tất cả nhân viên trong một tháng
-
+    // In danh sách lương của tất cả nhân viên trong một tháng
 
     @GetMapping("/calculate")
     @PreAuthorize("hasRole('ADMIN')")
@@ -93,7 +102,8 @@ public class UserController {
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM") YearMonth month) {
         return ResponseEntity.ok(salaryService.calculateMonthlySalaries(month));
     }
-    //Báo cáo lợi nhuận trong 1 tháng
+
+    // Báo cáo lợi nhuận trong 1 tháng
     @GetMapping("/profit")
     @PreAuthorize("hasRole('ADMIN')")
     public ProfitReportDto getMonthlyProfit(@RequestParam int year, @RequestParam int month) {

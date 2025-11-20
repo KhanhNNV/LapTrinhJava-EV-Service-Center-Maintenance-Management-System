@@ -7,25 +7,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import edu.uth.evservice.models.enums.Role;
-import edu.uth.evservice.dtos.*;
-import edu.uth.evservice.exception.ResourceNotFoundException;
-import edu.uth.evservice.models.*;
-import edu.uth.evservice.repositories.*;
-import edu.uth.evservice.requests.AddServiceItemRequest;
-import edu.uth.evservice.requests.UpdatePartQuantityRequest;
-import edu.uth.evservice.requests.NotificationRequest;
-import edu.uth.evservice.services.INotificationService;
-import edu.uth.evservice.services.ai.ServiceItemAIService;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import edu.uth.evservice.dtos.PerformanceDto;
 import edu.uth.evservice.dtos.ServiceTicketDto;
 import edu.uth.evservice.dtos.ServiceTicketPartDto;
 import edu.uth.evservice.dtos.SuggestedPartsDto;
 import edu.uth.evservice.dtos.TicketPartDto;
 import edu.uth.evservice.dtos.TicketServiceItemDto;
+import edu.uth.evservice.exception.ResourceNotFoundException;
 import edu.uth.evservice.models.Appointment;
 import edu.uth.evservice.models.CustomerPackageContract;
 import edu.uth.evservice.models.Inventory;
@@ -41,6 +33,7 @@ import edu.uth.evservice.models.TicketServiceItem;
 import edu.uth.evservice.models.TicketServiceItemId;
 import edu.uth.evservice.models.User;
 import edu.uth.evservice.models.enums.AppointmentStatus;
+import edu.uth.evservice.models.enums.Role;
 import edu.uth.evservice.models.enums.ServiceTicketStatus;
 import edu.uth.evservice.repositories.IAppointmentRepository;
 import edu.uth.evservice.repositories.IInventoryRepository;
@@ -51,10 +44,16 @@ import edu.uth.evservice.repositories.IServiceTicketRepository;
 import edu.uth.evservice.repositories.ITicketPartRepository;
 import edu.uth.evservice.repositories.ITicketServiceItemRepository;
 import edu.uth.evservice.repositories.IUserRepository;
+import edu.uth.evservice.requests.AddServiceItemRequest;
+import edu.uth.evservice.requests.NotificationRequest;
 import edu.uth.evservice.requests.ServiceTicketRequest;
+import edu.uth.evservice.requests.UpdatePartQuantityRequest;
+import edu.uth.evservice.services.INotificationService;
 import edu.uth.evservice.services.IServiceTicketService;
+import edu.uth.evservice.services.ai.ServiceItemAIService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
@@ -76,7 +75,7 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
     private final ITicketPartRepository ticketPartRepo;
     private final IServiceItemPartRepository suggestionRepo;
 
-    //ai
+    // ai
     private final ServiceItemAIService serviceItemAIService;
 
     @Override
@@ -149,7 +148,6 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
 
             notificationService.createNotification(customerNoti); // Gửi đi
         }
-
 
         return toDto(ticketRepo.save(ticket));
     }
@@ -228,9 +226,9 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
         ServiceTicket savedTicket = ticketRepo.save(ticket);
 
         // === 6. PHẦN CODE GỬI THÔNG BÁO ===
-            //  Lấy ra Appointment cha
+        // Lấy ra Appointment cha
         Appointment appointment = savedTicket.getAppointment();
-            // 3.2. Cập nhật trạng thái của Appointment cha
+        // 3.2. Cập nhật trạng thái của Appointment cha
         appointment.setStatus(AppointmentStatus.COMPLETED);// Doi trang thai
         appointment.setUpdatedAt(LocalDateTime.now());
 
@@ -247,10 +245,9 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
 
         notificationService.createNotification(customerNoti); // Gửi đi
 
-
         // 7. Trả về kết quả
         return toDto(savedTicket); // Giả sử bạn có hàm toDto
-}
+    }
 
     // kiem tra quyen so huu ticket cua tech
     @Override
@@ -429,8 +426,7 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
 
                 // 2. Lấy danh sách nhân viên/admin tại trung tâm đó
                 List<User> usersToNotify = userRepo.findByServiceCenter_CenterIdAndRoleIn(
-                        techCenter.getCenterId(), List.of(Role.STAFF, Role.ADMIN)
-                );
+                        techCenter.getCenterId(), List.of(Role.STAFF, Role.ADMIN));
 
                 // 3. Gửi thông báo cho từng người
                 for (User user : usersToNotify) {
@@ -439,7 +435,8 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
                     notiRequest.setTitle("Cảnh báo Tồn kho Thấp!");
                     notiRequest.setMessage("Mặt hàng: '" + part.getPartName() +
                             "' tại trung tâm " + techCenter.getCenterName() +
-                            " đã đạt mức tồn kho tối thiểu (" + updatedInventory.getMinQuantity() + "). Cần nhập thêm.");
+                            " đã đạt mức tồn kho tối thiểu (" + updatedInventory.getMinQuantity()
+                            + "). Cần nhập thêm.");
 
                     notificationService.createNotification(notiRequest);
                 }
@@ -529,7 +526,8 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
                 .lineTotal(0)
                 .build();
     }
-    //Báo cáo hiệu suất
+
+    // Báo cáo hiệu suất
     public List<PerformanceDto> calculatePerformance(LocalDate start, LocalDate end) {
         // Kiểm tra tham số
         if (start == null || end == null) {
@@ -546,7 +544,8 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
         List<ServiceTicket> tickets = ticketRepo
                 .findByStatusAndEndTimeBetween(ServiceTicketStatus.COMPLETED, startDate, endDate);
 
-        // Nếu không có ticket nào, có thể trả về danh sách rỗng nhưng vẫn show kỹ thuật viên
+        // Nếu không có ticket nào, có thể trả về danh sách rỗng nhưng vẫn show kỹ thuật
+        // viên
         // Lấy danh sách kỹ thuật viên
         List<User> technicians = userRepo.findByRole(Role.TECHNICIAN);
         if (technicians.isEmpty()) {
@@ -575,8 +574,7 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
                     tech.getUserId(),
                     tech.getFullName(),
                     totalTickets,
-                    totalHours
-            ));
+                    totalHours));
         }
 
         return report;
@@ -592,6 +590,5 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
         }
         return center;
     }
-
 
 }

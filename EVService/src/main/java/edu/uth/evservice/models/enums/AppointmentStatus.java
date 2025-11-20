@@ -6,6 +6,6 @@ public enum AppointmentStatus {
     CHECKED_IN, // Khách hàng đã đến
     ASSIGNED,
     IN_PROGRESS,
-    CANCELED,
+    CANCELLED,
     COMPLETED
 }

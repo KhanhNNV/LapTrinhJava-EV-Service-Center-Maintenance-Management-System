@@ -22,7 +22,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/vehicles")
-@PreAuthorize("hasAnyRole('CUSTOMER','ADMIN')") 
+@PreAuthorize("hasAnyRole('CUSTOMER','ADMIN')")
 @RequiredArgsConstructor
 public class VehicleController {
 
@@ -30,7 +30,8 @@ public class VehicleController {
 
     // đăng ký xe đ bảo dưỡng cho customer
     @PostMapping
-    public ResponseEntity<VehicleDto> registerVehicleForCustomer(@Valid @RequestBody VehicleRequest request,Authentication authentication) {
+    public ResponseEntity<VehicleDto> registerVehicleForCustomer(@Valid @RequestBody VehicleRequest request,
+            Authentication authentication) {
         Integer UserId = Integer.parseInt(authentication.getName());
         // Gọi phương thức mới, an toàn hơn
         VehicleDto createdVehicle = vehicleService.registerVehicle(request, UserId);
@@ -40,16 +41,24 @@ public class VehicleController {
 
     // GET /api/vehicles (Lấy tất cả xe của tôi)
     @GetMapping
-    @PreAuthorize("hasAnyRole('CUSTOMER','STAFF','TECHNICIAN','ADMIN')") 
+    @PreAuthorize("hasAnyRole('CUSTOMER','STAFF','TECHNICIAN','ADMIN')")
     public ResponseEntity<List<VehicleDto>> getMyVehicles(Authentication authentication) {
         Integer UserId = Integer.parseInt(authentication.getName());
         List<VehicleDto> vehicles = vehicleService.getMyVehicles(UserId);
         return ResponseEntity.ok(vehicles);
     }
 
+    // GET /api/vehicles/customer/{customerId} (Lấy tất cả xe của khách hàng -
+    // admin/staff)
+    @GetMapping("/customer/{customerId}")
+    @PreAuthorize("hasAnyRole('ADMIN','STAFF')")
+    public ResponseEntity<List<VehicleDto>> getVehiclesByCustomer(@PathVariable Integer customerId) {
+        return ResponseEntity.ok(vehicleService.getMyVehicles(customerId));
+    }
+
     // GET /api/vehicles/{id} (Lấy 1 xe của tôi)
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('CUSTOMER','STAFF','TECHNICIAN','ADMIN')") 
+    @PreAuthorize("hasAnyRole('CUSTOMER','STAFF','TECHNICIAN','ADMIN')")
     public ResponseEntity<VehicleDto> getMyVehicleById(@PathVariable("id") Integer id, Authentication authentication) {
         Integer UserId = Integer.parseInt(authentication.getName());
         VehicleDto vehicle = vehicleService.getMyVehicleById(id, UserId);
@@ -59,8 +68,8 @@ public class VehicleController {
     // PUT /api/vehicles/{id} (Cập nhật 1 xe của tôi)
     @PutMapping("/{id}")
     public ResponseEntity<VehicleDto> updateMyVehicle(@PathVariable("id") Integer id,
-                                                      @Valid @RequestBody VehicleRequest request, Authentication authentication) {
-        Integer UserId = Integer.parseInt(authentication.getName());                                            
+            @Valid @RequestBody VehicleRequest request, Authentication authentication) {
+        Integer UserId = Integer.parseInt(authentication.getName());
         VehicleDto updatedVehicle = vehicleService.updateMyVehicle(id, request, UserId);
         return ResponseEntity.ok(updatedVehicle);
     }
@@ -68,7 +77,7 @@ public class VehicleController {
     // DELETE /api/vehicles/{id} (Xóa 1 xe của tôi)
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteMyVehicle(@PathVariable("id") Integer id, Authentication authentication) {
-        Integer UserId = Integer.parseInt(authentication.getName()); 
+        Integer UserId = Integer.parseInt(authentication.getName());
         vehicleService.deleteMyVehicle(id, UserId);
         return ResponseEntity.noContent().build(); // Trả về 204 No Content
     }
