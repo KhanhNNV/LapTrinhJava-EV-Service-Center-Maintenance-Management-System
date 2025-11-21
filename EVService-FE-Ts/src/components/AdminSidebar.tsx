@@ -73,11 +73,6 @@ const items = [
     icon: Building2,
   },
   {
-    title: "Kho linh kiện",
-    url: "/dashboard/admin/inventory",
-    icon: Package,
-  },
-  {
     title: "Gói dịch vụ",
     url: "/dashboard/admin/services",
     icon: Package,
@@ -126,6 +121,7 @@ const items = [
     url: "/dashboard/admin/settings",
     icon: Settings,
   },
+    { title: 'Quản lý Kho', url: '/dashboard/admin/inventory', icon: Package }
 ];
 
 export function AdminSidebar() {

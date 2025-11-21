@@ -10,7 +10,7 @@ import edu.uth.evservice.models.Inventory;
 
 public interface IInventoryRepository extends JpaRepository<Inventory, Integer> {
     Optional<Inventory> findByPart_PartId(Integer partId);
-    Optional<Inventory> findByServiceCenter_CenterId(Integer id);
+    List<Inventory> findByServiceCenter_CenterId(Integer id);
 
     List<Inventory> findAllByPart_PartId(Integer partId);
     Optional<Inventory> findByPart_PartIdAndServiceCenter(Integer partId, ServiceCenter center);
@@ -18,5 +18,7 @@ public interface IInventoryRepository extends JpaRepository<Inventory, Integer> 
     boolean existsByPart_PartIdAndServiceCenter_CenterId(Integer partId, Integer centerId);
 
     List<Inventory> findByServiceCenter(ServiceCenter serviceCenter);
+    // Tìm tất cả hàng tồn kho của một trung tâm cụ thể -> Trả về List
+
 
 }
