@@ -1,60 +1,61 @@
-import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Navbar } from '@/components/Navbar';
-import { 
-  Zap, 
-  Calendar, 
-  Shield, 
-  Users, 
-  Wrench, 
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Navbar } from "@/components/Navbar";
+import {
+  Zap,
+  Calendar,
+  Shield,
+  Users,
+  Wrench,
   TrendingUp,
   CheckCircle,
-  ArrowRight
-} from 'lucide-react';
-import heroImage from '@/assets/hero-ev.jpg';
+  ArrowRight,
+} from "lucide-react";
+import heroImage from "@/assets/hero-ev.jpg";
 
 export default function Index() {
   const features = [
     {
       icon: Calendar,
-      title: 'Đặt lịch dễ dàng',
-      description: 'Đặt lịch bảo dưỡng trực tuyến, chọn thời gian phù hợp với bạn',
+      title: "Đặt lịch dễ dàng",
+      description:
+        "Đặt lịch bảo dưỡng trực tuyến, chọn thời gian phù hợp với bạn",
     },
     {
       icon: Shield,
-      title: 'Chuyên nghiệp',
-      description: 'Đội ngũ kỹ thuật viên được chứng nhận chuyên môn EV',
+      title: "Chuyên nghiệp",
+      description: "Đội ngũ kỹ thuật viên được chứng nhận chuyên môn EV",
     },
     {
       icon: Users,
-      title: 'Quản lý tập trung',
-      description: 'Theo dõi lịch sử bảo dưỡng và chi phí một cách dễ dàng',
+      title: "Quản lý tập trung",
+      description: "Theo dõi lịch sử bảo dưỡng và chi phí một cách dễ dàng",
     },
     {
       icon: Wrench,
-      title: 'Dịch vụ toàn diện',
-      description: 'Bảo dưỡng định kỳ, sửa chữa và tư vấn chuyên sâu',
+      title: "Dịch vụ toàn diện",
+      description: "Bảo dưỡng định kỳ, sửa chữa và tư vấn chuyên sâu",
     },
     {
       icon: TrendingUp,
-      title: 'Báo cáo thông minh',
-      description: 'Thống kê chi tiết về tình trạng xe và chi phí',
+      title: "Báo cáo thông minh",
+      description: "Thống kê chi tiết về tình trạng xe và chi phí",
     },
     {
       icon: Zap,
-      title: 'Công nghệ hiện đại',
-      description: 'Hệ thống quản lý hiện đại với AI hỗ trợ',
+      title: "Công nghệ hiện đại",
+      description: "Hệ thống quản lý hiện đại với AI hỗ trợ",
     },
   ];
 
   const services = [
-    'Bảo dưỡng định kỳ',
-    'Kiểm tra pin và hệ thống điện',
-    'Sửa chữa và thay thế linh kiện',
-    'Nâng cấp phần mềm xe',
-    'Tư vấn chuyên môn',
-    'Gói dịch vụ dài hạn',
+    "Bảo dưỡng định kỳ",
+    "Kiểm tra pin và hệ thống điện",
+    "Sửa chữa và thay thế linh kiện",
+    "Nâng cấp phần mềm xe",
+    "Tư vấn chuyên môn",
+    "Gói dịch vụ dài hạn",
   ];
 
   return (
@@ -68,10 +69,10 @@ export default function Index() {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-6">
               <h1 className="text-5xl lg:text-6xl font-bold leading-tight">
-                Trung tâm bảo dưỡng{' '}
+                Trung tâm bảo dưỡng{" "}
                 <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
                   xe điện
-                </span>{' '}
+                </span>{" "}
                 hàng đầu
               </h1>
               <p className="text-xl text-muted-foreground">
@@ -117,12 +118,17 @@ export default function Index() {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {features.map((feature, index) => (
-              <Card key={index} className="shadow-card hover:shadow-glow transition-shadow">
+              <Card
+                key={index}
+                className="shadow-card hover:shadow-glow transition-shadow"
+              >
                 <CardContent className="pt-6">
                   <div className="w-12 h-12 rounded-lg bg-gradient-primary flex items-center justify-center mb-4">
                     <feature.icon className="w-6 h-6 text-primary-foreground" />
                   </div>
-                  <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
+                  <h3 className="text-xl font-semibold mb-2">
+                    {feature.title}
+                  </h3>
                   <p className="text-muted-foreground">{feature.description}</p>
                 </CardContent>
               </Card>
@@ -149,7 +155,7 @@ export default function Index() {
                   </div>
                 ))}
               </div>
-              <Link to="/dashboard/staff">
+              <Link to="/dashboard/customer/appointments">
                 <Button size="lg" className="bg-gradient-primary shadow-glow">
                   Đặt lịch ngay
                 </Button>
@@ -159,13 +165,17 @@ export default function Index() {
             <div className="grid grid-cols-2 gap-4">
               <Card className="shadow-card">
                 <CardContent className="pt-6">
-                  <div className="text-4xl font-bold text-primary mb-2">500+</div>
+                  <div className="text-4xl font-bold text-primary mb-2">
+                    500+
+                  </div>
                   <p className="text-muted-foreground">Khách hàng</p>
                 </CardContent>
               </Card>
               <Card className="shadow-card">
                 <CardContent className="pt-6">
-                  <div className="text-4xl font-bold text-secondary mb-2">1000+</div>
+                  <div className="text-4xl font-bold text-secondary mb-2">
+                    1000+
+                  </div>
                   <p className="text-muted-foreground">Dịch vụ hoàn thành</p>
                 </CardContent>
               </Card>
@@ -177,7 +187,9 @@ export default function Index() {
               </Card>
               <Card className="shadow-card">
                 <CardContent className="pt-6">
-                  <div className="text-4xl font-bold text-primary mb-2">99%</div>
+                  <div className="text-4xl font-bold text-primary mb-2">
+                    99%
+                  </div>
                   <p className="text-muted-foreground">Hài lòng</p>
                 </CardContent>
               </Card>
@@ -221,27 +233,63 @@ export default function Index() {
             <div>
               <h3 className="font-semibold mb-4">Sản phẩm</h3>
               <ul className="space-y-2 text-muted-foreground">
-                <li><a href="#" className="hover:text-primary transition-colors">Tính năng</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Dịch vụ</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Bảng giá</a></li>
+                <li>
+                  <a href="#" className="hover:text-primary transition-colors">
+                    Tính năng
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-primary transition-colors">
+                    Dịch vụ
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-primary transition-colors">
+                    Bảng giá
+                  </a>
+                </li>
               </ul>
             </div>
 
             <div>
               <h3 className="font-semibold mb-4">Công ty</h3>
               <ul className="space-y-2 text-muted-foreground">
-                <li><a href="#" className="hover:text-primary transition-colors">Về chúng tôi</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Blog</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Liên hệ</a></li>
+                <li>
+                  <a href="#" className="hover:text-primary transition-colors">
+                    Về chúng tôi
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-primary transition-colors">
+                    Blog
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-primary transition-colors">
+                    Liên hệ
+                  </a>
+                </li>
               </ul>
             </div>
 
             <div>
               <h3 className="font-semibold mb-4">Hỗ trợ</h3>
               <ul className="space-y-2 text-muted-foreground">
-                <li><a href="#" className="hover:text-primary transition-colors">Trung tâm trợ giúp</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Điều khoản</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Bảo mật</a></li>
+                <li>
+                  <a href="#" className="hover:text-primary transition-colors">
+                    Trung tâm trợ giúp
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-primary transition-colors">
+                    Điều khoản
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-primary transition-colors">
+                    Bảo mật
+                  </a>
+                </li>
               </ul>
             </div>
           </div>

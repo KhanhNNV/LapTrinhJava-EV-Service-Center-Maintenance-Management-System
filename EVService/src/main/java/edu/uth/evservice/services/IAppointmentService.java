@@ -22,6 +22,8 @@ public interface IAppointmentService {
 
     List<AppointmentDto> getByStaff(Integer staffId);
 
+    List<AppointmentDto> getMyAppointments(Integer userId);
+
     // lay lich hen theo status
     List<AppointmentDto> getAppointmentsByStatus(String status);
 

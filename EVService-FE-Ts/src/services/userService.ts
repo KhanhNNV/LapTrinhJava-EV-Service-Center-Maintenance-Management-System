@@ -38,7 +38,7 @@ export interface UserResponse {
   totalPages: number;
   totalElements: number;
   size: number;
-  number: number; 
+  number: number;
 }
 export const userService = {
 
@@ -88,7 +88,7 @@ export const userService = {
         url:endpoint.url,
         params: {
           role,
-          page: page - 1, 
+          page: page - 1,
           limit,
         },
       });

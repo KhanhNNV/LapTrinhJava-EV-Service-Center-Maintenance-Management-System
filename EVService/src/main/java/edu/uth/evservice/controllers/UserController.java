@@ -1,5 +1,21 @@
 package edu.uth.evservice.controllers;
 
+import java.time.YearMonth;
+import java.util.List;
+
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import edu.uth.evservice.dtos.ProfitReportDto;
 import edu.uth.evservice.dtos.SalaryDto;
 import edu.uth.evservice.dtos.UserDto;
@@ -28,6 +44,7 @@ public class UserController {
     private final IUserService userService;
     private final ISalaryService salaryService;
     private final IProfitReportService profitReportService;
+
     // Tìm kiếm user theo username hoặc fullname (chữ thường)
     @GetMapping("/search")
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
@@ -49,7 +66,6 @@ public class UserController {
         }
     }
 
-
     // Tìm user theo ID
     @GetMapping("/{id:\\d+}")
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF','TECHNICIAN')")
@@ -59,9 +75,9 @@ public class UserController {
 
     // Cập nhật user theo ID
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> updateUser(@PathVariable Integer id,
-                                        @RequestBody CreateUserRequest request) {
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+    public ResponseEntity<UserDto> updateUser(@PathVariable Integer id,
+            @RequestBody CreateUserRequest request) {
         return ResponseEntity.ok(userService.updateUser(id, request));
     }
 
@@ -90,7 +106,6 @@ public class UserController {
     }
     //In danh sách lương của tất cả nhân viên trong một tháng
 
-
     @GetMapping("/calculate")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<SalaryDto>> calculateSalaries(
@@ -108,7 +123,7 @@ public class UserController {
     @GetMapping("/profile")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<UserDto> updateMyProfile(Authentication authentication) {
-        
+
         Integer userId = Integer.parseInt(authentication.getName());
         return ResponseEntity.ok(userService.getUserById(userId));
     }

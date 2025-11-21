@@ -13,6 +13,7 @@ import edu.uth.evservice.dtos.TechnicianWithCertificateDto;
 import edu.uth.evservice.requests.AppointmentRequest;
 import edu.uth.evservice.requests.AssignTechnicianRequest;
 import edu.uth.evservice.services.IAppointmentService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -22,13 +23,28 @@ public class AppointmentController {
 
         private final IAppointmentService appointmentService;
 
+        // Lay tat ca lich hen
+        @GetMapping
+        @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+        public ResponseEntity<List<AppointmentDto>> getAllAppointments() {
+                List<AppointmentDto> appointments = appointmentService.getAllAppointments();
+                return ResponseEntity.ok(appointments);
+        }
+
         // Customer lay danh sach lich hen cua minh
         @GetMapping("/myAppointments")
-        @PreAuthorize("hasAnyRole('CUSTOMER')")
+        @PreAuthorize("hasAnyRole('CUSTOMER', 'STAFF', 'TECHNICIAN')")
         public ResponseEntity<List<AppointmentDto>> getMyAppointments(Authentication authentication) {
-                Integer customerId = Integer.parseInt(authentication.getName());
-                List<AppointmentDto> myAppointments = appointmentService.getByCustomer(customerId);
+                Integer userId = Integer.parseInt(authentication.getName());
+                List<AppointmentDto> myAppointments = appointmentService.getMyAppointments(userId);
                 return ResponseEntity.ok(myAppointments);
+        }
+
+        // lay danh sach lich hen cua customer (admin/staff)
+        @GetMapping("/customer/{customerId}")
+        @PreAuthorize("hasAnyRole('ADMIN','STAFF')")
+        public ResponseEntity<List<AppointmentDto>> getAppointmentsByCustomer(@PathVariable Integer customerId) {
+                return ResponseEntity.ok(appointmentService.getMyAppointments(customerId));
         }
 
         // lay danh sach lich hen theo trang thai (admin/staff)
@@ -80,6 +96,7 @@ public class AppointmentController {
         @PutMapping("/{appointmentId}/check-in")
         @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
         public ResponseEntity<AppointmentDto> checkIn(@PathVariable Integer appointmentId) {
+
                 AppointmentDto result = appointmentService.checkInAppointment(appointmentId);
 
                 return ResponseEntity.ok(result);
@@ -99,8 +116,7 @@ public class AppointmentController {
         @PutMapping("/{appointmentId}/assignTechnician")
         @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
         public ResponseEntity<AppointmentDto> assignTechnician(
-                        @PathVariable Integer appointmentId,
-                        @RequestBody AssignTechnicianRequest request) {
+                        @PathVariable Integer appointmentId, @Valid @RequestBody AssignTechnicianRequest request) {
                 AppointmentDto updatedAppointment = appointmentService.assignTechnician(appointmentId,
                                 request.getTechnicianId());
                 return ResponseEntity.ok(updatedAppointment);

@@ -10,7 +10,7 @@ export interface VehicleDto {
     model: string;
     brand: string;
     licensePlate: string;
-    recentMaintenanceDate: string; 
+    recentMaintenanceDate: string;
     userId: number;
     // centerId: number;
     vehicleType: string;
@@ -72,13 +72,13 @@ export interface InvoiceDto {
     ticketId: number;        // Thay cho invoiceId
     appointmentId: number;
     completedTime: string;   // Thay cho createdDate (LocalDateTime -> string)
-    
+
     customerName: string;
     customerPhone: string;
     technicianName: string;
 
     // Vì bạn chưa gửi DTO chi tiết của 2 list này nên tạm thời để any[]
-    serviceItems: any[]; 
+    serviceItems: any[];
     partsUsed: any[];
 
     serviceTotal: number;
@@ -95,7 +95,7 @@ export function useCenters() {
     return useQuery<CenterDto[]>({
         queryKey: ["centers"],
         queryFn: async () => {
-            const res = await api.get("/api/service-centers"); 
+            const res = await api.get("/api/service-centers");
             return res.data;
         },
     });
@@ -234,7 +234,7 @@ export function useCustomerInvoices() {
         queryKey: ["customer-invoices"],
         queryFn: async () => {
             // Giả định endpoint BE trả về list hóa đơn của user đang đăng nhập
-            const res = await api.get("/api/invoices/my-invoices"); 
+            const res = await api.get("/api/invoices/my-invoices");
             return res.data;
         },
     });

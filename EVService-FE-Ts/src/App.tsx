@@ -21,7 +21,6 @@ import CustomerChat from "./pages/customer/CustomerChat";
 import StaffDashboard from "./pages/staff/Dashboard";
 import StaffAppointments from "./pages/staff/Appointments";
 import StaffCustomers from "./pages/staff/Customers";
-import StaffServiceTickets from "./pages/staff/ServiceTickets";
 import StaffMessages from "./pages/staff/Messages";
 import StaffNotifications from "./pages/staff/Notifications";
 import AdminDashboard from "./pages/admin/Dashboard";
@@ -43,6 +42,7 @@ import ResetPasswordPage from "./pages/auth/ResetPasswordPage";
 import EmailVerificationSentPage from "./pages/auth/EmailVerificationSentPage";
 import SettingsPage from "./pages/Setting";
 import RoleBasedUserList from "./pages/admin/users/RoleBaseUserList";
+import StaffQuotes from "./pages/staff/Quotes";
 
 const queryClient = new QueryClient();
 
@@ -59,7 +59,7 @@ const App = () => (
           <Route path="/auth/callback" element={<AuthCallbackPage />} />
           <Route path="/auth/verify-email" element={<VerifyEmailPage />} />
           <Route
-            path="/auth/email-sent"
+            path="/auth/email-verify-sent"
             element={<EmailVerificationSentPage />}
           />
           <Route
@@ -99,7 +99,7 @@ const App = () => (
             <Route index element={<StaffDashboard />} />
             <Route path="appointments" element={<StaffAppointments />} />
             <Route path="customers" element={<StaffCustomers />} />
-            <Route path="tickets" element={<StaffServiceTickets />} />
+            <Route path="quotes" element={<StaffQuotes />} />
             <Route path="messages" element={<StaffMessages />} />
             <Route path="notifications" element={<StaffNotifications />} />
             <Route path="settings" element={<SettingsPage />} />
