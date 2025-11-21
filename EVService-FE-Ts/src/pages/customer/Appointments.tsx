@@ -12,7 +12,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
+  // DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   Select,
@@ -21,20 +21,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { 
-  Calendar, 
-  Plus, 
-  Clock, 
-  MapPin, 
-  Loader2, 
-  Eye, 
-  FileText, 
-  Car, 
+import {
+  Calendar,
+  Plus,
+  Clock,
+  MapPin,
+  Loader2,
+  Eye,
+  FileText,
+  Car,
   User,
   Filter,
-  ArrowUpDown
+  ArrowUpDown,
 } from "lucide-react";
 
+import { toast } from "sonner";
+import { userService } from "@/services/userService";
+import { useQuery } from "@tanstack/react-query";
 // Import types và hooks
 import {
   useCustomerVehicles,
@@ -46,10 +49,12 @@ import {
   ServicePackageDto,
   AppointmentDto,
 } from "@/services/appointmentService.ts";
+import { useNavigate } from "react-router-dom";
 
 export default function Appointments() {
   const [isBookingDialogOpen, setIsBookingDialogOpen] = useState(false);
-  const [selectedAppointment, setSelectedAppointment] = useState<AppointmentDto | null>(null);
+  const [selectedAppointment, setSelectedAppointment] =
+    useState<AppointmentDto | null>(null);
   const { data: centers } = useCenters();
 
   const [formData, setFormData] = useState({
@@ -64,20 +69,29 @@ export default function Appointments() {
   // State cho sorting và filtering
   const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
-
+  // Lấy thông tin người dùng
+  const { data: userProfile } = useQuery({
+    queryKey: ["user-profile"],
+    queryFn: userService.getProfile,
+    retry: 1,
+  });
   // Fetch Data
-  const { data: vehicles, isLoading: isLoadingVehicles } = useCustomerVehicles();
-  const { data: appointments, isLoading: isLoadingAppointments } = useCustomerAppointments();
-  const { data: servicePackages, isLoading: isLoadingPackages } = useServicePackages();
+  const { data: vehicles, isLoading: isLoadingVehicles } =
+    useCustomerVehicles();
+  const { data: appointments, isLoading: isLoadingAppointments } =
+    useCustomerAppointments();
+  const { data: servicePackages, isLoading: isLoadingPackages } =
+    useServicePackages();
 
   // Mutations
   const bookAppointmentMutation = useBookAppointment();
   const cancelAppointmentMutation = useCancelAppointment();
 
   // --- LOGIC LỌC DANH SÁCH ---
-  const activeAppointments = appointments?.filter(
-    (a: AppointmentDto) => !["COMPLETED", "CANCELED"].includes(a.status)
-  ) || [];
+  const activeAppointments =
+    appointments?.filter(
+      (a: AppointmentDto) => !["COMPLETED", "CANCELED"].includes(a.status)
+    ) || [];
 
   // --- LOGIC SẮP XẾP VÀ LỌC ---
   const filteredAndSortedAppointments = activeAppointments
@@ -88,7 +102,7 @@ export default function Appointments() {
     .sort((a: AppointmentDto, b: AppointmentDto) => {
       const dateA = new Date(`${a.appointmentDate}T${a.appointmentTime}`);
       const dateB = new Date(`${b.appointmentDate}T${b.appointmentTime}`);
-      
+
       if (sortOrder === "newest") {
         return dateB.getTime() - dateA.getTime(); // Mới nhất đầu tiên
       } else {
@@ -98,15 +112,47 @@ export default function Appointments() {
 
   // Helper: Tìm biển số xe từ ID
   const getLicensePlate = (vehicleId: number) => {
-    const vehicle = vehicles?.find((v: VehicleDto) => v.vehicleId === vehicleId);
+    const vehicle = vehicles?.find(
+      (v: VehicleDto) => v.vehicleId === vehicleId
+    );
     return vehicle ? vehicle.licensePlate : `ID: ${vehicleId}`;
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    }).format(amount);
+  // const formatCurrency = (amount: number) => {
+  //   return new Intl.NumberFormat("vi-VN", {
+  //     style: "currency",
+  //     currency: "VND",
+  //   }).format(amount);
+  // };
+
+  // --- HÀM XỬ LÝ MỞ DIALOG ĐẶT LỊCH ---
+  const handleOpenBookingDialog = () => {
+    // Kiểm tra xem đã tải được thông tin user chưa
+    if (!userProfile) {
+      return; // Hoặc hiện loading
+    }
+
+    // Kiểm tra điều kiện: Có Họ tên và Có Số điện thoại
+    if (
+      !userProfile.fullName ||
+      !userProfile.phoneNumber ||
+      userProfile.fullName.trim() === "" ||
+      userProfile.phoneNumber.trim() === ""
+    ) {
+      toast.warning(
+        "Vui lòng cập nhật đầy đủ thông tin cần thiết trước khi thao tác lại",
+        {
+          // action: {
+          //   label: "Cập nhật ngay",
+          //   onClick: () => navigate("/dashboard/customer/settings")
+          // }
+        }
+      );
+      return;
+    }
+
+    // Nếu đủ thông tin thì mở Dialog
+    setIsBookingDialogOpen(true);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -155,10 +201,12 @@ export default function Appointments() {
   };
 
   // Thêm helper function để lấy description từ serviceType
-const getServiceDescription = (serviceType: string) => {
-  const servicePackage = servicePackages?.find(pkg => pkg.packageName === serviceType);
-  return servicePackage?.description || serviceType; // Fallback về serviceType nếu không tìm thấy
-};
+  const getServiceDescription = (serviceType: string) => {
+    const servicePackage = servicePackages?.find(
+      (pkg) => pkg.packageName === serviceType
+    );
+    return servicePackage?.description || serviceType; // Fallback về serviceType nếu không tìm thấy
+  };
 
   return (
     <div className="space-y-6">
@@ -172,13 +220,24 @@ const getServiceDescription = (serviceType: string) => {
         </div>
 
         {/* Button mở Dialog đặt lịch */}
-        <Dialog open={isBookingDialogOpen} onOpenChange={setIsBookingDialogOpen}>
-          <DialogTrigger asChild>
+        <Dialog
+          open={isBookingDialogOpen}
+          onOpenChange={setIsBookingDialogOpen}
+        >
+          {/* <DialogTrigger asChild>
             <Button className="bg-[#007AFF] hover:bg-[#0066CC] shadow-lg shadow-blue-500/20">
               <Plus className="w-4 h-4 mr-2" />
               Đặt lịch mới
             </Button>
-          </DialogTrigger>
+          </DialogTrigger> */}
+
+          <Button
+            className="bg-[#007AFF] hover:bg-[#0066CC] shadow-lg shadow-blue-500/20"
+            onClick={handleOpenBookingDialog} // Gọi hàm kiểm tra
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Đặt lịch mới
+          </Button>
 
           <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto custom-scrollbar pr-6">
             <DialogHeader>
@@ -382,7 +441,7 @@ const getServiceDescription = (serviceType: string) => {
           <Filter className="w-4 h-4 text-gray-500" />
           <span className="text-sm font-medium text-gray-700">Lọc theo:</span>
         </div>
-        
+
         <div className="flex flex-wrap gap-3">
           {/* Bộ lọc trạng thái */}
           <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -400,7 +459,10 @@ const getServiceDescription = (serviceType: string) => {
           </Select>
 
           {/* Sắp xếp thời gian */}
-          <Select value={sortOrder} onValueChange={(value: "newest" | "oldest") => setSortOrder(value)}>
+          <Select
+            value={sortOrder}
+            onValueChange={(value: "newest" | "oldest") => setSortOrder(value)}
+          >
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Sắp xếp" />
             </SelectTrigger>
@@ -458,7 +520,9 @@ const getServiceDescription = (serviceType: string) => {
                         {/* Hiển thị biển số xe */}
                         <div className="flex items-center gap-2 font-medium text-blue-600">
                           <Car className="w-4 h-4" />
-                          <span>Xe: {getLicensePlate(appointment.vehicleId)}</span>
+                          <span>
+                            Xe: {getLicensePlate(appointment.vehicleId)}
+                          </span>
                         </div>
 
                         <div className="flex items-center gap-2">
@@ -503,7 +567,11 @@ const getServiceDescription = (serviceType: string) => {
                         variant="destructive"
                         size="sm"
                         onClick={() => {
-                          if (confirm("Bạn có chắc chắn muốn hủy lịch hẹn này không?")) {
+                          if (
+                            confirm(
+                              "Bạn có chắc chắn muốn hủy lịch hẹn này không?"
+                            )
+                          ) {
                             cancelAppointmentMutation.mutate(
                               appointment.appointmentId
                             );
@@ -529,13 +597,14 @@ const getServiceDescription = (serviceType: string) => {
           <CardContent className="py-12 text-center">
             <Calendar className="w-16 h-16 mx-auto text-gray-300 mb-4" />
             <h3 className="text-lg font-semibold text-gray-900">
-              {statusFilter === "ALL" ? "Chưa có lịch hẹn nào" : "Không tìm thấy lịch hẹn phù hợp"}
+              {statusFilter === "ALL"
+                ? "Chưa có lịch hẹn nào"
+                : "Không tìm thấy lịch hẹn phù hợp"}
             </h3>
             <p className="text-muted-foreground mb-6">
-              {statusFilter === "ALL" 
+              {statusFilter === "ALL"
                 ? "Hãy đặt lịch bảo dưỡng ngay để chăm sóc xe của bạn"
-                : "Thử thay đổi bộ lọc trạng thái để xem kết quả khác"
-              }
+                : "Thử thay đổi bộ lọc trạng thái để xem kết quả khác"}
             </p>
             <Button
               className="bg-[#007AFF] hover:bg-[#0066CC]"
@@ -565,127 +634,143 @@ const getServiceDescription = (serviceType: string) => {
           </DialogHeader>
 
           {selectedAppointment && (
-  <div className="grid grid-cols-1 gap-4 py-4 text-sm">
-    {/* Nhóm thông tin chính */}
-    <div className="bg-gray-50 p-3 rounded-lg space-y-2 border border-gray-100">
-      <div className="font-semibold text-gray-900 mb-2">
-        Thông tin chung
-      </div>
-      <div className="grid grid-cols-3 gap-2">
-        <span className="text-gray-500 col-span-1">Mã lịch hẹn:</span>
-        <span className="col-span-2 font-medium">
-          {selectedAppointment.appointmentId}
-        </span>
+            <div className="grid grid-cols-1 gap-4 py-4 text-sm">
+              {/* Nhóm thông tin chính */}
+              <div className="bg-gray-50 p-3 rounded-lg space-y-2 border border-gray-100">
+                <div className="font-semibold text-gray-900 mb-2">
+                  Thông tin chung
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <span className="text-gray-500 col-span-1">Mã lịch hẹn:</span>
+                  <span className="col-span-2 font-medium">
+                    {selectedAppointment.appointmentId}
+                  </span>
 
-        <span className="text-gray-500 col-span-1">Dịch vụ:</span>
-        <span className="col-span-2 font-medium">
-          {getServiceDescription(selectedAppointment.serviceType)}
-        </span>
+                  <span className="text-gray-500 col-span-1">Dịch vụ:</span>
+                  <span className="col-span-2 font-medium">
+                    {getServiceDescription(selectedAppointment.serviceType)}
+                  </span>
 
-        <span className="text-gray-500 col-span-1">Trạng thái:</span>
-        <span className={`col-span-2 font-medium ${getStatusColor(selectedAppointment.status).replace("bg-", "text-").split(" ")[1]}`}>
-          {getStatusText(selectedAppointment.status)}
-        </span>
+                  <span className="text-gray-500 col-span-1">Trạng thái:</span>
+                  <span
+                    className={`col-span-2 font-medium ${
+                      getStatusColor(selectedAppointment.status)
+                        .replace("bg-", "text-")
+                        .split(" ")[1]
+                    }`}
+                  >
+                    {getStatusText(selectedAppointment.status)}
+                  </span>
 
-        <span className="text-gray-500 col-span-1">Thời gian:</span>
-        <span className="col-span-2 font-medium">
-          {selectedAppointment.appointmentTime} -{" "}
-          {new Date(
-            selectedAppointment.appointmentDate
-          ).toLocaleDateString("vi-VN")}
-        </span>
+                  <span className="text-gray-500 col-span-1">Thời gian:</span>
+                  <span className="col-span-2 font-medium">
+                    {selectedAppointment.appointmentTime} -{" "}
+                    {new Date(
+                      selectedAppointment.appointmentDate
+                    ).toLocaleDateString("vi-VN")}
+                  </span>
 
-        {/* THÊM: Tên trung tâm dịch vụ */}
-        <span className="text-gray-500 col-span-1">Trung tâm:</span>
-        <span className="col-span-2 font-medium">
-          {centers?.find(c => c.centerId === selectedAppointment.centerId)?.centerName || `Center ID: ${selectedAppointment.centerId}`}
-        </span>
-      </div>
-    </div>
+                  {/* THÊM: Tên trung tâm dịch vụ */}
+                  <span className="text-gray-500 col-span-1">Trung tâm:</span>
+                  <span className="col-span-2 font-medium">
+                    {centers?.find(
+                      (c) => c.centerId === selectedAppointment.centerId
+                    )?.centerName ||
+                      `Center ID: ${selectedAppointment.centerId}`}
+                  </span>
+                </div>
+              </div>
 
-    {/* SỬA: Nhóm thông tin xe */}
-    <div className="bg-gray-50 p-3 rounded-lg space-y-2 border border-gray-100">
-      <div className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
-        <Car className="w-4 h-4" /> Thông tin xe
-      </div>
-      <div className="grid grid-cols-3 gap-2">
-        <span className="text-gray-500 col-span-1">Biển số xe:</span>
-        <span className="col-span-2 font-medium text-blue-600">
-          {getLicensePlate(selectedAppointment.vehicleId)}
-        </span>
+              {/* SỬA: Nhóm thông tin xe */}
+              <div className="bg-gray-50 p-3 rounded-lg space-y-2 border border-gray-100">
+                <div className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                  <Car className="w-4 h-4" /> Thông tin xe
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <span className="text-gray-500 col-span-1">Biển số xe:</span>
+                  <span className="col-span-2 font-medium text-blue-600">
+                    {getLicensePlate(selectedAppointment.vehicleId)}
+                  </span>
 
-        {/* THÊM: Hãng xe */}
-        <span className="text-gray-500 col-span-1">Hãng xe:</span>
-        <span className="col-span-2 text-gray-700">
-          {vehicles?.find(v => v.vehicleId === selectedAppointment.vehicleId)?.brand || "N/A"}
-        </span>
+                  {/* THÊM: Hãng xe */}
+                  <span className="text-gray-500 col-span-1">Hãng xe:</span>
+                  <span className="col-span-2 text-gray-700">
+                    {vehicles?.find(
+                      (v) => v.vehicleId === selectedAppointment.vehicleId
+                    )?.brand || "N/A"}
+                  </span>
 
-        {/* THÊM: Ghi chú */}
-        <span className="text-gray-500 col-span-1">Ghi chú:</span>
-        <span className="col-span-2 italic text-gray-600">
-          {selectedAppointment.note || "Không có ghi chú kèm theo"}
-        </span>
-      </div>
-    </div>
+                  {/* THÊM: Ghi chú */}
+                  <span className="text-gray-500 col-span-1">Ghi chú:</span>
+                  <span className="col-span-2 italic text-gray-600">
+                    {selectedAppointment.note || "Không có ghi chú kèm theo"}
+                  </span>
+                </div>
+              </div>
 
-    {/* Nhóm nhân sự (KTV, Staff) - GIỮ NGUYÊN */}
-    <div className="bg-gray-50 p-3 rounded-lg space-y-2 border border-gray-100">
-      <div className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
-        <User className="w-4 h-4" /> Nhân sự phụ trách
-      </div>
-      <div className="grid grid-cols-3 gap-2">
-        <span className="text-gray-500 col-span-1">
-          Kỹ thuật viên:
-        </span>
-        <span className="col-span-2 font-medium">
-          {selectedAppointment.technicianName ? (
-            selectedAppointment.technicianName
-          ) : (
-            <span className="text-gray-400 italic">
-              Chưa phân công (ID:{" "}
-              {selectedAppointment.technicianId || "N/A"})
-            </span>
+              {/* Nhóm nhân sự (KTV, Staff) - GIỮ NGUYÊN */}
+              <div className="bg-gray-50 p-3 rounded-lg space-y-2 border border-gray-100">
+                <div className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                  <User className="w-4 h-4" /> Nhân sự phụ trách
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <span className="text-gray-500 col-span-1">
+                    Kỹ thuật viên:
+                  </span>
+                  <span className="col-span-2 font-medium">
+                    {selectedAppointment.technicianName ? (
+                      selectedAppointment.technicianName
+                    ) : (
+                      <span className="text-gray-400 italic">
+                        Chưa phân công (ID:{" "}
+                        {selectedAppointment.technicianId || "N/A"})
+                      </span>
+                    )}
+                  </span>
+
+                  <span className="text-gray-500 col-span-1">Nhân viên:</span>
+                  <span className="col-span-2 font-medium">
+                    {selectedAppointment.staffName ? (
+                      selectedAppointment.staffName
+                    ) : (
+                      <span className="text-gray-400 italic">
+                        Chưa phân công (ID:{" "}
+                        {selectedAppointment.staffId || "N/A"})
+                      </span>
+                    )}
+                  </span>
+                </div>
+              </div>
+
+              {/* SỬA: Thông tin khác - BỎ DÒNG HỢP ĐỒNG */}
+              <div className="bg-gray-50 p-3 rounded-lg space-y-2 border border-gray-100">
+                <div className="font-semibold text-gray-900 mb-2">
+                  Thông tin khác
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  {/* BỎ: Dòng hợp đồng */}
+
+                  <span className="text-gray-500 col-span-1">Ngày tạo:</span>
+                  <span className="col-span-2 text-xs text-gray-500">
+                    {selectedAppointment.createdAt
+                      ? new Date(selectedAppointment.createdAt).toLocaleString(
+                          "vi-VN"
+                        )
+                      : "N/A"}
+                  </span>
+
+                  <span className="text-gray-500 col-span-1">Cập nhật:</span>
+                  <span className="col-span-2 text-xs text-gray-500">
+                    {selectedAppointment.updatedAt
+                      ? new Date(selectedAppointment.updatedAt).toLocaleString(
+                          "vi-VN"
+                        )
+                      : "N/A"}
+                  </span>
+                </div>
+              </div>
+            </div>
           )}
-        </span>
-
-        <span className="text-gray-500 col-span-1">Nhân viên:</span>
-        <span className="col-span-2 font-medium">
-          {selectedAppointment.staffName ? (
-            selectedAppointment.staffName
-          ) : (
-            <span className="text-gray-400 italic">
-              Chưa phân công (ID:{" "}
-              {selectedAppointment.staffId || "N/A"})
-            </span>
-          )}
-        </span>
-      </div>
-    </div>
-
-    {/* SỬA: Thông tin khác - BỎ DÒNG HỢP ĐỒNG */}
-    <div className="bg-gray-50 p-3 rounded-lg space-y-2 border border-gray-100">
-      <div className="font-semibold text-gray-900 mb-2">
-        Thông tin khác
-      </div>
-      <div className="grid grid-cols-3 gap-2">
-        {/* BỎ: Dòng hợp đồng */}
-
-        <span className="text-gray-500 col-span-1">Ngày tạo:</span>
-        <span className="col-span-2 text-xs text-gray-500">
-          {selectedAppointment.createdAt ? 
-            new Date(selectedAppointment.createdAt).toLocaleString('vi-VN') : 'N/A'}
-        </span>
-
-        <span className="text-gray-500 col-span-1">Cập nhật:</span>
-        <span className="col-span-2 text-xs text-gray-500">
-          {selectedAppointment.updatedAt ? 
-            new Date(selectedAppointment.updatedAt).toLocaleString('vi-VN') : 'N/A'}
-        </span>
-      </div>
-    </div>
-  </div>
-)}
-          
         </DialogContent>
       </Dialog>
     </div>
