@@ -27,7 +27,7 @@ import StaffNotifications from "./pages/staff/Notifications";
 import AdminDashboard from "./pages/admin/Dashboard";
 import AdminUsers from "./pages/admin/Users";
 import AdminServiceCenters from "./pages/admin/ServiceCenters";
-import AdminPartsInventory from "./pages/admin/PartsInventory";
+import InventoryManager from "./pages/admin/InventoryManager";
 import AdminServicePackages from "./pages/admin/ServicePackages";
 import AdminAnalytics from "./pages/admin/Analytics";
 import AdminNotifications from "./pages/admin/Notifications";
@@ -117,7 +117,7 @@ const App = () => (
             <Route index element={<AdminDashboard />} />
 
             <Route path="service-centers" element={<AdminServiceCenters />} />
-            <Route path="parts" element={<AdminPartsInventory />} />
+            <Route path="inventory" element={<InventoryManager />} />
             <Route path="packages" element={<AdminServicePackages />} />
             <Route path="analytics" element={<AdminAnalytics />} />
             <Route path="notifications" element={<AdminNotifications />} />
