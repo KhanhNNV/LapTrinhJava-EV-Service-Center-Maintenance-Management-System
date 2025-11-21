@@ -6,7 +6,7 @@ import {
   Settings,
   LogOut,
   LayoutDashboard,
-  CreditCard 
+  CreditCard,
   MessageSquare
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
