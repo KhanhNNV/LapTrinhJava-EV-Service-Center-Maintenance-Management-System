@@ -51,4 +51,11 @@ public class InventoryController {
         List<InventoryDto> inventories = inventoryService.getInventoryByTechnician(technicianId);
         return ResponseEntity.ok(inventories);
     }
+
+    @GetMapping("/service-centers/{centerId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+    public ResponseEntity<List<InventoryDto>> getInventoriesByCenter(@PathVariable Integer centerId) {
+        List<InventoryDto> inventories = inventoryService.getInventoriesByCenterId(centerId);
+        return ResponseEntity.ok(inventories);
+    }
 }

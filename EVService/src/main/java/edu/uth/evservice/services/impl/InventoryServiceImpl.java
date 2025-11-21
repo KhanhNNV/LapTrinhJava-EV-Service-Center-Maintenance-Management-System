@@ -25,6 +25,7 @@ import edu.uth.evservice.services.IInventoryService;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -33,9 +34,6 @@ public class InventoryServiceImpl implements IInventoryService {
     private final IInventoryRepository inventoryRepository;
     private final IPartRepository partRepository;
     private final IServiceCenterRepository serviceCenterRepository;
-    //
-    private final INotificationService notificationService;
-
     private final IUserRepository userRepo;
 
     @Override
@@ -86,6 +84,23 @@ public class InventoryServiceImpl implements IInventoryService {
         return inventories.stream().map(this::toDto).collect(Collectors.toList());
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<InventoryDto> getInventoriesByCenterId(Integer centerId) {
+        // 1. Kiểm tra xem centerId có tồn tại không (tuỳ chọn, nhưng nên có)
+        if (!serviceCenterRepository.existsById(centerId)) {
+            throw new ResourceNotFoundException("Không tìm thấy trung tâm với id: " + centerId);
+        }
+
+        // 2. Gọi Repository lấy danh sách
+        List<Inventory> inventories = inventoryRepository.findByServiceCenter_CenterId(centerId);
+
+        // 3. Chuyển đổi sang DTO và trả về
+        return inventories.stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
+    }
+
     private InventoryDto toDto(Inventory inv) {
         return InventoryDto.builder()
                 .inventoryId(inv.getInventoryId())
@@ -100,5 +115,6 @@ public class InventoryServiceImpl implements IInventoryService {
                 .centerName(inv.getServiceCenter().getCenterName())
                 .build();
     }
+
 
 }

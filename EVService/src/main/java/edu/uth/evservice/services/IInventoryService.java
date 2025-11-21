@@ -24,4 +24,6 @@ public interface IInventoryService {
     InventoryDto addStock(AddStockRequest request);
 
     List<InventoryDto> getInventoryByTechnician(Integer technicianId);
+
+    List<InventoryDto> getInventoriesByCenterId(Integer centerId);
 }
