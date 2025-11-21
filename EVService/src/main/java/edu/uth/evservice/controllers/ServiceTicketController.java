@@ -3,6 +3,7 @@ package edu.uth.evservice.controllers;
 import java.time.LocalDate;
 import java.util.List;
 
+import edu.uth.evservice.dtos.*;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,10 +19,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import edu.uth.evservice.dtos.PerformanceDto;
-import edu.uth.evservice.dtos.ServiceTicketDto;
-import edu.uth.evservice.dtos.SuggestedPartsDto;
-import edu.uth.evservice.dtos.TicketPartDto;
 import edu.uth.evservice.requests.AddServiceItemRequest;
 import edu.uth.evservice.requests.UpdatePartQuantityRequest;
 import edu.uth.evservice.services.IServiceTicketService;
@@ -33,7 +30,6 @@ import lombok.RequiredArgsConstructor;
 public class ServiceTicketController {
 
     private final IServiceTicketService ticketService;
-
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     public List<ServiceTicketDto> getAllServiceTickets() {

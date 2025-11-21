@@ -19,11 +19,15 @@ import org.springframework.web.bind.annotation.RestController;
 import edu.uth.evservice.dtos.ProfitReportDto;
 import edu.uth.evservice.dtos.SalaryDto;
 import edu.uth.evservice.dtos.UserDto;
+import edu.uth.evservice.models.User;
 import edu.uth.evservice.models.enums.Role;
 import edu.uth.evservice.requests.CreateUserRequest;
+import edu.uth.evservice.requests.UpdateBaseSalaryByRoleRequest;
+import edu.uth.evservice.requests.UpdateBaseSalaryRequest;
 import edu.uth.evservice.services.IProfitReportService;
 import edu.uth.evservice.services.ISalaryService;
 import edu.uth.evservice.services.IUserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.data.domain.Page;
@@ -145,4 +149,25 @@ public class UserController {
         Page<UserDto> result = userService.getListUsersByRole(role, page, limit);
         return ResponseEntity.ok(result);
     }
+    // --- BỔ SUNG: Endpoint cập nhật lương TỪNG NGƯỜI ---
+    // Tương ứng với PUT /api/users/{userId}/base-salary trên Frontend
+    @PutMapping("/{userId}/base-salary")
+    public ResponseEntity<User> updateBaseSalary(
+            @PathVariable Long userId,
+            @Valid @RequestBody UpdateBaseSalaryRequest request) {
+
+        User updatedUser = salaryService.updateBaseSalary(userId, request);
+        return ResponseEntity.ok(updatedUser);
+    }
+
+    // --- BỔ SUNG: Endpoint cập nhật lương CHUNG THEO ROLE ---
+    // Tương ứng với PUT /api/users/update-base-salary-by-role trên Frontend
+    @PutMapping("/update-base-salary-by-role")
+    public ResponseEntity<List<User>> updateBaseSalaryByRole(
+            @Valid @RequestBody UpdateBaseSalaryByRoleRequest request) {
+
+        List<User> updatedUsers = salaryService.updateBaseSalaryByRole(request);
+        return ResponseEntity.ok(updatedUsers);
+    }
+
 }

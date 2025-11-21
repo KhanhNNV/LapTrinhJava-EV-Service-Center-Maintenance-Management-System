@@ -37,7 +37,6 @@ public class ServiceTicket {
 
     @Column(name = "notes", columnDefinition = "TEXT")
     private String notes;
-
     // 1 ticket liên kết tới 1 appointment
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "appointment_id", nullable = false)

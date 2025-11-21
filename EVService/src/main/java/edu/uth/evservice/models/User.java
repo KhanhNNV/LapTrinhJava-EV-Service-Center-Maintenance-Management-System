@@ -43,7 +43,10 @@ public class User {
     @Nationalized
     @Column(name = "address")
     String address;
-
+    @Column(name = "base_salary") // Hoặc không cần @Column nếu tên khớp
+    private Long baseSalary;
+    @Column(name = "commission_rate")
+    private Double commissionRate;
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
     Role role;

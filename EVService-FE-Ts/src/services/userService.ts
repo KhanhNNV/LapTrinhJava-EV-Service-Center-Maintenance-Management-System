@@ -20,10 +20,13 @@ export interface PasswordChangeForm {
   newPassword: string;
   confirmPassword: string;
 }
+export interface UpdateBaseSalaryPayload {
+    baseSalary: number;
+}
 export type Role = 'CUSTOMER' | 'STAFF' | 'TECHNICIAN' | 'ADMIN';
 export interface User {
   userId: number;
-  username:String;
+  username:string;
   fullName: string;
   email: string;
   phoneNumber: string;
@@ -40,7 +43,35 @@ export interface UserResponse {
   size: number;
   number: number;
 }
+export interface UpdateBaseSalaryByRolePayload {
+    role: 'STAFF' | 'TECHNICIAN';
+    baseSalary: number;
+}
 export const userService = {
+    //~ Cập nhật lương cơ bản của nhân viên
+    async updateBaseSalary(userId: number, data: UpdateBaseSalaryPayload){
+        // Giả định có endpoint PUT để cập nhật lương cơ bản
+        // Ví dụ: PUT /api/users/{userId}/base-salary
+        const endpoint = `/api/users/${userId}/base-salary`;
+        const res = await api.request<any>({
+            method: 'PUT', // Hoặc PATCH
+            url: endpoint,
+            data: data,
+        });
+        return res.data;
+    },
+    //~ Cập nhật lương cơ bản theo vai trò
+    async updateBaseSalaryByRole(data: UpdateBaseSalaryByRolePayload){
+        // Giả định có endpoint POST/PUT để cập nhật lương cơ bản theo role
+        // Ví dụ: PUT /api/users/update-base-salary-by-role
+        const endpoint = `/api/users/update-base-salary-by-role`;
+        const res = await api.request<any>({
+            method: 'PUT',
+            url: endpoint,
+            data: data,
+        });
+        return res.data;
+    },
 
     //~ Lấy thông tin cá nhân
     async getProfile(){
@@ -94,4 +125,5 @@ export const userService = {
       });
       return res.data;
     }
+
 }
