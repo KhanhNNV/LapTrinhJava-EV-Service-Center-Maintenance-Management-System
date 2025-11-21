@@ -4,6 +4,7 @@ import edu.uth.evservice.dtos.InvoiceDto;
 import edu.uth.evservice.services.billing.IInvoiceService;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -35,6 +36,18 @@ public class InvoiceController {
 
         InvoiceDto invoice = invoiceService.getInvoiceByTicketId(ticketId);
         return ResponseEntity.ok(invoice);
+    }
+
+    @GetMapping("/my-invoices")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Page<InvoiceDto>> getMyInvoices(
+            Authentication authentication,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "100") int limit // Mặc định lấy 100 cái mới nhất
+    ) {
+        Integer userId = Integer.parseInt(authentication.getName());
+        Page<InvoiceDto> invoices = invoiceService.getMyInvoices(userId, page, limit);
+        return ResponseEntity.ok(invoices);
     }
 
     @PutMapping("/{invoiceId}/status")

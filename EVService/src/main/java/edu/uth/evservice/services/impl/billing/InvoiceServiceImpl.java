@@ -15,6 +15,10 @@ import edu.uth.evservice.services.INotificationService;
 import edu.uth.evservice.services.billing.IInvoiceService;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -55,9 +59,10 @@ public class InvoiceServiceImpl implements IInvoiceService {
         List<TicketServiceItem> serviceItems = ticketItemRepo.findByServiceTicket_TicketId(ticketId);
         List<TicketPart> parts = ticketPartRepo.findByTicket_TicketId(ticketId);
 
-        double subtotalItems= serviceItems.stream()
-                .mapToDouble(item->item.getQuantity() * item.getUnitPriceAtTimeOfService())
+        double subtotalItems = serviceItems.stream()
+                .mapToDouble(item -> item.getUnitPriceAtTimeOfService())
                 .sum();
+
         double subtotalParts=parts.stream()
                 .mapToDouble(part-> part.getQuantity() * part.getUnitPriceAtTimeOfService())
                 .sum();
@@ -98,7 +103,7 @@ public class InvoiceServiceImpl implements IInvoiceService {
         List<TicketPart> parts = ticketPartRepo.findByTicket_TicketId(ticketId);
 
         double subtotalItems = serviceItems.stream()
-                .mapToDouble(item->item.getQuantity() * item.getUnitPriceAtTimeOfService())
+                .mapToDouble(item->item.getUnitPriceAtTimeOfService())
                 .sum();
         double subtotalParts = parts.stream()
                 .mapToDouble(part-> part.getQuantity() * part.getUnitPriceAtTimeOfService())
@@ -131,6 +136,39 @@ public class InvoiceServiceImpl implements IInvoiceService {
         return getInvoiceByTicketId(updatedInvoice.getServiceTicket().getTicketId());
     }
 
+    @Override
+    public Page<InvoiceDto> getMyInvoices(Integer userId, int page, int limit) {
+        // 1. Tạo Pageable, sắp xếp hóa đơn mới nhất lên đầu
+        Pageable pageable = PageRequest.of(page, limit, Sort.by("invoiceDate").descending());
+
+        // 2. Lấy danh sách Entity từ DB
+        Page<Invoice> invoicePage = invoiceRepo.findByUser_UserId(userId, pageable);
+
+        // 3. Map từng Entity sang DTO (Kèm tính toán tiền)
+        return invoicePage.map(invoice -> {
+            Integer ticketId = invoice.getServiceTicket().getTicketId();
+
+            // Lấy items và parts để tính tổng tiền hiển thị ra list
+            List<TicketServiceItem> serviceItems = ticketItemRepo.findByServiceTicket_TicketId(ticketId);
+            List<TicketPart> parts = ticketPartRepo.findByTicket_TicketId(ticketId);
+
+            // Tính tổng tiền items (Lưu ý: nên nhân với Quantity)
+            double subtotalItems = serviceItems.stream()
+                    .mapToDouble(item -> item.getQuantity() * item.getUnitPriceAtTimeOfService())
+                    .sum();
+
+            // Tính tổng tiền parts
+            double subtotalParts = parts.stream()
+                    .mapToDouble(part -> part.getQuantity() * part.getUnitPriceAtTimeOfService())
+                    .sum();
+
+            User assignTech = invoice.getServiceTicket().getTechnician();
+
+            // Tái sử dụng hàm toDto bạn đã viết ở hàm getDetail
+            return toDto(invoice, serviceItems, parts, subtotalItems, subtotalParts, assignTech);
+        });
+    }
+
     private InvoiceDto toDto(Invoice invoice,
                              List<TicketServiceItem> serviceItems,
                              List<TicketPart> parts,
@@ -155,6 +193,7 @@ public class InvoiceServiceImpl implements IInvoiceService {
         double grandTotal = serviceTotal + partTotal;
 
         return InvoiceDto.builder()
+                .id(ticket.getInvoice().getInvoiceId())
                 // Thông tin chung
                 .ticketId(ticket.getTicketId())
                 .appointmentId(appointment.getAppointmentId())
