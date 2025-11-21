@@ -26,7 +26,6 @@ import StaffNotifications from "./pages/staff/Notifications";
 import AdminDashboard from "./pages/admin/Dashboard";
 import AdminUsers from "./pages/admin/Users";
 import AdminServiceCenters from "./pages/admin/ServiceCenters";
-import AdminPartsInventory from "./pages/admin/PartsInventory";
 import AdminServicePackages from "./pages/admin/ServicePackages";
 import AdminAnalytics from "./pages/admin/Analytics";
 import AdminNotifications from "./pages/admin/Notifications";
@@ -46,6 +45,8 @@ import EmployeesSalary from "@/pages/admin/EmployeesSalary.tsx";
 import Performance from "@/pages/admin/Performance.tsx";
 import Details from "@/pages/admin/Profit.tsx";
 import StaffQuotes from "./pages/staff/Quotes";
+import PartsManagement from "@/pages/admin/PartsManagement.tsx";
+import ServiceItemManagement from "@/pages/admin/ServiceItemManagement.tsx";
 
 const queryClient = new QueryClient();
 
@@ -120,12 +121,13 @@ const App = () => (
             <Route index element={<AdminDashboard />} />
 
             <Route path="service-centers" element={<AdminServiceCenters />} />
-            <Route path="parts" element={<AdminPartsInventory />} />
             <Route path="packages" element={<AdminServicePackages />} />
             <Route path="analytics" element={<AdminAnalytics />} />
               <Route path="employees-salary" element={<EmployeesSalary />} />
               <Route path="performance" element={<Performance />} />
               <Route path="details" element={<Details />} />
+              <Route path="parts" element={<PartsManagement />} />
+              <Route path="serviceitems" element={<ServiceItemManagement />} />
             <Route path="notifications" element={<AdminNotifications />} />
             <Route path="settings" element={<SettingsPage />} />
             <Route path="users/:role" element={<RoleBasedUserList />} />

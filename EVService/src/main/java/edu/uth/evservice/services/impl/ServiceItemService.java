@@ -104,4 +104,6 @@ public class ServiceItemService implements IServiceItemService {
         dto.setPrice(item.getPrice());
         return dto;
     }
+
 }
+

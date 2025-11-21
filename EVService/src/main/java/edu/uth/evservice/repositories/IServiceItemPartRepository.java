@@ -9,4 +9,6 @@ import java.util.List;
 @Repository
 public interface IServiceItemPartRepository extends JpaRepository<ServiceItemPart, ServiceItemPartId> {
     List<ServiceItemPart> findByServiceItem_ItemId(Integer itemId);
+    void deleteByServiceItem_ItemId(Integer itemId);
+
 }
