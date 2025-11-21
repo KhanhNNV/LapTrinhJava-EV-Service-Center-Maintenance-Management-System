@@ -395,6 +395,22 @@ export const ENDPOINTS = {
       method: "POST" as const,
       url: `/api/users/${id}/certificates`,
     }),
+    getCerbyUser: (userId: number | string) => ({
+      method: "GET" as const,
+      url: `/api/users/${userId}/certificates`, // Giả định BE có API này (hoặc bạn dùng tạm list all rồi filter)
+    }),
+    updateCer: (userId: number | string) => ({
+      method: "POST" as const,
+      url: `/api/users/${userId}/certificates`,
+    }),
+    removeCer: (userId: number | string, certId: number | string) => ({
+      method: "DELETE" as const,
+      url: `/api/users/${userId}/certificates/${certId}`,
+    }),
+    updateUser: (userId: number| string) => ({
+      method: "PUT" as const,
+      url: `/api/${userId}`,
+    }),
   },
 
   // ─── VehicleController ───────────────────────────────────────────────────

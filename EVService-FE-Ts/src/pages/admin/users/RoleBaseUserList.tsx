@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Search, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { CreateUserDialog } from "@/components/admin/users/CreateUserDialog"; // Import component mới
+import { EditUserDialog } from "@/components/admin/users/EditUserDialog";
 
 export default function RoleBasedUserList() {
   // 1. Lấy role từ URL
@@ -17,13 +18,15 @@ export default function RoleBasedUserList() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  
+
   // State phân trang
   const [currentPage, setCurrentPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
 
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [isEditOpen, setIsEditOpen] = useState(false);
   // 3. Hàm lấy tiêu đề trang
   const getPageTitle = (r?: string) => {
     switch (r) {
@@ -38,12 +41,12 @@ export default function RoleBasedUserList() {
   // 4. Hàm gọi API lấy danh sách
   const fetchUsers = async () => {
     if (!role) return;
-    
+
     setLoading(true);
     try {
       const targetRole = role as Role;
       const response = await userService.getListUserByRole(targetRole, currentPage, limit);
-      
+
       setUsers(response.content);
       setTotalPages(response.totalPages);
       setTotalElements(response.totalElements);
@@ -67,28 +70,29 @@ export default function RoleBasedUserList() {
 
   // 6. Xử lý hành động
   const handleEdit = (user: User) => {
-    toast.info(`Chức năng sửa user ${user.username} đang phát triển`);
+    setEditingUser(user); // Lưu thông tin user vào state
+    setIsEditOpen(true);  // Mở dialog lên
   };
-  
+
   const handleDelete = async (user: User) => {
     if (confirm(`Bạn có chắc muốn xóa ${user.fullName}?`)) {
-        try {
-            // Giả định có hàm delete
-            // await userService.deleteUser(user.userId); 
-            toast.info(`Đã gửi yêu cầu xóa ${user.userId} (API delete chưa được nối trong demo này)`);
-            fetchUsers();
-        } catch (e) {
-            toast.error("Xóa thất bại");
-        }
+      try {
+        // Giả định có hàm delete
+        // await userService.deleteUser(user.userId); 
+        toast.info(`Đã gửi yêu cầu xóa ${user.userId} (API delete chưa được nối trong demo này)`);
+        fetchUsers();
+      } catch (e) {
+        toast.error("Xóa thất bại");
+      }
     }
   };
-  
+
   const handleView = (user: User) => {
     toast.info(`Xem chi tiết: ${user.fullName}`);
   };
 
   // Lọc local
-  const filteredUsers = users.filter(u => 
+  const filteredUsers = users.filter(u =>
     u.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     u.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (u.phoneNumber && u.phoneNumber.includes(searchTerm))
@@ -104,9 +108,9 @@ export default function RoleBasedUserList() {
             Danh sách {role?.toLowerCase()} trong hệ thống.
           </p>
         </div>
-        
+
         {/* Nút Thêm Mới được nhúng ở đây, tự quản lý trạng thái mở Dialog */}
-        <CreateUserDialog onSuccess={fetchUsers} /> 
+        <CreateUserDialog onSuccess={fetchUsers} />
       </div>
 
       {/* Toolbar: Tìm kiếm */}
@@ -142,6 +146,14 @@ export default function RoleBasedUserList() {
           onView={handleView}
         />
       )}
+
+
+      <EditUserDialog
+        open={isEditOpen}
+        onOpenChange={setIsEditOpen}
+        user={editingUser}
+        onSuccess={fetchUsers} // Load lại bảng sau khi sửa xong
+      />
     </div>
   );
 } 

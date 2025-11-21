@@ -133,11 +133,11 @@ export const UserTable: React.FC<UserTableProps> = ({
                   
                   <TableCell className="text-center">
                     <div className="flex justify-end gap-2">
-                      <Button variant="ghost" size="icon" onClick={() => onView(user)}>
-                        <Eye className="h-4 w-4 text-orange-400" />
-                      </Button>
                       <Button variant="ghost" size="icon" onClick={() => onEdit(user)}>
                         <Edit className="h-4 w-4 text-slate-800" />
+                      </Button>
+                      <Button variant="ghost" size="icon" onClick={() => onView(user)}>
+                        <Eye className="h-4 w-4 text-orange-400" />
                       </Button>
                       <Button variant="ghost" size="icon" onClick={() => onDelete(user)}>
                         <Trash2 className="h-4 w-4 text-destructive" />

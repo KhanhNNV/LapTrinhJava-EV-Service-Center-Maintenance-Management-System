@@ -6,6 +6,18 @@ export interface Certificate {
   description?: string;
   code?: string;
   issuingOrganization?: string;
+  validityPeriod?: number;
+}
+
+export interface TechnicianCertificate {
+  technicianId: number;
+  certificateId: number;
+  certificateName: string;
+  issuingOrganization?: string;
+  issueDate: string;   // YYYY-MM-DD
+  expiryDate: string;  // YYYY-MM-DD
+  credentialId: string;
+  notes?: string;
 }
 
 export const certificateService = {
