@@ -164,7 +164,7 @@ export default function Setting() {
     
     // Mapping dữ liệu từ form sang đúng format API yêu cầu (UpdateProfile)
     const payload: UpdateProfile = {
-      fullname: formData.fullName,
+      fullName: formData.fullName,
       address: formData.address,
       phoneNumber: formData.phoneNumber
     };

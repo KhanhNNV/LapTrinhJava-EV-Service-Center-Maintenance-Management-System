@@ -112,12 +112,12 @@ export function CreateUserDialog({ onSuccess }: { onSuccess?: () => void }) {
       };
 
       // CASE 1: TẠO KHÁCH HÀNG
-      if (activeTab === "CUSTOMER") {
-        await userService.createCustomer(commonData);
-        toast.success("Đã tạo Khách hàng thành công!");
-      } 
+      // if (activeTab === "CUSTOMER") {
+      //   await userService.createCustomer(commonData);
+      //   toast.success("Đã tạo Khách hàng thành công!");
+      // } 
       // CASE 2: TẠO NHÂN VIÊN (STAFF)
-      else if (activeTab === "STAFF") {
+      if (activeTab === "STAFF") {
         await userService.createStaff({
           ...commonData,
           centerId: Number(values.centerId),

@@ -11,7 +11,7 @@ export interface UserProfile {
   address: string;
 }
 export interface UpdateProfile{
-  fullname: string;
+  fullName: string;
   address: string;
   phoneNumber: string;
 }
@@ -126,18 +126,6 @@ export const userService = {
         data:data
       })
       return res.data;
-    },
-
-
-    // Hàm tạo Customer dùng chung endpoint Register
-    createCustomer: async (data: CreateUserRequest) => {
-        const endpoint = ENDPOINTS.auth.register
-        const res = await api.request({
-          method: endpoint.method,
-          url:endpoint.url,
-          data:data
-        })
-        return res.data;
     },
 
 
