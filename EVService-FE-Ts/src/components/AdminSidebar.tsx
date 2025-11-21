@@ -80,11 +80,6 @@ const items = [
     url: "/dashboard/admin/services",
     icon: Package,
   },
-  {
-    title: "Báo cáo & Thống kê",
-    url: "/dashboard/admin/analytics",
-    icon: BarChart3,
-  },
     {
         title: "Báo cáo & Thống kê",
         icon: BarChart3,
