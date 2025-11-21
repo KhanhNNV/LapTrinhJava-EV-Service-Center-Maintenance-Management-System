@@ -15,6 +15,7 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Builder
 public class InvoiceDto {
+    private Integer id;
     private Integer ticketId;
     private Integer appointmentId;
     private LocalDateTime completedTime;

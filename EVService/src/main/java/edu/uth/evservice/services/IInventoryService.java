@@ -7,7 +7,7 @@ import edu.uth.evservice.requests.AddStockRequest;
 import edu.uth.evservice.requests.InventoryRequest;
 
 public interface IInventoryService {
-//    List<InventoryDto> getAllInventories();
+    List<InventoryDto> getAllInventories();
 //
 //    InventoryDto getInventoryById(Integer id);
 //
