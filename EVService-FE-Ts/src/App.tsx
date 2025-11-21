@@ -48,6 +48,7 @@ import StaffQuotes from "./pages/staff/Quotes";
 import PartsManagement from "@/pages/admin/PartsManagement.tsx";
 import ServiceItemManagement from "@/pages/admin/ServiceItemManagement.tsx";
 import TechnicianCertificates from "@/pages/technician/TechnicianCertificates.tsx";
+import {useCustomerInvoices} from "@/services/customerInvoices.ts";
 
 const queryClient = new QueryClient();
 

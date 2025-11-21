@@ -33,10 +33,10 @@ const menuItems = [
   { title: 'Xe của tôi', url: '/dashboard/customer/vehicles', icon: Car },
   { title: 'Đặt lịch hẹn', url: '/dashboard/customer/appointments', icon: Calendar },
   { title: 'Lịch sử', url: '/dashboard/customer/history', icon: History },
-  { title: 'Thanh toán', url: '/dashboard/customer/payments', icon: CreditCard }, 
+  { title: 'Thanh toán', url: '/dashboard/customer/payments', icon: CreditCard },
+    { title: "Hỗ trợ trực tuyến", url: "/dashboard/customer/messages", icon: MessageSquare,},
   { title: 'Thông báo', url: '/dashboard/customer/notifications', icon: Bell },
   { title: 'Cài đặt', url: '/dashboard/customer/settings', icon: Settings },
-  { title: "Hỗ trợ trực tuyến", url: "/dashboard/customer/messages", icon: MessageSquare,},
 ];
 
 export function CustomerSidebar() {

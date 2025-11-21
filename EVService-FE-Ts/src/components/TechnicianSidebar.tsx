@@ -1,4 +1,4 @@
-import { LayoutDashboard, Calendar, ClipboardList, Settings, LogOut, Bell } from "lucide-react";
+import {LayoutDashboard, Calendar, ClipboardList, Settings, LogOut, Bell, Medal } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { NavLink } from "@/components/NavLink";
 import {
@@ -15,11 +15,11 @@ import { authService } from "@/services/auth.ts";
 import { useToast } from "@/hooks/use-toast";
 
 const menuItems = [
-  { title: "Tổng quan", url: "/dashboard/technician", icon: LayoutDashboard },
-  { title: "Lịch hẹn", url: "/dashboard/technician/appointments", icon: Calendar },
-  { title: "Phiếu dịch vụ", url: "/dashboard/technician/tickets", icon: ClipboardList },
-  { title: "Thông báo", url: "/dashboard/technician/notifications", icon: Bell },
-    { title: 'Chứng chỉ', url: '/dashboard/technician/certificates', icon: Settings },
+    { title: "Tổng quan", url: "/dashboard/technician", icon: LayoutDashboard },
+    { title: "Lịch hẹn", url: "/dashboard/technician/appointments", icon: Calendar },
+    { title: "Phiếu dịch vụ", url: "/dashboard/technician/tickets", icon: ClipboardList },
+    { title: "Thông báo", url: "/dashboard/technician/notifications", icon: Bell },
+    { title: 'Chứng chỉ', url: '/dashboard/technician/certificates', icon: Medal},
     { title: 'Cài đặt', url: '/dashboard/technician/settings', icon: Settings }
 ];
 
@@ -33,8 +33,8 @@ export function TechnicianSidebar() {
   const handleLogout = () => {
     authService.logout();
     toast({
-      title: "Logged out",
-      description: "You have been successfully logged out",
+      title: "Đăng xuất",
+      description: "Đã đăng xuất thành công",
     });
     navigate("/login");
   };
@@ -49,25 +49,25 @@ export function TechnicianSidebar() {
                     {!collapsed && <span className="truncate font-semibold text-blue-900">EV Service</span>}
                 </div>
             </SidebarHeader>
-
-
             <SidebarContent>
                 <SidebarGroup>
-                    <SidebarGroupLabel className={collapsed ? 'text-center px-0' : ''}>
-                        {collapsed ? 'Menu' : 'Customer Dashboard'}
+                    <SidebarGroupLabel className={collapsed ? "text-center px-0" : ""}>
+                        {collapsed ? "Menu" : "Technician Dashboard"}
                     </SidebarGroupLabel>
                     <SidebarGroupContent>
                         <SidebarMenu>
                             {menuItems.map((item) => (
                                 <SidebarMenuItem key={item.title}>
-                                    <SidebarMenuButton asChild tooltip={item.title}>
+                                    <SidebarMenuButton asChild>
                                         <NavLink
                                             to={item.url}
-                                            end={item.url === '/dashboard/customer'}
+                                            end={item.url === "/dashboard/staff"}
                                             className="hover:bg-muted/50"
                                             activeClassName="bg-primary/10 text-primary font-medium"
                                         >
-                                            <item.icon className={collapsed ? 'mx-auto' : 'mr-2 h-4 w-4'} />
+                                            <item.icon
+                                                className={collapsed ? "mx-auto" : "mr-2 h-4 w-4"}
+                                            />
                                             {!collapsed && <span>{item.title}</span>}
                                         </NavLink>
                                     </SidebarMenuButton>
@@ -81,12 +81,17 @@ export function TechnicianSidebar() {
             <SidebarFooter>
                 <SidebarMenu>
                     <SidebarMenuItem>
-                        <SidebarMenuButton onClick={handleLogout} className="hover:bg-destructive/10 hover:text-destructive">
-                            <LogOut className={collapsed ? 'mx-auto' : 'mr-2 h-4 w-4'} />
+                        <SidebarMenuButton
+                            onClick={handleLogout}
+                            className="hover:bg-destructive/10 hover:text-destructive"
+                        >
+                            <LogOut className={collapsed ? "mx-auto" : "mr-2 h-4 w-4"} />
                             {!collapsed && <span>Đăng xuất</span>}
                         </SidebarMenuButton>
                     </SidebarMenuItem>
                 </SidebarMenu>
+
+                {/* Hiển thị thông tin nhân viên khi sidebar mở rộng */}
                 {!collapsed && user && (
                     <div className="px-3 py-2 text-xs text-muted-foreground border-t">
                         <p className="font-medium truncate">{user.fullName}</p>

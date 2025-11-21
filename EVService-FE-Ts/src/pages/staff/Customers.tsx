@@ -4,6 +4,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Car, Bike } from "lucide-react";
+import { usePagination } from "@/hooks/usePagination";
+import { PaginationControls } from "@/components/common/PaginationControls";
 import {
   Dialog,
   DialogContent,
@@ -94,6 +96,16 @@ export default function StaffCustomers() {
     email: "",
     address: "",
   });
+
+    const {
+        currentData,
+        currentPage,
+        totalPages,
+        goToPage,
+        totalItems,
+        indexOfFirstItem,
+        indexOfLastItem
+    } = usePagination(customers, 12);
 
   useEffect(() => {
     fetchCustomersFromAppointments();
@@ -258,7 +270,7 @@ export default function StaffCustomers() {
     }
   };
 
-  const filteredCustomers = customers.filter(
+  const filteredCustomers = currentData.filter(
     (c) =>
       c.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (c.phoneNumber && c.phoneNumber.includes(searchTerm))
@@ -298,6 +310,8 @@ export default function StaffCustomers() {
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       ) : (
+          <>
+
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {filteredCustomers.length > 0 ? (
             filteredCustomers.map((customer) => (
@@ -621,6 +635,18 @@ export default function StaffCustomers() {
             </div>
           )}
         </div>
+              <div className="flex items-center justify-between border-t pt-4 mt-4">
+                  <div className="text-sm text-muted-foreground">
+                      Hiển thị {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, totalItems)} trong số {totalItems} lịch hẹn
+                  </div>
+
+                  <PaginationControls
+                      currentPage={currentPage}
+                      totalPages={totalPages}
+                      onPageChange={goToPage}
+                  />
+              </div>
+          </>
       )}
     </div>
   );
