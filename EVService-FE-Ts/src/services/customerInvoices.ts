@@ -22,6 +22,7 @@ export interface InvoiceDto {
     customerName: string;
     customerPhone: string;
     technicianName: string;
+    staffName: string;
 
     serviceItems: TicketServiceItemDto[];
     partsUsed: TicketPartDto[];

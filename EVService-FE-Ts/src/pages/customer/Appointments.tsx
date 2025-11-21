@@ -194,7 +194,7 @@ export default function Appointments() {
       CHECKED_IN: "Đã check-in",
       ASSIGNED: "Đã phân công cho nhân viên bảo dưỡng",
       IN_PROGRESS: "Đang bảo dưỡng",
-      CANCELED: "Đã hủy",
+      CANCELLED: "Đã hủy",
       COMPLETED: "Hoàn thành",
     };
     return texts[status] || status;

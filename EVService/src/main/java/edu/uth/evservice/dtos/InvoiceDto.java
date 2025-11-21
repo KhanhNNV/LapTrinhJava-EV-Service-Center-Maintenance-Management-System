@@ -23,6 +23,7 @@ public class InvoiceDto {
     private String customerName;
     private String customerPhone;
     private String technicianName;
+    private String staffName;
 
     private List<TicketServiceItemDto> serviceItems;
     private List<TicketPartDto> partsUsed;

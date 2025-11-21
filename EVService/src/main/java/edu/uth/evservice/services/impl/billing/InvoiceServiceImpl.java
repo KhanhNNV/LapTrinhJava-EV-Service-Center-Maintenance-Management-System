@@ -206,6 +206,8 @@ public class InvoiceServiceImpl implements IInvoiceService {
                 // Thông tin kỹ thuật viên
                 .technicianName(staff != null ? staff.getFullName() : "N/A")
 
+                .staffName(ticket.getAppointment().getStaff().getFullName() != null ? ticket.getAppointment().getStaff().getFullName(): "N/A")
+
                 // Chi tiết dịch vụ và phụ tùng
                 .serviceItems(itemDtos)
                 .partsUsed(partDtos)

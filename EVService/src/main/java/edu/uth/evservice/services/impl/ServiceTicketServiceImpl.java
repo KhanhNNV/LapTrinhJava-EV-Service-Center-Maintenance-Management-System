@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import edu.uth.evservice.models.*;
+import edu.uth.evservice.repositories.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,32 +20,9 @@ import edu.uth.evservice.dtos.SuggestedPartsDto;
 import edu.uth.evservice.dtos.TicketPartDto;
 import edu.uth.evservice.dtos.TicketServiceItemDto;
 import edu.uth.evservice.exception.ResourceNotFoundException;
-import edu.uth.evservice.models.Appointment;
-import edu.uth.evservice.models.CustomerPackageContract;
-import edu.uth.evservice.models.Inventory;
-import edu.uth.evservice.models.Part;
-import edu.uth.evservice.models.ServiceCenter;
-import edu.uth.evservice.models.ServiceItem;
-import edu.uth.evservice.models.ServiceItemPart;
-import edu.uth.evservice.models.ServicePackage;
-import edu.uth.evservice.models.ServiceTicket;
-import edu.uth.evservice.models.TicketPart;
-import edu.uth.evservice.models.TicketPartId;
-import edu.uth.evservice.models.TicketServiceItem;
-import edu.uth.evservice.models.TicketServiceItemId;
-import edu.uth.evservice.models.User;
 import edu.uth.evservice.models.enums.AppointmentStatus;
 import edu.uth.evservice.models.enums.Role;
 import edu.uth.evservice.models.enums.ServiceTicketStatus;
-import edu.uth.evservice.repositories.IAppointmentRepository;
-import edu.uth.evservice.repositories.IInventoryRepository;
-import edu.uth.evservice.repositories.IPartRepository;
-import edu.uth.evservice.repositories.IServiceItemPartRepository;
-import edu.uth.evservice.repositories.IServiceItemRepository;
-import edu.uth.evservice.repositories.IServiceTicketRepository;
-import edu.uth.evservice.repositories.ITicketPartRepository;
-import edu.uth.evservice.repositories.ITicketServiceItemRepository;
-import edu.uth.evservice.repositories.IUserRepository;
 import edu.uth.evservice.requests.AddServiceItemRequest;
 import edu.uth.evservice.requests.NotificationRequest;
 import edu.uth.evservice.requests.ServiceTicketRequest;
@@ -63,6 +42,7 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
 
     private final IServiceTicketRepository ticketRepo;
     private final IAppointmentRepository appointmentRepo;
+    private final IVehicleRepository vehicleRepo;
     private final IUserRepository userRepo;
 
     private final ITicketServiceItemRepository ticketServiceItemRepository;
@@ -233,6 +213,14 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
         appointment.setUpdatedAt(LocalDateTime.now());
 
         appointmentRepo.save(appointment);
+
+        // Cập nhật ngày bảo trì gần nhất cho Vehicle
+        Vehicle vehicle = appointment.getVehicle();
+        if (vehicle != null) {
+            vehicle.setRecentMaintenanceDate(LocalDate.now());
+            vehicleRepo.save(vehicle);
+        }
+
         // Lấy thông tin khách hàng từ lịch hẹn liên quan
         User customer = savedTicket.getAppointment().getCustomer();
 

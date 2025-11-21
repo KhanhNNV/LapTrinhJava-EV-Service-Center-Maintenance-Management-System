@@ -5,7 +5,6 @@ export interface ServiceTicket {
     status: string;
     startTime: string;
     endTime?: string;
-    notes?: string
     serviceType: string;
     customerName: string;
     staffName?: string | null; // Có thể null

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react'; // 1. Thêm useMemo
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -17,7 +17,24 @@ import { PaginationControls } from "@/components/common/PaginationControls";
 export default function Invoices() {
     const { data: invoices, isLoading } = useCustomerInvoices();
 
-    // Cấu hình phân trang
+    // 2. LOGIC SẮP XẾP: Mới nhất lên đầu
+    const sortedInvoices = useMemo(() => {
+        if (!invoices) return [];
+
+        // Tạo bản sao mảng để tránh mutate dữ liệu gốc
+        return [...invoices].sort((a, b) => {
+            // Cách 1: Sắp xếp theo ngày hoàn thành (completedTime)
+            // Nếu bạn có trường 'createdAt' hoặc 'createdDate', hãy thay thế vào đây
+            const timeA = new Date(a.completedTime || 0).getTime();
+            const timeB = new Date(b.completedTime || 0).getTime();
+            return timeB - timeA;
+
+            // Cách 2 (Dự phòng): Nếu ngày tháng bị null, có thể sắp xếp theo ID giảm dần
+            // return b.id - a.id;
+        });
+    }, [invoices]);
+
+    // 3. Cấu hình phân trang: Truyền sortedInvoices vào đây
     const {
         currentData: currentInvoices,
         currentPage,
@@ -26,7 +43,7 @@ export default function Invoices() {
         totalItems,
         indexOfFirstItem,
         indexOfLastItem
-    } = usePagination(invoices || [], 6); // 6 items per page
+    } = usePagination(sortedInvoices, 6);
 
     // State để quản lý hóa đơn đang được xem chi tiết
     const [selectedInvoice, setSelectedInvoice] = useState<InvoiceDto | null>(null);
@@ -40,17 +57,15 @@ export default function Invoices() {
 
 
     // --- HÀM TÍNH TOÁN TỔNG TIỀN (Frontend Calculation) ---
-    // Tính tổng tiền Dịch vụ: Cộng dồn đơn giá (theo yêu cầu của bạn)
+    // ... (Phần code còn lại giữ nguyên không đổi) ...
     const calculateServiceTotal = (items: any[]) => {
         if (!items) return 0;
         return items.reduce((sum, item) => {
-            // Ưu tiên unitPriceAtTimeOfService, fallback về unitPrice
             const price = Number(item.unitPriceAtTimeOfService || item.unitPrice || 0);
             return sum + price;
         }, 0);
     };
 
-    // Tính tổng tiền Phụ tùng: Cộng dồn (Đơn giá * Số lượng)
     const calculatePartTotal = (parts: any[]) => {
         if (!parts) return 0;
         return parts.reduce((sum, part) => {
@@ -62,6 +77,7 @@ export default function Invoices() {
 
     return (
         <div className="space-y-6">
+            {/* ... Phần Render UI giữ nguyên ... */}
             <div>
                 <h2 className="text-3xl font-bold tracking-tight text-gray-900">Hóa đơn của tôi</h2>
                 <p className="text-muted-foreground">Quản lý lịch sử dịch vụ và thanh toán</p>
@@ -77,8 +93,10 @@ export default function Invoices() {
                                 Bạn chưa có hóa đơn dịch vụ nào.
                             </div>
                         ) : (
+                            // currentInvoices lúc này đã là dữ liệu đã được sắp xếp và cắt trang
                             currentInvoices.map((invoice: InvoiceDto) => (
                                 <Card key={invoice.id} className="shadow-sm hover:shadow-md transition-all flex flex-col">
+                                    {/* ... Nội dung Card ... */}
                                     <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
                                         <div className="font-bold text-lg flex items-center gap-2">
                                             <Receipt className="w-5 h-5 text-blue-600"/>
@@ -119,10 +137,7 @@ export default function Invoices() {
                                         </Button>
                                         <Button
                                             className="w-full bg-blue-600 hover:bg-blue-700"
-                                            //onClick={() => handlePayment(invoice.ticketId)}
-                                            //disabled={createPaymentMutation.isPending}
                                         >
-                                            {/*{createPaymentMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin"/> : <CreditCard className="w-4 h-4 mr-2"/>}*/}
                                             Thanh toán
                                         </Button>
                                     </CardFooter>
@@ -130,6 +145,7 @@ export default function Invoices() {
                             ))
                         )}
                     </div>
+                    {/* ... Phần Pagination Controls giữ nguyên ... */}
                     {totalItems > 0 && (
                         <div className="flex flex-col sm:flex-row items-center justify-between border-t pt-4 mt-4 gap-4">
                             <div className="text-sm text-muted-foreground text-center sm:text-left">
@@ -145,9 +161,11 @@ export default function Invoices() {
                 </>
             )}
 
-            {/* --- DIALOG CHI TIẾT HÓA ĐƠN --- */}
+            {/* ... Phần Dialog giữ nguyên ... */}
             <Dialog open={!!selectedInvoice} onOpenChange={(open) => !open && setSelectedInvoice(null)}>
+                {/* ... Nội dung Dialog ... */}
                 <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                    {/* ... */}
                     <DialogHeader>
                         <DialogTitle className="text-xl text-center">CHI TIẾT HÓA ĐƠN DỊCH VỤ</DialogTitle>
                         <DialogDescription className="text-center">
@@ -157,6 +175,7 @@ export default function Invoices() {
 
                     {selectedInvoice && (
                         <div className="space-y-6 py-2">
+                            {/* ... Copy lại nội dung dialog cũ ... */}
                             {/* Thông tin khách hàng */}
                             <div className="bg-slate-50 p-3 rounded-lg border space-y-1 text-sm">
                                 <div className="flex items-center gap-2">
@@ -170,6 +189,10 @@ export default function Invoices() {
                                 <div className="flex items-center gap-2">
                                     <Wrench className="w-4 h-4 text-gray-500"/>
                                     KTV thực hiện: <span>{selectedInvoice.technicianName}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Wrench className="w-4 h-4 text-gray-500"/>
+                                    Nhân viên tiếp nhận: <span>{selectedInvoice.staffName}</span>
                                 </div>
                             </div>
 
@@ -185,8 +208,7 @@ export default function Invoices() {
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
-                                            {selectedInvoice.serviceItems.map((item: any, index) => {
-                                                // Xử lý giá an toàn cho từng dòng
+                                            {selectedInvoice.serviceItems.map((item: any, index: number) => {
                                                 const price = Number(item.unitPriceAtTimeOfService || item.unitPrice || 0);
                                                 return (
                                                     <TableRow key={index}>
@@ -201,7 +223,6 @@ export default function Invoices() {
                                     <p className="text-sm text-muted-foreground italic px-2">Không có dịch vụ.</p>
                                 )}
 
-                                {/* Tổng tiền Dịch vụ (Tính toán lại ở FE) */}
                                 <div className="flex justify-between text-sm font-bold pt-2 px-2 border-t border-dashed">
                                     <span>Cộng tiền dịch vụ:</span>
                                     <span>{formatCurrency(calculateServiceTotal(selectedInvoice.serviceItems))}</span>
@@ -222,8 +243,7 @@ export default function Invoices() {
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
-                                            {selectedInvoice.partsUsed.map((part: any, index) => {
-                                                // Xử lý giá và số lượng an toàn
+                                            {selectedInvoice.partsUsed.map((part: any, index: number) => {
                                                 const price = Number(part.unitPriceAtTimeOfService || part.unitPrice || 0);
                                                 const qty = Number(part.quantity || 0);
                                                 const total = price * qty;
@@ -245,7 +265,6 @@ export default function Invoices() {
                                     <p className="text-sm text-muted-foreground italic px-2">Không sử dụng phụ tùng.</p>
                                 )}
 
-                                {/* Tổng tiền Phụ tùng (Tính toán lại ở FE) */}
                                 <div className="flex justify-between text-sm font-bold pt-2 px-2 border-t border-dashed">
                                     <span>Cộng tiền phụ tùng:</span>
                                     <span>{formatCurrency(calculatePartTotal(selectedInvoice.partsUsed))}</span>
@@ -254,10 +273,8 @@ export default function Invoices() {
 
                             <Separator className="my-4"/>
 
-                            {/* Tổng cộng cuối cùng */}
                             <div className="flex justify-between items-center bg-blue-50 p-4 rounded-lg border border-blue-100">
                                 <span className="text-lg font-bold text-blue-900">TỔNG THANH TOÁN</span>
-                                {/* Tính tổng lại 1 lần nữa để đảm bảo khớp với các thành phần con */}
                                 <span className="text-2xl font-bold text-red-600">
                                     {formatCurrency(
                                         calculateServiceTotal(selectedInvoice.serviceItems) +
@@ -273,10 +290,7 @@ export default function Invoices() {
                         {selectedInvoice && (
                             <Button
                                 className="bg-blue-600 hover:bg-blue-700"
-                                //onClick={() => handlePayment(selectedInvoice.ticketId)}
-                                //disabled={createPaymentMutation.isPending}
                             >
-                                {/*{createPaymentMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2"/> : <CreditCard className="w-4 h-4 mr-2"/>}*/}
                                 Thanh toán ngay
                             </Button>
                         )}

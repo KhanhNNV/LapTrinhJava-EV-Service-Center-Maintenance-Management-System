@@ -173,7 +173,6 @@ export function useBookAppointment() {
                 note: data.note || "",
                 vehicleId: parseInt(data.vehicleId),
                 centerId: parseInt(data.centerId),
-                contractId: 1,
             };
 
             const response = await api.post("/api/appointments", requestBody);

@@ -476,18 +476,6 @@ export default function TechnicianServiceTickets() {
                                                 </div>
                                             </div>
                                         )}
-                                        {ticket.notes && (
-                                            <div className="col-span-full flex flex-col gap-2 rounded-lg border border-blue-100 bg-blue-50 p-3 dark:border-blue-900 dark:bg-blue-950/20">
-                                                <p className="font-semibold text-blue-700 dark:text-blue-300 shrink-0">
-                                                    Ghi chú của nhân viên:
-                                                </p>
-                                                <div className="max-h-[100px] w-full overflow-y-auto rounded border border-blue-200 bg-white p-2 dark:bg-black/20">
-                                                    <p className="text-sm text-blue-900 dark:text-blue-100 whitespace-pre-wrap break-all">
-                                                        {ticket.notes}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        )}
                                     </div>
                                     {/* --- KHU VỰC CÁC NÚT BẤM --- */}
                                     <div className="pt-4 mt-4 border-t flex flex-wrap gap-3 justify-end items-center">
