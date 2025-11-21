@@ -1,191 +1,236 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import {
+    useConversations,
+    useMessages,
+    useSendMessage,
+    useClaimConversation,
+    useCloseConversation
+} from "@/services/chatService";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import api from "@/services/api.ts";
-import { useToast } from "@/hooks/use-toast";
-import { Send, User } from "lucide-react";
-import { authService } from "@/services/auth.ts";
-
-interface Conversation {
-  id: number;
-  user: { id: number; fullName: string };
-  lastMessage?: { content: string; createdAt: string };
-}
-
-interface Message {
-  id: number;
-  content: string;
-  senderId: number;
-  createdAt: string;
-}
+import { Badge } from "@/components/ui/badge";
+import { MessageSquare, Send, CheckCircle, XCircle, User } from "lucide-react";
+import { authService } from "@/services/auth";
+import { toast } from "sonner";
 
 export default function StaffMessages() {
-  const { toast } = useToast();
-  const currentUser = authService.getCurrentUser();
-  const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [selectedConversation, setSelectedConversation] = useState<number | null>(null);
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [newMessage, setNewMessage] = useState("");
+    const currentUser = authService.getCurrentUser();
 
-  useEffect(() => {
-    fetchConversations();
-  }, []);
+    // 1. Lấy danh sách tất cả cuộc trò chuyện
+    const { data: conversations, isLoading } = useConversations();
 
-  useEffect(() => {
-    if (selectedConversation) {
-      fetchMessages(selectedConversation);
-    }
-  }, [selectedConversation]);
+    // State: Cuộc trò chuyện đang được chọn để xem
+    const [selectedConversationId, setSelectedConversationId] = useState<number | null>(null);
+    const [inputMessage, setInputMessage] = useState("");
 
-  const fetchConversations = async () => {
-    try {
-      const response = await api.get("/api/conversations");
-      setConversations(response.data);
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch conversations",
-        variant: "destructive",
-      });
-    }
-  };
+    // 2. Lấy tin nhắn của cuộc trò chuyện đang chọn
+    const { data: messages } = useMessages(selectedConversationId);
 
-  const fetchMessages = async (conversationId: number) => {
-    try {
-      const response = await api.get(`/api/messages/conversation/${conversationId}`);
-      setMessages(response.data);
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch messages",
-        variant: "destructive",
-      });
-    }
-  };
+    // Các hành động
+    const sendMessageMutation = useSendMessage();
+    const claimMutation = useClaimConversation();
+    const closeMutation = useCloseConversation();
 
-  const sendMessage = async () => {
-    if (!newMessage.trim() || !selectedConversation) return;
+    // Lọc danh sách: Chia thành "Chưa xử lý" (NEW) và "Của tôi"
+    const newConversations = conversations?.filter(c => c.status === 'NEW') || [];
+    const myConversations = conversations?.filter(c => c.employeeId === currentUser?.id && c.status === 'IN_PROGRESS') || [];
+    const closedConversations = conversations?.filter(c => c.status === 'CLOSED') || [];
 
-    try {
-      await api.post("/api/messages", {
-        conversationId: selectedConversation,
-        content: newMessage,
-      });
-      setNewMessage("");
-      fetchMessages(selectedConversation);
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to send message",
-        variant: "destructive",
-      });
-    }
-  };
+    // Xử lý gửi tin nhắn
+    const handleSend = () => {
+        if (!inputMessage.trim() || !selectedConversationId) return;
+        sendMessageMutation.mutate({
+            conversationId: selectedConversationId,
+            content: inputMessage
+        });
+        setInputMessage("");
+    };
 
-  return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight">Messages</h2>
-        <p className="text-muted-foreground">
-          Chat with customers for support
-        </p>
-      </div>
+    // Tìm thông tin cuộc hội thoại đang chọn
+    const activeConv = conversations?.find(c => c.conversationId === selectedConversationId);
 
-      <div className="grid md:grid-cols-3 gap-4 h-[600px]">
-        <Card className="md:col-span-1">
-          <CardHeader>
-            <CardTitle>Conversations</CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <ScrollArea className="h-[500px]">
-              {conversations.map((conversation) => (
-                <div
-                  key={conversation.id}
-                  onClick={() => setSelectedConversation(conversation.id)}
-                  className={`p-4 cursor-pointer border-b hover:bg-muted/50 transition-colors ${
-                    selectedConversation === conversation.id ? "bg-muted" : ""
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      <User className="h-5 w-5 text-primary" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium truncate">
-                        {conversation.user.fullName}
-                      </p>
-                      {conversation.lastMessage && (
-                        <p className="text-sm text-muted-foreground truncate">
-                          {conversation.lastMessage.content}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </ScrollArea>
-          </CardContent>
-        </Card>
+    if (isLoading) return <div>Đang tải dữ liệu...</div>;
 
-        <Card className="md:col-span-2">
-          <CardHeader>
-            <CardTitle>
-              {selectedConversation
-                ? conversations.find((c) => c.id === selectedConversation)?.user.fullName
-                : "Select a conversation"}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {selectedConversation ? (
-              <>
-                <ScrollArea className="h-[400px] pr-4">
-                  <div className="space-y-4">
-                    {messages.map((message) => (
-                      <div
-                        key={message.id}
-                        className={`flex ${
-                          message.senderId === currentUser?.id ? "justify-end" : "justify-start"
-                        }`}
-                      >
-                        <div
-                          className={`max-w-[70%] rounded-lg p-3 ${
-                            message.senderId === currentUser?.id
-                              ? "bg-primary text-primary-foreground"
-                              : "bg-muted"
-                          }`}
-                        >
-                          <p className="text-sm">{message.content}</p>
-                          <p className="text-xs opacity-70 mt-1">
-                            {new Date(message.createdAt).toLocaleTimeString()}
-                          </p>
+    return (
+        <div className="h-[calc(100vh-100px)] grid grid-cols-12 gap-6">
+
+            {/* CỘT TRÁI: DANH SÁCH CUỘC TRÒ CHUYỆN */}
+            <Card className="col-span-4 flex flex-col shadow-card">
+                <CardHeader className="border-b py-4">
+                    <CardTitle className="text-lg">Hộp thư hỗ trợ</CardTitle>
+                </CardHeader>
+                <ScrollArea className="flex-1">
+                    <div className="p-4 space-y-6">
+
+                        {/* Mục 1: Yêu cầu Mới (Cần Claim) */}
+                        <div>
+                            <h3 className="text-sm font-bold text-muted-foreground mb-2 flex items-center">
+                                <div className="w-2 h-2 bg-green-500 rounded-full mr-2"/>
+                                Yêu cầu mới ({newConversations.length})
+                            </h3>
+                            <div className="space-y-2">
+                                {newConversations.map(c => (
+                                    <div
+                                        key={c.conversationId}
+                                        onClick={() => setSelectedConversationId(c.conversationId)}
+                                        className={`p-3 rounded-lg border cursor-pointer hover:bg-muted transition-colors ${selectedConversationId === c.conversationId ? "border-primary bg-primary/5" : ""}`}
+                                    >
+                                        <div className="flex justify-between mb-1">
+                                            <span className="font-medium text-sm">Khách #{c.customerId}</span>
+                                            <Badge variant="outline" className="text-[10px] bg-green-50 text-green-700">MỚI</Badge>
+                                        </div>
+                                        <p className="text-xs text-muted-foreground truncate">{c.topic}</p>
+                                    </div>
+                                ))}
+                                {newConversations.length === 0 && <p className="text-xs text-muted-foreground italic">Không có yêu cầu mới</p>}
+                            </div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                </ScrollArea>
 
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="Type a message..."
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    onKeyPress={(e) => e.key === "Enter" && sendMessage()}
-                  />
-                  <Button onClick={sendMessage}>
-                    <Send className="h-4 w-4" />
-                  </Button>
-                </div>
-              </>
-            ) : (
-              <div className="h-[400px] flex items-center justify-center text-muted-foreground">
-                Select a conversation to start chatting
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  );
+                        {/* Mục 2: Đang xử lý (Của tôi) */}
+                        <div>
+                            <h3 className="text-sm font-bold text-muted-foreground mb-2 flex items-center">
+                                <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"/>
+                                Đang xử lý ({myConversations.length})
+                            </h3>
+                            <div className="space-y-2">
+                                {myConversations.map(c => (
+                                    <div
+                                        key={c.conversationId}
+                                        onClick={() => setSelectedConversationId(c.conversationId)}
+                                        className={`p-3 rounded-lg border cursor-pointer hover:bg-muted transition-colors ${selectedConversationId === c.conversationId ? "border-primary bg-primary/5" : ""}`}
+                                    >
+                                        <div className="flex justify-between mb-1">
+                                            <span className="font-medium text-sm">Khách #{c.customerId}</span>
+                                            <Badge variant="outline" className="text-[10px] bg-blue-50 text-blue-700">ĐANG CHAT</Badge>
+                                        </div>
+                                        <p className="text-xs text-muted-foreground truncate">{c.topic}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Mục 3: Đã đóng (Lịch sử) */}
+                        <div>
+                            <h3 className="text-sm font-bold text-muted-foreground mb-2">Đã đóng</h3>
+                            <div className="space-y-2 opacity-60">
+                                {closedConversations.map(c => (
+                                    <div
+                                        key={c.conversationId}
+                                        onClick={() => setSelectedConversationId(c.conversationId)}
+                                        className={`p-3 rounded-lg border cursor-pointer hover:bg-muted ${selectedConversationId === c.conversationId ? "border-primary" : ""}`}
+                                    >
+                                        <p className="text-sm font-medium">Khách #{c.customerId}</p>
+                                        <p className="text-xs text-muted-foreground truncate">{c.topic}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                    </div>
+                </ScrollArea>
+            </Card>
+
+            {/* CỘT PHẢI: CỬA SỔ CHAT */}
+            <Card className="col-span-8 flex flex-col shadow-card">
+                {selectedConversationId ? (
+                    <>
+                        {/* Header của khung chat */}
+                        <CardHeader className="border-b py-4 flex flex-row items-center justify-between">
+                            <div>
+                                <CardTitle className="text-lg flex items-center gap-2">
+                                    <User className="w-5 h-5" />
+                                    Khách hàng #{activeConv?.customerId}
+                                </CardTitle>
+                                <p className="text-sm text-muted-foreground">{activeConv?.topic}</p>
+                            </div>
+
+                            {/* CÁC NÚT HÀNH ĐỘNG */}
+                            <div className="flex gap-2">
+                                {/* Nút Nhận việc: Chỉ hiện khi trạng thái là NEW */}
+                                {activeConv?.status === 'NEW' && (
+                                    <Button
+                                        size="sm"
+                                        className="bg-green-600 hover:bg-green-700"
+                                        onClick={() => claimMutation.mutate(selectedConversationId)}
+                                        disabled={claimMutation.isPending}
+                                    >
+                                        <CheckCircle className="w-4 h-4 mr-2" />
+                                        Nhận xử lý
+                                    </Button>
+                                )}
+
+                                {/* Nút Kết thúc: Chỉ hiện khi đang xử lý và là của mình */}
+                                {activeConv?.status === 'IN_PROGRESS' && activeConv?.employeeId === currentUser?.id && (
+                                    <Button
+                                        size="sm"
+                                        variant="destructive"
+                                        onClick={() => {
+                                            if(confirm("Bạn có chắc muốn đóng cuộc trò chuyện này?")) {
+                                                closeMutation.mutate(selectedConversationId);
+                                            }
+                                        }}
+                                        disabled={closeMutation.isPending}
+                                    >
+                                        <XCircle className="w-4 h-4 mr-2" />
+                                        Kết thúc tư vấn
+                                    </Button>
+                                )}
+                            </div>
+                        </CardHeader>
+
+                        {/* Nội dung tin nhắn */}
+                        <CardContent className="flex-1 p-0 relative overflow-hidden bg-muted/10">
+                            <ScrollArea className="h-full p-4">
+                                <div className="space-y-4">
+                                    {messages?.map((msg) => {
+                                        const isMe = msg.senderId === currentUser?.id; // Tin nhắn của Staff
+                                        return (
+                                            <div key={msg.messageId} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
+                                                <div className={`max-w-[70%] p-3 rounded-lg text-sm shadow-sm ${
+                                                    isMe ? "bg-primary text-white rounded-tr-none" : "bg-white text-foreground rounded-tl-none border"
+                                                }`}>
+                                                    <p>{msg.content}</p>
+                                                    <p className={`text-[10px] mt-1 opacity-70 ${isMe ? "text-right" : "text-left"}`}>
+                                                        {new Date(msg.timestamp).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'})} - {msg.senderName}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        )
+                                    })}
+                                </div>
+                            </ScrollArea>
+                        </CardContent>
+
+                        {/* Ô nhập tin nhắn: Chỉ hiện khi được phép chat */}
+                        <div className="p-4 border-t bg-background">
+                            {activeConv?.status === 'IN_PROGRESS' && activeConv?.employeeId === currentUser?.id ? (
+                                <div className="flex gap-2">
+                                    <Input
+                                        placeholder="Nhập câu trả lời..."
+                                        value={inputMessage}
+                                        onChange={(e) => setInputMessage(e.target.value)}
+                                        onKeyDown={(e) => e.key === "Enter" && handleSend()}
+                                    />
+                                    <Button size="icon" onClick={handleSend} disabled={sendMessageMutation.isPending}>
+                                        <Send className="w-4 h-4" />
+                                    </Button>
+                                </div>
+                            ) : (
+                                <div className="text-center text-sm text-muted-foreground bg-muted p-2 rounded">
+                                    {activeConv?.status === 'NEW' ? "Bạn cần nhận xử lý để trả lời." : "Cuộc trò chuyện này đã đóng hoặc do người khác phụ trách."}
+                                </div>
+                            )}
+                        </div>
+                    </>
+                ) : (
+                    <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
+                        <MessageSquare className="w-16 h-16 mb-4 opacity-20" />
+                        <p>Chọn một cuộc trò chuyện để bắt đầu</p>
+                    </div>
+                )}
+            </Card>
+        </div>
+    );
 }

@@ -262,6 +262,7 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
 
     @Override
     public List<ServiceTicketDto> getTicketsByTechnicianId(Integer technicianId) {
+        User tech = userRepo.findById(technicianId).orElseThrow(()-> new ResourceNotFoundException("Không tìm thấy user này"));
         return ticketRepo.findByTechnician_UserId(technicianId)
                 .stream().map(this::toDto).collect(Collectors.toList());
     }
@@ -480,7 +481,11 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
                 .endTime(ticket.getEndTime())
                 .status(ticket.getStatus() != null ? ticket.getStatus().name() : null)
                 .notes(ticket.getNotes())
-                .appointmentId(ticket.getAppointment().getAppointmentId())
+                .serviceType(ticket.getAppointment().getServiceType())
+                .customerName(ticket.getAppointment().getCustomer().getFullName())
+                .staffName(ticket.getAppointment().getStaff() != null? ticket.getAppointment().getStaff().getFullName():null)
+                .noteCus(ticket.getAppointment().getNote())
+                .licensePlate(ticket.getAppointment().getVehicle().getLicensePlate())
                 .technicianId(ticket.getTechnician().getUserId())
                 .items(itemDtos)
                 .parts(partDtos)
@@ -506,6 +511,18 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
                 .lineTotal(tp.getQuantity() * tp.getUnitPriceAtTimeOfService())
                 .build();
     }
+
+//    private AppointmentDto toAppointmentDto(Appointment appointment) {
+//        if (appointment == null) return null;
+//
+//        return AppointmentDto.builder()
+//                .serviceType(appointment.getServiceType())
+//                .status(appointment.getStatus().name())
+//                .customerName(appointment.getCustomer().getFullName())
+//                .staffName(appointment.getStaff().getFullName())
+//                .vehicleName(appointment.getVehicle().getBrand() + " " + appointment.getVehicle().getModel())
+//                .build();
+//    }
 
     private ServiceTicketPartDto toSuggestedDto(Part part, int suggestedQty, int stock) {
         return ServiceTicketPartDto.builder()

@@ -57,7 +57,7 @@ public class VehicleServiceImpl implements IVehicleService {
                 .licensePlate(request.getLicensePlate())
                 .recentMaintenanceDate(request.getRecentMaintenanceDate())
                 .user(customer) // Gán chủ xe là người đang đăng nhập
-                .serviceCenter(center) // Gán trung tâm dịch vụ
+                // .serviceCenter(center) // Gán trung tâm dịch vụ
                 .vehicleType(request.getVehicleType())
                 .build();
 
@@ -109,6 +109,12 @@ public class VehicleServiceImpl implements IVehicleService {
 
         // 2. Xóa xe
         vehicleRepository.delete(vehicle);
+    }
+
+    @Override
+    public VehicleDto getVehicleById(Integer vehicleId){
+        Vehicle vehicle=vehicleRepository.findById(vehicleId).orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy xe này"));
+        return toDTO(vehicle);
     }
 
 

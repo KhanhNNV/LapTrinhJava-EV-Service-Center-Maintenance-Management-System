@@ -3,11 +3,14 @@ package edu.uth.evservice.repositories;
 import java.util.List;
 import java.util.Optional;
 
+import edu.uth.evservice.models.enums.Role;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import edu.uth.evservice.models.User;
-import edu.uth.evservice.models.enums.Role;
 
 @Repository
 public interface IUserRepository extends JpaRepository<User, Integer> {
@@ -27,8 +30,7 @@ public interface IUserRepository extends JpaRepository<User, Integer> {
     boolean existsByPhoneNumber(String phoneNumber);
 
     List<User> findByRole(Role role);// Phân role user sử dụng cho crud admincontroller
-    // Tìm kiếm bằng username hoặc fullname
-
+    //Tìm kiếm bằng username hoặc fullname
     List<User> findByUsernameContainingIgnoreCase(String username);
 
     List<User> findByFullNameContainingIgnoreCase(String fullName);
@@ -40,4 +42,5 @@ public interface IUserRepository extends JpaRepository<User, Integer> {
 
     List<User> findByServiceCenter_CenterIdAndRole(Integer centerId, Role roles);
 
+    Page<User> findByRole(Role role, Pageable pageable);
 }

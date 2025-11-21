@@ -1,6 +1,7 @@
 package edu.uth.evservice.services.auth;
 
 import edu.uth.evservice.dtos.jwt.JwtDto;
+import edu.uth.evservice.requests.ChangePasswordRequest;
 import edu.uth.evservice.requests.jwt.LoginRequest;
 import edu.uth.evservice.requests.jwt.RefreshTokenRequest;
 import edu.uth.evservice.requests.jwt.RegisterRequest;
@@ -25,4 +26,8 @@ public interface IAuthenticaionService {
 
     // NEW: đặt lại mật khẩu bằng token
     void resetPassword(String token, String newPassword);
+
+
+    //Đổi mật khẩu ở setting
+    void changePassword(Integer userId, ChangePasswordRequest request);
 }

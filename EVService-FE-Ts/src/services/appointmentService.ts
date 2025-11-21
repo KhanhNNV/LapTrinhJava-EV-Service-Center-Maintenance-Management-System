@@ -1,60 +1,263 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/services/api.ts";
-import { ENDPOINTS } from "@/config/endpoints.ts";
 import { toast } from "sonner";
 
-// Lấy danh sách xe của người dùng
+// --- INTERFACES (Khớp với Java DTOs) ---
+
+// Khớp với VehicleDto.java
+export interface VehicleDto {
+    vehicleId: number;
+    model: string;
+    brand: string;
+    licensePlate: string;
+    recentMaintenanceDate: string;
+    userId: number;
+    // centerId: number;
+    vehicleType: string;
+}
+
+// Khớp với ServicePackageDto.java
+export interface ServicePackageDto {
+    packageId: number; // Backend là packageId
+    packageName: string;
+    price: number;
+    duration: number;
+    description: string;
+}
+
+// Khớp với AppointmentDto.java
+export interface AppointmentDto {
+    appointmentId: number;
+    appointmentDate: string;
+    appointmentTime: string;
+    serviceType: string;
+    status: string; // PENDING, CONFIRMED, ...
+    note: string;
+
+    centerId: number;
+
+    customerId?: number;
+    customerName?: string;
+
+    vehicleId: number;
+
+    technicianId?: number;
+    technicianName?: string;
+
+    staffId?: number;
+    staffName?: string;
+
+    contractId?: number;
+    contractName?: string;
+
+    createdAt?: string;
+    updatedAt?: string;
+}
+export interface CenterDto {
+    centerId: number;
+    centerName: string;
+    address: string;
+    phoneNumber: string;
+    email: string;
+}
+
+export interface ServicePackageDto {
+    packageId: number;
+    packageName: string;
+    price: number;
+    duration: number;
+    description: string;
+}
+export interface InvoiceDto {
+    ticketId: number;        // Thay cho invoiceId
+    appointmentId: number;
+    completedTime: string;   // Thay cho createdDate (LocalDateTime -> string)
+
+    customerName: string;
+    customerPhone: string;
+    technicianName: string;
+
+    // Vì bạn chưa gửi DTO chi tiết của 2 list này nên tạm thời để any[]
+    serviceItems: any[];
+    partsUsed: any[];
+
+    serviceTotal: number;
+    partTotal: number;
+    grandTotal: number;      // Thay cho amount
+}
+export interface PaymentDto {
+    orderId: string;    // Mã đơn hàng
+    paymentUrl: string; // Link thanh toán
+}
+// --- HOOKS ---
+// Thêm Hook lấy danh sách trung tâm
+export function useCenters() {
+    return useQuery<CenterDto[]>({
+        queryKey: ["centers"],
+        queryFn: async () => {
+            const res = await api.get("/api/service-centers");
+            return res.data;
+        },
+    });
+}
+
+// Thêm các Hooks xử lý xe (Tách logic khỏi Page)
+export function useAddVehicle() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (data: any) => {
+            // Xử lý logic data ngay tại service
+            const payload = { ...data, centerId: parseInt(data.centerId) };
+            const res = await api.post("/api/vehicles", payload);
+            return res.data;
+        },
+        onSuccess: () => {
+            toast.success("Thêm xe thành công");
+            queryClient.invalidateQueries({ queryKey: ["customer-vehicles"] });
+        },
+        onError: (err: any) => toast.error(err?.response?.data?.message || "Lỗi thêm xe")
+    });
+}
+
+export function useUpdateVehicle() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async ({ id, data }: { id: number; data: any }) => {
+            const payload = { ...data, centerId: parseInt(data.centerId) };
+            const res = await api.put(`/api/vehicles/${id}`, payload);
+            return res.data;
+        },
+        onSuccess: () => {
+            toast.success("Cập nhật xe thành công");
+            queryClient.invalidateQueries({ queryKey: ["customer-vehicles"] });
+        },
+        onError: (err: any) => toast.error(err?.response?.data?.message || "Lỗi cập nhật xe")
+    });
+}
+
+export function useDeleteVehicle() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (id: number) => {
+            await api.delete(`/api/vehicles/${id}`);
+        },
+        onSuccess: () => {
+            toast.success("Xóa xe thành công");
+            queryClient.invalidateQueries({ queryKey: ["customer-vehicles"] });
+        },
+        onError: () => toast.error("Không thể xóa xe")
+    });
+}
+
 export function useCustomerVehicles() {
-  return useQuery({
-    queryKey: ["customer-vehicles"],
-    queryFn: async () => {
-      const res = await api.get(ENDPOINTS.vehicles.list.url);
-      return res.data;
-    },
-  });
+    return useQuery<VehicleDto[]>({
+        queryKey: ["customer-vehicles"],
+        queryFn: async () => {
+            const res = await api.get("/api/vehicles");
+            return res.data;
+        },
+    });
 }
 
-// Lấy lịch hẹn của người dùng
+export function useServicePackages() {
+    return useQuery<ServicePackageDto[]>({
+        queryKey: ["service-packages"],
+        queryFn: async () => {
+            const res = await api.get("/api/service-packages");
+            return res.data;
+        },
+    });
+}
+
 export function useCustomerAppointments() {
-  return useQuery({
-    queryKey: ["customer-appointments"],
-    queryFn: async () => {
-      const res = await api.get("/api/appointments/myAppointments");
-      return res.data;
-    },
-  });
+    return useQuery<AppointmentDto[]>({
+        queryKey: ["customer-appointments"],
+        queryFn: async () => {
+            const res = await api.get("/api/appointments/myAppointments");
+            return res.data;
+        },
+    });
 }
 
-// Đặt lịch hẹn
 export function useBookAppointment() {
-  const queryClient = useQueryClient();
+    const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: async (data: any) => {
-      const response = await api.post("/api/appointments", {
-        ...data,
-        appointmentDate: `${data.appointmentDate}T${data.appointmentTime}`,
-        centerId: 1,
-        contractId: 1,
-      });
-      return response.data;
-    },
+    return useMutation({
+        mutationFn: async (data: any) => {
+            // Chuẩn bị data khớp với AppointmentRequest.java
+            const requestBody = {
+                appointmentDate: data.appointmentDate,
+                appointmentTime: data.appointmentTime.length === 5 ? `${data.appointmentTime}:00` : data.appointmentTime,
+                serviceType: data.serviceType,
+                note: data.note || "",
+                vehicleId: parseInt(data.vehicleId),
+                centerId: parseInt(data.centerId),
+                contractId: 1,
+            };
 
-    onSuccess: () => {
-      toast.success("Đã đặt lịch hẹn thành công!");
-      queryClient.invalidateQueries({ queryKey: ["customer-appointments"] });
-    },
-
-    onError: () => {
-      toast.error("Không thể đặt lịch. Vui lòng thử lại.");
-    },
-  });
+            const response = await api.post("/api/appointments", requestBody);
+            return response.data;
+        },
+        onSuccess: () => {
+            toast.success("Đã đặt lịch hẹn thành công!");
+            queryClient.invalidateQueries({ queryKey: ["customer-appointments"] });
+        },
+        onError: (error: any) => {
+            const errorMessage = error?.response?.data?.message || "Không thể đặt lịch. Vui lòng thử lại.";
+            toast.error(errorMessage);
+        },
+    });
 }
 
-//staff lấy lịch hẹn của khách hàng
-export const appointmentService = {
-  getAppointmentsByCustomer: (customerId: number) =>
-    api.get(`/api/appointments/customer/${customerId}`),
-  getAppointmentsByStatus: (status: string) =>
-    api.get(`/api/appointments/status/${status}`),
-};
+export function useCancelAppointment() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (appointmentId: number) => {
+            // Endpoint DELETE dùng appointmentId
+            const response = await api.delete(`/api/appointments/${appointmentId}`);
+            return response.data;
+        },
+        onSuccess: () => {
+            toast.success("Đã hủy lịch hẹn thành công!");
+            queryClient.invalidateQueries({ queryKey: ["customer-appointments"] });
+        },
+        onError: (error: any) => {
+            const errorMessage = error?.response?.data?.message || "Không thể hủy lịch.";
+            toast.error(errorMessage);
+        },
+    });
+}
+
+export function useCustomerInvoices() {
+    return useQuery<InvoiceDto[]>({
+        queryKey: ["customer-invoices"],
+        queryFn: async () => {
+            // Giả định endpoint BE trả về list hóa đơn của user đang đăng nhập
+            const res = await api.get("/api/invoices/my-invoices");
+            return res.data;
+        },
+    });
+}
+
+export function useCreateVnPayPayment() {
+    return useMutation({
+        mutationFn: async (ticketId: number) => {
+            // Gọi API: POST /api/payments/vnpay/{ticketId}
+            // Lưu ý: Controller Java dùng @PathVariable Integer invoiceId, ở đây ta truyền ticketId vào
+            const res = await api.post(`/api/payments/vnpay/${ticketId}`);
+            return res.data; // Trả về PaymentDto { orderId, paymentUrl }
+        },
+        onSuccess: (data: PaymentDto) => {
+            if (data.paymentUrl) {
+                // Chuyển hướng sang VNPay
+                window.location.href = data.paymentUrl;
+            } else {
+                toast.error("Không nhận được link thanh toán từ hệ thống");
+            }
+        },
+        onError: (error: any) => {
+            toast.error(error?.response?.data?.message || "Lỗi tạo giao dịch thanh toán");
+        }
+    });
+}

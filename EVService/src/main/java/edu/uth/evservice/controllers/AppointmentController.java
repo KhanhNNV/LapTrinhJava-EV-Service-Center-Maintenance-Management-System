@@ -6,14 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import edu.uth.evservice.dtos.AppointmentDto;
 import edu.uth.evservice.dtos.TechnicianWithCertificateDto;
@@ -129,15 +122,19 @@ public class AppointmentController {
                 return ResponseEntity.ok(updatedAppointment);
         }
 
-        // // KTV xem danh sách LỊCH HẸN (chưa phải công việc) được gán
-        // @GetMapping("/technician")
-        // @PreAuthorize("hasRole('TECHNICIAN')")
-        // public ResponseEntity<List<AppointmentDto>>
-        // getApointmentsByTechnician(Authentication authentication) {
-        // Integer technicianId = Integer.parseInt(authentication.getName());
-        // List<AppointmentDto> appointments = appointmentService
-        // .getAppointmentByTechinician(technicianId);
-        // return ResponseEntity.ok(appointments);
-        // }
+        // KTV xem danh sách LỊCH HẸN (chưa phải công việc) được gán
+        @GetMapping("/technician")
+        @PreAuthorize("hasRole('TECHNICIAN')")
+        public ResponseEntity<List<AppointmentDto>> getAppointmentsByTechnician(
+                Authentication authentication,
+                @RequestParam(required = false) String status
+        ) {
+            Integer technicianId = Integer.parseInt(authentication.getName());
+
+            List<AppointmentDto> appointments = appointmentService
+                    .getAppointmentByTechnician(technicianId, status);
+
+            return ResponseEntity.ok(appointments);
+        }
 
 }

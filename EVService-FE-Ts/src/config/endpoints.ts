@@ -13,6 +13,10 @@ export const ENDPOINTS = {
       method: "POST" as const,
       url: "/auth/refresh",
     },
+    change_password: {
+     method: "POST" as const, 
+      url: "/auth/change-password",
+    },
   },
 
   // ─── AppointmentController ───────────────────────────────────────────────
@@ -350,6 +354,14 @@ export const ENDPOINTS = {
       method: "GET" as const,
       url: `/api/users/${id}`,
     }),
+    get_profile: {
+      method: "GET" as const,
+      url: "/api/users/profile",
+    },
+    update_profile: {
+      method:"PUT" as const,
+      url:"/api/users/profile"
+    },
     calculate: {
       method: "GET" as const,
       url: "/api/users/calculate",
@@ -374,6 +386,10 @@ export const ENDPOINTS = {
       method: "POST" as const,
       url: "/api/users/createTechnician",
     },
+    getListUserByRole:{
+      method: "GET" as const,
+      url: "/api/users"
+    }
   },
 
   // ─── VehicleController ───────────────────────────────────────────────────

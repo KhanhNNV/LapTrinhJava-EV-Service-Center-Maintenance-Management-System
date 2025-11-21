@@ -202,7 +202,8 @@ public class AppointmentServiceImpl implements IAppointmentService {
         customerNoti.setUserId(savedAppointment.getCustomer().getUserId()); // ID người nhận (Khách hàng)
         customerNoti.setTitle("Lịch hẹn của bạn đã được xác nhận!");
         customerNoti.setMessage("Lịch hẹn #" + savedAppointment.getAppointmentId() +
-                " của bạn đã được nhân viên của chúng tôi xác nhận.");
+                " đã được nhân viên xác nhận. Vui lòng đến quầy và check-in lúc " +
+                savedAppointment.getAppointmentTime() + " ngày " + savedAppointment.getAppointmentDate() + ".");
 
         notificationService.createNotification(customerNoti); // Gửi đi
 
@@ -334,15 +335,26 @@ public class AppointmentServiceImpl implements IAppointmentService {
     }
 
     @Override
-    public List<AppointmentDto> getAppointmentByTechinician(Integer technicianId) {
+    public List<AppointmentDto> getAppointmentByTechnician(Integer technicianId,String statusStr) {
         User tech = userRepository.findById(technicianId)
                 .orElseThrow(
                         () -> new ResourceNotFoundException(
-                                "Không tìm thấy kỹ thuật viên với username : " + technicianId));
+                                "Không tìm thấy kỹ thuật viên với id : " + technicianId));
 
-        return appointmentRepository
-                .findByAssignedTechnician_UserId(tech.getUserId())
-                .stream()
+        List<Appointment> appointments;
+
+        if (statusStr != null && !statusStr.isEmpty() && !statusStr.equals("ALL")) {
+            try {
+                AppointmentStatus status = AppointmentStatus.valueOf(statusStr);
+                appointments = appointmentRepository.findByAssignedTechnician_UserIdAndStatus(tech.getUserId(), status);
+            } catch (IllegalArgumentException e) {
+                appointments = List.of();
+            }
+        } else {
+            appointments = appointmentRepository.findByAssignedTechnician_UserId(tech.getUserId());
+        }
+
+        return appointments.stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());
     }

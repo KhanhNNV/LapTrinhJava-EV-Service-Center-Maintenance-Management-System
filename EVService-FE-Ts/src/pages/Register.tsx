@@ -19,7 +19,7 @@ import { toast } from "sonner";
 import GoogleIcon from "@/assets/icons/GoogleIcon";
 import FacebookIcon from "@/assets/icons/FacebookIcon";
 import GithubIcon from "@/assets/icons/GithubIcon";
-
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 type PasswordRequirement = {
   text: string;
   met: boolean;
@@ -108,7 +108,7 @@ export default function Register() {
 
   // ======= Social register (OAuth2) =======
   const handleSocialRegister = (provider: "google" | "facebook" | "github") => {
-    const base = "http://localhost:8080/oauth2/authorization";
+    const base = `${API_BASE_URL}/oauth2/authorization`;
     const urlMap: Record<typeof provider, string> = {
       google: `${base}/google`,
       facebook: `${base}/facebook`,
