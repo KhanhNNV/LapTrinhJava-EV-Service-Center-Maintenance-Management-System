@@ -107,28 +107,52 @@ export const userService = {
       return res.data;
     },
 
+    async createStaff (data: CreateUserRequest){
+        const endpoint = ENDPOINTS.users.createStaff
+        const res = await api.request({
+          method: endpoint.method,
+          url:endpoint.url,
+          data:data
+        })
+        return res.data;
+    },
 
-  createStaff: async (data: CreateUserRequest) => {
-    // API: UserController.createStaff
-return await api.post("/api/users/createStaff", data);
-  },
+    
+    async createTechnician(data: CreateUserRequest){
+      const endpoint = ENDPOINTS.users.createTechnician
+      const res = await api.request({
+        method: endpoint.method,
+        url:endpoint.url,
+        data:data
+      })
+      return res.data;
+    },
 
-  createTechnician: async (data: CreateUserRequest) => {
-    // API: UserController.createTechnician
-return await api.post("/api/users/createTechnician", data);
-  },
-  
-  // Hàm tạo Customer dùng chung endpoint Register
-  createCustomer: async (data: CreateUserRequest) => {
-      // Tận dụng API đăng ký public
-      return await api.post("/auth/register", data);
-  },
-  addCertificateToUser: async (userId: number, data: { 
-    certificateId: number; 
-    credentialId: string; 
-    issueDate: string; 
-    notes?: string 
-  }) => {
-    return await api.post(`/api/users/${userId}/certificates`, data);
-  },
+
+    // Hàm tạo Customer dùng chung endpoint Register
+    createCustomer: async (data: CreateUserRequest) => {
+        const endpoint = ENDPOINTS.auth.register
+        const res = await api.request({
+          method: endpoint.method,
+          url:endpoint.url,
+          data:data
+        })
+        return res.data;
+    },
+
+
+    async addCertificateToUser(userId: number, data: { 
+      certificateId: number; 
+      credentialId: string; 
+      issueDate: string; 
+      notes?: string 
+    }) {
+      const endpoint = ENDPOINTS.users.addCertificate(userId);
+      const res = await api.request({
+        method: endpoint.method,
+        url: endpoint.url,
+        data: data
+      });
+      return res.data;
+    },
 }

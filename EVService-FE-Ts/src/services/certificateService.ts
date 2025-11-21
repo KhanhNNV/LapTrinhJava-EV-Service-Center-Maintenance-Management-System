@@ -1,8 +1,8 @@
 import api from "./api";
 
 export interface Certificate {
-  id: number;
-  name: string;
+  certificateId: number;   
+  certificateName: string
   description?: string;
   code?: string; // Mã chứng chỉ nếu có
 }

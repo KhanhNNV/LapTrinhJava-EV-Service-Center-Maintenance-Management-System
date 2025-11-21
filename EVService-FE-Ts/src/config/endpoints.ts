@@ -390,7 +390,11 @@ export const ENDPOINTS = {
     getListUserByRole:{
       method: "GET" as const,
       url: "/api/users"
-    }
+    },
+    addCertificate: (id: number | string) => ({
+      method: "POST" as const,
+      url: `/api/users/${id}/certificates`,
+    }),
   },
 
   // ─── VehicleController ───────────────────────────────────────────────────

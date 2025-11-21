@@ -55,10 +55,7 @@ export function CreateUserDialog({ onSuccess }: { onSuccess?: () => void }) {
   
   // Dữ liệu danh mục từ API
   const [centers, setCenters] = useState<ServiceCenter[]>([]);
-    const [certTypes, setCertTypes] = useState<Certificate[]>([
-      { id: 1, name: "Chứng chỉ sửa chữa Ô tô điện" },
-      { id: 2, name: "Chứng chỉ sửa chữa Xe máy điện" }
-    ]);
+    const [certTypes, setCertTypes] = useState<Certificate[]>([]);
   // Khởi tạo Form
   const form = useForm<z.infer<typeof techSchema>>({
     resolver: zodResolver(
@@ -136,7 +133,7 @@ export function CreateUserDialog({ onSuccess }: { onSuccess?: () => void }) {
         });
         
         // Lấy userId từ response (Backend trả về DTO có userId)
-        const newUserId = res.data?.userId || res.data?.id; 
+        const newUserId = res?.userId || res?.id;
 
         // B2: Thêm chứng chỉ (nếu có nhập)
         if (newUserId && values.certificates && values.certificates.length > 0) {
@@ -180,8 +177,8 @@ export function CreateUserDialog({ onSuccess }: { onSuccess?: () => void }) {
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-4">
-            <TabsTrigger value="CUSTOMER">Khách hàng</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 mb-4">
+            {/* <TabsTrigger value="CUSTOMER">Khách hàng</TabsTrigger> */}
             <TabsTrigger value="STAFF">Nhân viên</TabsTrigger>
             <TabsTrigger value="TECHNICIAN">Kỹ thuật viên</TabsTrigger>
           </TabsList>
@@ -224,7 +221,7 @@ export function CreateUserDialog({ onSuccess }: { onSuccess?: () => void }) {
               <FormField control={form.control} name="password" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Mật khẩu <span className="text-red-500">*</span></FormLabel>
-                  <FormControl><Input type="password" placeholder="******" {...field} /></FormControl>
+                  <FormControl><Input type="password" placeholder="**********" {...field} /></FormControl>
                   <FormMessage />
                 </FormItem>
               )} />
@@ -290,8 +287,10 @@ export function CreateUserDialog({ onSuccess }: { onSuccess?: () => void }) {
                                     </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                    {certTypes.map((ct) => (
-                                    <SelectItem key={ct.id} value={ct.id.toString()}>{ct.name}</SelectItem>
+                                    {certTypes.map((ct: any) => (
+                                      <SelectItem key={ct.certificateId} value={ct.certificateId.toString()}>
+                                        {ct.certificateName}
+                                      </SelectItem>
                                     ))}
                                 </SelectContent>
                                 </Select>
