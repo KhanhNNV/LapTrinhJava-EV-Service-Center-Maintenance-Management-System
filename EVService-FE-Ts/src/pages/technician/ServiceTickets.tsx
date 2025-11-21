@@ -10,6 +10,8 @@ import { useToast } from "@/hooks/use-toast";
 import { authService } from "@/services/auth";
 import { Wrench, Plus, CheckCircle, Loader2,Eye,Trash2,Check,ChevronsUpDown,Sparkles,BrainCircuit,Info,Minus } from "lucide-react";
 import { cn } from "@/utils/utils";
+import { usePagination } from "@/hooks/usePagination";
+import { PaginationControls } from "@/components/common/PaginationControls";
 import {
     Table,
     TableBody,
@@ -80,6 +82,15 @@ export default function TechnicianServiceTickets() {
     const [openPartCombobox, setOpenPartCombobox] = useState(false);  // Đóng mở dropdown
 
 
+    const {
+        currentData,
+        currentPage,
+        totalPages,
+        goToPage,
+        totalItems,
+        indexOfFirstItem,
+        indexOfLastItem
+    } = usePagination(tickets, 5);
 
     useEffect(() => {
         if (currentUser?.id) {
@@ -409,14 +420,15 @@ export default function TechnicianServiceTickets() {
                     <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                 </div>
             ) : (
+                <>
                 <div className="grid gap-4">
-                    {tickets.length === 0 && (
+                    {currentData.length === 0 && (
                         <div className="text-center py-10 border border-dashed rounded-lg">
                             <p className="text-muted-foreground">Không có phiếu dịch vụ nào.</p>
                         </div>
                     )}
 
-                    {tickets.map((ticket) => (
+                    {currentData.map((ticket) => (
                         <Card key={ticket.ticketId} className="hover:shadow-md transition-shadow">
                             <CardHeader>
                                 <div className="flex items-center justify-between">
@@ -505,7 +517,10 @@ export default function TechnicianServiceTickets() {
                                 </div>
                             </CardContent>
                         </Card>
+
+
                     ))}
+
                     <Dialog open={!!selectedTicket} onOpenChange={(open) => !open && setSelectedTicket(null)}>
                         <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
                             {selectedTicket && (
@@ -1070,6 +1085,17 @@ export default function TechnicianServiceTickets() {
                         </DialogContent>
                     </Dialog>
                 </div>
+                    <div className="flex items-center justify-between border-t pt-4 mt-4">
+                        <div className="text-sm text-muted-foreground">
+                            Hiển thị {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, totalItems)} trong số {totalItems} lịch hẹn
+                        </div>
+
+                        <PaginationControls
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            onPageChange={goToPage}
+                        />
+                    </div></>
             )}
         </div>
     );

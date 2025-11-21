@@ -20,7 +20,8 @@ import * as z from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-
+import { usePagination } from "@/hooks/usePagination";
+import { PaginationControls } from "@/components/common/PaginationControls";
 // Helper type guard để kiểm tra lỗi phản hồi API
 // Giả định lỗi API trả về một đối tượng có response.data.message
 interface ApiError {
@@ -75,6 +76,7 @@ export default function PartsManagement() {
         defaultValues: { partName: "", unitPrice: 0, initialStock: 0 },
     });
 
+
     useEffect(() => {
         fetchParts();
     }, []);
@@ -107,6 +109,17 @@ export default function PartsManagement() {
             part.partId.toString().includes(lowerCaseSearch)
         );
     }, [parts, searchTerm]);
+
+    //phân trang
+    const {
+        currentData, // Dữ liệu hiển thị cho trang hiện tại
+        currentPage,
+        totalPages,
+        goToPage,
+        totalItems,
+        indexOfFirstItem,
+        indexOfLastItem
+    } = usePagination(filteredParts, 5);
 
     // --- Handle Dialog Actions (Không đổi) ---
 
@@ -259,41 +272,57 @@ export default function PartsManagement() {
                             <p className="text-muted-foreground">Không tìm thấy phụ tùng nào.</p>
                         </div>
                     ) : (
-                        <div className="overflow-x-auto">
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead className="w-[80px]">ID</TableHead>
-                                        <TableHead>Tên Phụ Tùng</TableHead>
-                                        <TableHead className="text-right">Đơn Giá</TableHead>
-                                        <TableHead className="text-center w-[120px]">Hành Động</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {filteredParts.map((part) => (
-                                        <TableRow key={part.partId}>
-                                            <TableCell className="font-medium">{part.partId}</TableCell>
-                                            <TableCell>{part.partName}</TableCell>
-                                            <TableCell className="text-right font-medium text-green-600">
-                                                {part.unitPrice.toLocaleString('vi-VN')} VNĐ
-                                            </TableCell>
-                                            <TableCell className="text-center">
-                                                <div className="flex justify-center gap-2">
-                                                    {/* Nút Sửa (Hiển thị cho mọi user đã đăng nhập) */}
-                                                    <Button variant="outline" size="icon" onClick={() => handleOpenEdit(part)}>
-                                                        <Edit className="h-4 w-4" />
-                                                    </Button>
-                                                    {/* Nút Xóa (Hiển thị cho mọi user đã đăng nhập) */}
-                                                    <Button variant="destructive" size="icon" onClick={() => setPartToDelete(part.partId)}>
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </Button>
-                                                </div>
-                                            </TableCell>
+                        <>
+
+                            <div className="overflow-x-auto">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead className="w-[80px]">ID</TableHead>
+                                            <TableHead>Tên Phụ Tùng</TableHead>
+                                            <TableHead className="text-right">Đơn Giá</TableHead>
+                                            <TableHead className="text-center w-[120px]">Hành Động</TableHead>
                                         </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </div>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {currentData.map((part) => (
+                                            <TableRow key={part.partId}>
+                                                <TableCell className="font-medium">{part.partId}</TableCell>
+                                                <TableCell>{part.partName}</TableCell>
+                                                <TableCell className="text-right font-medium text-green-600">
+                                                    {part.unitPrice.toLocaleString('vi-VN')} VNĐ
+                                                </TableCell>
+                                                <TableCell className="text-center">
+                                                    <div className="flex justify-center gap-2">
+                                                        {/* Nút Sửa (Hiển thị cho mọi user đã đăng nhập) */}
+                                                        <Button variant="outline" size="icon" onClick={() => handleOpenEdit(part)}>
+                                                            <Edit className="h-4 w-4" />
+                                                        </Button>
+                                                        {/* Nút Xóa (Hiển thị cho mọi user đã đăng nhập) */}
+                                                        <Button variant="destructive" size="icon" onClick={() => setPartToDelete(part.partId)}>
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </Button>
+                                                    </div>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </div>
+                            {totalItems > 0 && (
+                                <div className="flex flex-col sm:flex-row items-center justify-between border-t pt-4 mt-4 gap-4">
+                                    <div className="text-sm text-muted-foreground">
+                                        Hiển thị {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, totalItems)} trong số {totalItems} phụ tùng
+                                    </div>
+
+                                    <PaginationControls
+                                        currentPage={currentPage}
+                                        totalPages={totalPages}
+                                        onPageChange={goToPage}
+                                    />
+                                </div>
+                            )}
+                        </>
                     )}
                 </CardContent>
             </Card>

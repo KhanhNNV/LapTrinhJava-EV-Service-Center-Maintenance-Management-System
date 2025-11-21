@@ -11,9 +11,22 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Receipt, Calendar, CreditCard, Loader2, Wrench, Eye, User, Phone } from 'lucide-react';
 import { useCustomerInvoices, InvoiceDto } from '@/services/customerInvoices.ts';
+import { usePagination } from "@/hooks/usePagination";
+import { PaginationControls } from "@/components/common/PaginationControls";
 
 export default function Invoices() {
     const { data: invoices, isLoading } = useCustomerInvoices();
+
+    // Cấu hình phân trang
+    const {
+        currentData: currentInvoices,
+        currentPage,
+        totalPages,
+        goToPage,
+        totalItems,
+        indexOfFirstItem,
+        indexOfLastItem
+    } = usePagination(invoices || [], 6); // 6 items per page
 
     // State để quản lý hóa đơn đang được xem chi tiết
     const [selectedInvoice, setSelectedInvoice] = useState<InvoiceDto | null>(null);
@@ -57,65 +70,79 @@ export default function Invoices() {
             {isLoading ? (
                 <div className="flex justify-center py-10"><Loader2 className="animate-spin"/></div>
             ) : (
-                <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-2">
-                    {invoices?.length === 0 ? (
-                        <div className="col-span-full text-center py-10 text-gray-500 border-2 border-dashed rounded-lg">
-                            Bạn chưa có hóa đơn dịch vụ nào.
+                <>
+                    <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-2">
+                        {currentInvoices.length === 0 ? (
+                            <div className="col-span-full text-center py-10 text-gray-500 border-2 border-dashed rounded-lg">
+                                Bạn chưa có hóa đơn dịch vụ nào.
+                            </div>
+                        ) : (
+                            currentInvoices.map((invoice: InvoiceDto) => (
+                                <Card key={invoice.id} className="shadow-sm hover:shadow-md transition-all flex flex-col">
+                                    <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+                                        <div className="font-bold text-lg flex items-center gap-2">
+                                            <Receipt className="w-5 h-5 text-blue-600"/>
+                                            Hóa đơn #{invoice.id}
+                                        </div>
+                                        <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                                            Hoàn thành
+                                        </Badge>
+                                    </CardHeader>
+
+                                    <CardContent className="space-y-3 flex-1">
+                                        <div className="text-sm text-muted-foreground flex items-center gap-2">
+                                            <Calendar className="w-4 h-4"/>
+                                            {invoice.completedTime ? new Date(invoice.completedTime).toLocaleString('vi-VN') : 'N/A'}
+                                        </div>
+                                        <div className="text-sm flex items-center gap-2">
+                                            <Wrench className="w-4 h-4 text-gray-500"/>
+                                            Kỹ thuật viên: <span className="font-medium">{invoice.technicianName}</span>
+                                        </div>
+
+                                        <Separator />
+
+                                        <div className="flex justify-between items-center pt-2">
+                                            <span className="text-sm text-muted-foreground">Tổng thanh toán</span>
+                                            <span className="text-xl font-bold text-red-600">
+                                                {formatCurrency(invoice.grandTotal)}
+                                            </span>
+                                        </div>
+                                    </CardContent>
+
+                                    <CardFooter className="grid grid-cols-2 gap-3 bg-slate-50/50 p-4">
+                                        <Button
+                                            variant="outline"
+                                            className="w-full"
+                                            onClick={() => setSelectedInvoice(invoice)}
+                                        >
+                                            <Eye className="w-4 h-4 mr-2"/> Chi tiết
+                                        </Button>
+                                        <Button
+                                            className="w-full bg-blue-600 hover:bg-blue-700"
+                                            //onClick={() => handlePayment(invoice.ticketId)}
+                                            //disabled={createPaymentMutation.isPending}
+                                        >
+                                            {/*{createPaymentMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin"/> : <CreditCard className="w-4 h-4 mr-2"/>}*/}
+                                            Thanh toán
+                                        </Button>
+                                    </CardFooter>
+                                </Card>
+                            ))
+                        )}
+                    </div>
+                    {totalItems > 0 && (
+                        <div className="flex flex-col sm:flex-row items-center justify-between border-t pt-4 mt-4 gap-4">
+                            <div className="text-sm text-muted-foreground text-center sm:text-left">
+                                Hiển thị {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, totalItems)} trong số {totalItems} hóa đơn
+                            </div>
+                            <PaginationControls
+                                currentPage={currentPage}
+                                totalPages={totalPages}
+                                onPageChange={goToPage}
+                            />
                         </div>
-                    ) : (
-                        invoices?.map((invoice: InvoiceDto) => (
-                            <Card key={invoice.id} className="shadow-sm hover:shadow-md transition-all flex flex-col">
-                                <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                                    <div className="font-bold text-lg flex items-center gap-2">
-                                        <Receipt className="w-5 h-5 text-blue-600"/>
-                                        Hóa đơn #{invoice.id}
-                                    </div>
-                                    <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                                        Hoàn thành
-                                    </Badge>
-                                </CardHeader>
-
-                                <CardContent className="space-y-3 flex-1">
-                                    <div className="text-sm text-muted-foreground flex items-center gap-2">
-                                        <Calendar className="w-4 h-4"/>
-                                        {invoice.completedTime ? new Date(invoice.completedTime).toLocaleString('vi-VN') : 'N/A'}
-                                    </div>
-                                    <div className="text-sm flex items-center gap-2">
-                                        <Wrench className="w-4 h-4 text-gray-500"/>
-                                        Kỹ thuật viên: <span className="font-medium">{invoice.technicianName}</span>
-                                    </div>
-
-                                    <Separator />
-
-                                    <div className="flex justify-between items-center pt-2">
-                                        <span className="text-sm text-muted-foreground">Tổng thanh toán</span>
-                                        <span className="text-xl font-bold text-red-600">
-                                            {formatCurrency(invoice.grandTotal)}
-                                        </span>
-                                    </div>
-                                </CardContent>
-
-                                <CardFooter className="grid grid-cols-2 gap-3 bg-slate-50/50 p-4">
-                                    <Button
-                                        variant="outline"
-                                        className="w-full"
-                                        onClick={() => setSelectedInvoice(invoice)}
-                                    >
-                                        <Eye className="w-4 h-4 mr-2"/> Chi tiết
-                                    </Button>
-                                    <Button
-                                        className="w-full bg-blue-600 hover:bg-blue-700"
-                                        //onClick={() => handlePayment(invoice.ticketId)}
-                                        //disabled={createPaymentMutation.isPending}
-                                    >
-                                        {/*{createPaymentMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin"/> : <CreditCard className="w-4 h-4 mr-2"/>}*/}
-                                        Thanh toán
-                                    </Button>
-                                </CardFooter>
-                            </Card>
-                        ))
                     )}
-                </div>
+                </>
             )}
 
             {/* --- DIALOG CHI TIẾT HÓA ĐƠN --- */}

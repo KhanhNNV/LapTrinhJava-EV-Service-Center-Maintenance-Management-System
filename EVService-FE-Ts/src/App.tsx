@@ -47,6 +47,8 @@ import Details from "@/pages/admin/Profit.tsx";
 import StaffQuotes from "./pages/staff/Quotes";
 import PartsManagement from "@/pages/admin/PartsManagement.tsx";
 import ServiceItemManagement from "@/pages/admin/ServiceItemManagement.tsx";
+import TechnicianCertificates from "@/pages/technician/TechnicianCertificates.tsx";
+import {useCustomerInvoices} from "@/services/customerInvoices.ts";
 
 const queryClient = new QueryClient();
 
@@ -147,6 +149,7 @@ const App = () => (
             <Route path="appointments" element={<TechnicianMyAppointments />} />
             <Route path="tickets" element={<TechnicianServiceTickets />} />
             <Route path="notifications" element={<TechnicianNotifications />} />
+              <Route path="certificates" element={<TechnicianCertificates /> } />
             <Route path="settings" element={<SettingsPage />} />
           </Route>
 

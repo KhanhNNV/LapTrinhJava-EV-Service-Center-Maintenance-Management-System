@@ -22,6 +22,8 @@ import * as z from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { usePagination } from "@/hooks/usePagination";
+import { PaginationControls } from "@/components/common/PaginationControls";
 
 // Helper type guard để kiểm tra lỗi phản hồi API
 interface ApiError {
@@ -113,6 +115,16 @@ export default function ServiceItemManagement() {
             item.id.toString().includes(lowerCaseSearch)
         );
     }, [serviceItems, searchTerm]);
+
+    const {
+        currentData, // Dữ liệu hiển thị cho trang hiện tại
+        currentPage,
+        totalPages,
+        goToPage,
+        totalItems,
+        indexOfFirstItem,
+        indexOfLastItem
+    } = usePagination(filteredItems, 5);
 
     // --- CRUD Handlers (Không đổi) ---
 
@@ -247,6 +259,7 @@ export default function ServiceItemManagement() {
                             <p className="text-muted-foreground">Không tìm thấy dịch vụ nào.</p>
                         </div>
                     ) : (
+                        <>
                         <div className="overflow-x-auto">
                             <Table>
                                 <TableHeader>
@@ -260,7 +273,7 @@ export default function ServiceItemManagement() {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {filteredItems.map((item) => (
+                                    {currentData.map((item) => (
                                         <TableRow key={item.id}>
                                             <TableCell className="font-medium">{item.id}</TableCell>
                                             <TableCell>{item.itemName}</TableCell>
@@ -286,6 +299,20 @@ export default function ServiceItemManagement() {
                                 </TableBody>
                             </Table>
                         </div>
+                            {totalItems > 0 && (
+                                <div className="flex flex-col sm:flex-row items-center justify-between border-t pt-4 mt-4 gap-4">
+                                    <div className="text-sm text-muted-foreground">
+                                        Hiển thị {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, totalItems)} trong số {totalItems} dịch vụ
+                                    </div>
+
+                                    <PaginationControls
+                                        currentPage={currentPage}
+                                        totalPages={totalPages}
+                                        onPageChange={goToPage}
+                                    />
+                                </div>
+                            )}
+                        </>
                     )}
                 </CardContent>
             </Card>

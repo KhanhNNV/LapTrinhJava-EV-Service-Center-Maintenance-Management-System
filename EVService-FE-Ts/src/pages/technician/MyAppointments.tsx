@@ -3,6 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/componen
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
+import { usePagination } from "@/hooks/usePagination";
+import { PaginationControls } from "@/components/common/PaginationControls";
 import {
     Dialog,
     DialogContent,
@@ -45,6 +47,16 @@ export default function TechnicianMyAppointments() {
 
     // State loading khi đang tạo ticket
     const [isCreating, setIsCreating] = useState(false);
+
+    const {
+        currentData,
+        currentPage,
+        totalPages,
+        goToPage,
+        totalItems,
+        indexOfFirstItem,
+        indexOfLastItem
+    } = usePagination(appointments, 9);
 
     useEffect(() => {
         if (currentUser?.id) fetchAppointments();
@@ -197,40 +209,52 @@ export default function TechnicianMyAppointments() {
                     <p className="text-muted-foreground">Không tìm thấy lịch hẹn nào.</p>
                 </div>
             ) : (
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    {appointments.map((appt) => (
-                        <Card key={appt.appointmentId} className="hover:shadow-md flex flex-col h-full">
-                            <CardHeader className="pb-2">
-                                <div className="flex justify-between items-start">
-                                    <CardTitle className="text-lg">{appt.serviceType}</CardTitle>
-                                    <Badge className={statusColors[appt.status]}>{getStatusText(appt.status)}</Badge>
-                                </div>
-                            </CardHeader>
-                            <CardContent className="text-sm space-y-2 flex-1">
-                                <div className="flex items-center gap-2">
-                                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                <>
+                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                        {currentData.map((appt) => (
+                            <Card key={appt.appointmentId} className="hover:shadow-md flex flex-col h-full">
+                                <CardHeader className="pb-2">
+                                    <div className="flex justify-between items-start">
+                                        <CardTitle className="text-lg">{appt.serviceType}</CardTitle>
+                                        <Badge className={statusColors[appt.status]}>{getStatusText(appt.status)}</Badge>
+                                    </div>
+                                </CardHeader>
+                                <CardContent className="text-sm space-y-2 flex-1">
+                                    <div className="flex items-center gap-2">
+                                        <Calendar className="h-4 w-4 text-muted-foreground" />
 
-                                    <span className="font-medium">
-                                        {new Date(appt.updatedAt).toLocaleString('vi-VN', {
-                                        hour: '2-digit',
-                                        minute: '2-digit',
-                                        day: '2-digit',
-                                        month: '2-digit',
-                                        year: 'numeric'
-                                        })}
-                                    </span>
-                                </div>
+                                        <span className="font-medium">
+                                            {new Date(appt.updatedAt).toLocaleString('vi-VN', {
+                                            hour: '2-digit',
+                                            minute: '2-digit',
+                                            day: '2-digit',
+                                            month: '2-digit',
+                                            year: 'numeric'
+                                            })}
+                                        </span>
+                                    </div>
+                                    {/* ... phần note giữ nguyên */}
+                                </CardContent>
+                                <CardFooter>
+                                    <Button variant="outline" className="w-full" onClick={() => handleViewDetails(appt)}>
+                                        <Info className="mr-2 h-4 w-4" /> Xem chi tiết & tạo phiếu dịch vụ
+                                    </Button>
+                                </CardFooter>
+                            </Card>
+                        ))}
+                    </div>
+                    <div className="flex items-center justify-between border-t pt-4 mt-4">
+                        <div className="text-sm text-muted-foreground">
+                            Hiển thị {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, totalItems)} trong số {totalItems} lịch hẹn
+                         </div>
 
-                                {/* ... phần note giữ nguyên */}
-                            </CardContent>
-                            <CardFooter>
-                                <Button variant="outline" className="w-full" onClick={() => handleViewDetails(appt)}>
-                                    <Info className="mr-2 h-4 w-4" /> Xem chi tiết & tạo phiếu dịch vụ
-                                </Button>
-                            </CardFooter>
-                        </Card>
-                    ))}
-                </div>
+                        <PaginationControls
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            onPageChange={goToPage}
+                        />
+                    </div>
+                </>
             )}
 
             {/* DIALOG CHI TIẾT */}

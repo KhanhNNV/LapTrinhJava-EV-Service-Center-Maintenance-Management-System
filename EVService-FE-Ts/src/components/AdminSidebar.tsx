@@ -83,6 +83,23 @@ const items = [
     icon: Package,
   },
     {
+        title: "Phụ tùng và dịch vụ ",
+        icon: Wrench,
+        isActive: true,
+        items: [
+            {
+                title: "Phụ tùng",
+                url: "/dashboard/admin/parts",
+                icon: Package
+            },
+            {
+                title: "Dịch vụ",
+                url: "/dashboard/admin/serviceitems",
+                icon: Wrench
+            },
+        ],
+    },
+    {
         title: "Báo cáo & Thống kê",
         icon: BarChart3,
         isActive: true,
@@ -104,25 +121,8 @@ const items = [
             }
         ],
     },
-    {
-        title: "Phụ tùng và dịch vụ ",
-        icon: Wrench,
-        isActive: true,
-        items: [
-            {
-                title: "Phụ tùng",
-                url: "/dashboard/admin/parts",
-                icon: Package
-            },
-            {
-                title: "Dịch vụ",
-                url: "/dashboard/admin/serviceitems",
-                icon: Wrench
-            },
-        ],
-    },
   {
-    title: "Cài đặt hệ thống",
+    title: "Cài đặt",
     url: "/dashboard/admin/settings",
     icon: Settings,
   },
