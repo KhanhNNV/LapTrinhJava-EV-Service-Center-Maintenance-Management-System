@@ -45,14 +45,30 @@ export default function Details() {
         try {
             const data = await profitService.getProfitReport(year, month);
             setReport(data);
-        } catch (error) {
-            console.error("Failed to fetch profit report:", error);
+        } catch (error: any) {
+            console.warn("Không tải được dữ liệu (Có thể do chưa có doanh thu):", error);
+
+            // [QUAN TRỌNG] Tự tạo dữ liệu mặc định = 0 thay vì để null
+            const zeroData: ProfitReport = {
+                year: year,
+                month: month,
+                totalRevenue: 0,
+                totalExpense: 0,
+                profit: 0,
+                staffSalary: 0,
+                technicianSalary: 0,
+                partCost: 0
+            };
+
+            setReport(zeroData);
+
+            // (Tùy chọn) Thông báo nhẹ nhàng cho người dùng biết
             toast({
-                title: "Lỗi",
-                description: "Không thể tải báo cáo lợi nhuận.",
-                variant: "destructive",
+                title: "Chưa có dữ liệu",
+                description: `Tháng ${month}/${year} chưa có phát sinh doanh thu/chi phí.`,
+                variant: "default", // Màu bình thường, không dùng màu đỏ (destructive)
             });
-            setReport(null);
+
         } finally {
             setLoading(false);
         }
