@@ -19,4 +19,6 @@ public interface IVehicleService {
 
     // Xóa 1 xe CỦA TÔI (customer)
     void deleteMyVehicle(Integer vehicleId, Integer UserId);
+
+    List<VehicleDto> getVehiclesByUserId(Integer userId);
 }

@@ -68,10 +68,16 @@ export const ENDPOINTS = {
       method: "PUT" as const,
       url: `/api/appointments/${appointmentId}/confirmForCustomer`,
     }),
+    historyByStaff: (staffId: number | string) => ({
+      method: "GET" as const,
+      url: `/api/appointments/staff/${staffId}`,
+    }),
+    // API: Lấy lịch sử của Customer (đã có nhưng khai báo lại cho chắc)
     historyByCustomer: (customerId: number | string) => ({
       method: "GET" as const,
-      url: `/api/appointments/customer/${customerId}`,
+      url: `/api/appointments/customer/${customerId}/history`,
     }),
+
   },
 
   // ─── CertificateController ───────────────────────────────────────────────
@@ -260,7 +266,10 @@ export const ENDPOINTS = {
       method: "DELETE" as const,
       url: `/api/service-centers/${id}`,
     }),
-    
+    historyByTechnician: (technicianId: number | string) => ({
+        method: "GET" as const,
+        url: `/api/service-tickets/technician/${technicianId}/history`,
+    }),
   },
 
 
@@ -446,6 +455,10 @@ export const ENDPOINTS = {
     delete: (id: number | string) => ({
       method: "DELETE" as const,
       url: `/api/vehicles/${id}`,
+    }),
+    byUser: (userId: number | string) => ({
+      method: "GET" as const,
+      url: `/api/vehicles/user/${userId}`,
     }),
   },
 

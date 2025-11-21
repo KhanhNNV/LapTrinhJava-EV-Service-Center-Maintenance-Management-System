@@ -12,7 +12,10 @@ import java.util.stream.Collectors;
 import edu.uth.evservice.requests.NotificationRequest;
 import edu.uth.evservice.services.INotificationService;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import edu.uth.evservice.dtos.AppointmentDto;
 import edu.uth.evservice.dtos.TechnicianWithCertificateDto;

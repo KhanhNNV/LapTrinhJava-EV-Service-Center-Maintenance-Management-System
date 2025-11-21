@@ -27,14 +27,15 @@ public class VehicleServiceImpl implements IVehicleService {
     // START: Thêm logic cho phương thức đăng ký xe của customer
     // Lý do: Đây là phương thức an toàn để khách hàng tự đăng ký xe của mình.
     // Công dụng:
-    // 1. Sử dụng `customerId` lấy từ token (đã được xác thực) để xác định chủ xe, thay vì `userId` từ request.
+    // 1. Sử dụng `customerId` lấy từ token (đã được xác thực) để xác định chủ xe,
+    // thay vì `userId` từ request.
     // 2. Kiểm tra xem biển số xe đã tồn tại trong hệ thống hay chưa.
     // 3. Xử lý logic gán xe cho một trung tâm dịch vụ nếu có.
     // 4. Lưu xe vào CSDL và trả về thông tin chi tiết (DTO).
     @Override
-    public VehicleDto registerVehicle(VehicleRequest request, Integer customerId){
+    public VehicleDto registerVehicle(VehicleRequest request, Integer customerId) {
         // 1. Tìm customer bằng customerId (an toàn hơn)
-        User customer = userRepository.findById(customerId) 
+        User customer = userRepository.findById(customerId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy người dùng: " + customerId));
 
         // 2. Kiểm tra biển số xe đã tồn tại
@@ -64,6 +65,7 @@ public class VehicleServiceImpl implements IVehicleService {
         // 5. Lưu và chuyển đổi sang DTO bằng hàm có sẵn
         return toDTO(vehicleRepository.save(vehicle));
     }
+
     // END: Thêm logic cho phương thức đăng ký xe của customer
     @Override
     public List<VehicleDto> getMyVehicles(Integer UserId) {
@@ -79,7 +81,7 @@ public class VehicleServiceImpl implements IVehicleService {
         // Tìm xe theo ID VÀ username để đảm bảo đúng chủ sở hữu
         Vehicle vehicle = vehicleRepository.findByVehicleIdAndUser_UserId(vehicleId, UserId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy xe hoặc bạn không có quyền truy cập xe này."));
-        
+
         return toDTO(vehicle);
     }
 
@@ -95,7 +97,7 @@ public class VehicleServiceImpl implements IVehicleService {
         existingVehicle.setLicensePlate(request.getLicensePlate());
         existingVehicle.setRecentMaintenanceDate(request.getRecentMaintenanceDate());
         existingVehicle.setVehicleType(request.getVehicleType());
-        
+
         // 3. Lưu lại
         Vehicle updatedVehicle = vehicleRepository.save(existingVehicle);
         return toDTO(updatedVehicle);
@@ -111,6 +113,13 @@ public class VehicleServiceImpl implements IVehicleService {
         vehicleRepository.delete(vehicle);
     }
 
+    @Override
+    public List<VehicleDto> getVehiclesByUserId(Integer userId) {
+        return vehicleRepository.findByUser_UserId(userId)
+                .stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
+    }
 
     private VehicleDto toDTO(Vehicle vehicle) {
         return VehicleDto.builder()
@@ -125,5 +134,4 @@ public class VehicleServiceImpl implements IVehicleService {
                 .build();
     }
 
-    
 }
