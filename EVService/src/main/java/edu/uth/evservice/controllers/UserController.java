@@ -4,9 +4,11 @@ import edu.uth.evservice.dtos.ProfitReportDto;
 import edu.uth.evservice.dtos.SalaryDto;
 import edu.uth.evservice.dtos.UserDto;
 import edu.uth.evservice.models.enums.Role;
+import edu.uth.evservice.requests.AddCertificateRequest;
 import edu.uth.evservice.requests.CreateUserRequest;
 import edu.uth.evservice.services.IProfitReportService;
 import edu.uth.evservice.services.ISalaryService;
+import edu.uth.evservice.services.ITechnicianCertificateService;
 import edu.uth.evservice.services.IUserService;
 import lombok.RequiredArgsConstructor;
 
@@ -28,6 +30,7 @@ public class UserController {
     private final IUserService userService;
     private final ISalaryService salaryService;
     private final IProfitReportService profitReportService;
+    private final ITechnicianCertificateService techCertService;
     // Tìm kiếm user theo username hoặc fullname (chữ thường)
     @GetMapping("/search")
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
@@ -72,7 +75,6 @@ public class UserController {
         userService.deleteUser(id);
         return ResponseEntity.ok("Đã xóa user có ID = " + id);
     }
-
     // Tạo Technician
     @PostMapping("/createTechnician")
     @PreAuthorize("hasRole('ADMIN')")
@@ -80,7 +82,6 @@ public class UserController {
         request.setRole(Role.TECHNICIAN.name());
         return ResponseEntity.ok(userService.createUser(request));
     }
-
     // Tạo Staff
     @PostMapping("/createStaff")
     @PreAuthorize("hasRole('ADMIN')")
@@ -89,8 +90,6 @@ public class UserController {
         return ResponseEntity.ok(userService.createUser(request));
     }
     //In danh sách lương của tất cả nhân viên trong một tháng
-
-
     @GetMapping("/calculate")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<SalaryDto>> calculateSalaries(
@@ -130,4 +129,12 @@ public class UserController {
         Page<UserDto> result = userService.getListUsersByRole(role, page, limit);
         return ResponseEntity.ok(result);
     }
+
+    @PostMapping("/{userId}/certificates")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> addCertificateToUser(
+        @PathVariable Integer userId,
+        @RequestBody AddCertificateRequest request) {
+    return ResponseEntity.ok(techCertService.addCertificateToMyProfile(request, userId));
+}
 }

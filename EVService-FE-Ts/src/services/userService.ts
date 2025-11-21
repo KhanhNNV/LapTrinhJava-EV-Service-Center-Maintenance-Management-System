@@ -40,6 +40,18 @@ export interface UserResponse {
   size: number;
   number: number; 
 }
+
+export interface CreateUserRequest {
+  username: string;
+  fullName: string;
+  email: string;
+  password: string;
+  phoneNumber?: string;
+  address?: string;
+  role?: string;
+  centerId?: number | null; 
+
+}
 export const userService = {
 
     //~ Lấy thông tin cá nhân
@@ -93,5 +105,30 @@ export const userService = {
         },
       });
       return res.data;
-    }
+    },
+
+
+  createStaff: async (data: CreateUserRequest) => {
+    // API: UserController.createStaff
+return await api.post("/api/users/createStaff", data);
+  },
+
+  createTechnician: async (data: CreateUserRequest) => {
+    // API: UserController.createTechnician
+return await api.post("/api/users/createTechnician", data);
+  },
+  
+  // Hàm tạo Customer dùng chung endpoint Register
+  createCustomer: async (data: CreateUserRequest) => {
+      // Tận dụng API đăng ký public
+      return await api.post("/auth/register", data);
+  },
+  addCertificateToUser: async (userId: number, data: { 
+    certificateId: number; 
+    credentialId: string; 
+    issueDate: string; 
+    notes?: string 
+  }) => {
+    return await api.post(`/api/users/${userId}/certificates`, data);
+  },
 }

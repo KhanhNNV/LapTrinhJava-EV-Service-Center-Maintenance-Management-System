@@ -75,17 +75,17 @@ export const UserTable: React.FC<UserTableProps> = ({
               <TableHead className="w-[50px]">ID</TableHead>
               
 
-              <TableHead className="text-center">Tài khoản</TableHead>
+              <TableHead className="text-left">Tài khoản</TableHead>
               
-              <TableHead className="text-center">Họ và Tên</TableHead>
-              <TableHead className="text-center">Email</TableHead>
-              <TableHead className="text-center">SĐT</TableHead>
+              <TableHead className="text-left">Họ và Tên</TableHead>
+              <TableHead className="text-left">Email</TableHead>
+              <TableHead className="text-left">SĐT</TableHead>
               
               <TableHead className="text-center">Cơ sở</TableHead>
               
               <TableHead className="text-center">Vai trò</TableHead>
               
-              <TableHead className="text-center">Ngày tham gia</TableHead>
+              <TableHead className="text-left">Ngày tham gia</TableHead>
               
               <TableHead className="text-center">Hành động</TableHead>
             </TableRow>
@@ -120,7 +120,7 @@ export const UserTable: React.FC<UserTableProps> = ({
                     )}
                   </TableCell>
 
-                  <TableCell>
+                  <TableCell className="text-center">
                     <Badge variant={getRoleBadgeColor(user.role)}>
                       {user.role}
                     </Badge>
@@ -131,7 +131,7 @@ export const UserTable: React.FC<UserTableProps> = ({
                     {formatDateTime(user.createdAt)}
                   </TableCell>
                   
-                  <TableCell className="text-right">
+                  <TableCell className="text-center">
                     <div className="flex justify-end gap-2">
                       <Button variant="ghost" size="icon" onClick={() => onView(user)}>
                         <Eye className="h-4 w-4 text-orange-400" />
