@@ -10,6 +10,12 @@ export interface UserProfile {
   phoneNumber: string;
   address: string;
 }
+
+export interface UpdateCertRequest {
+  credentialId: string;
+  issueDate: string;
+  notes?: string;
+}
 export interface UpdateProfile {
   fullName: string;
   address: string;
@@ -160,17 +166,6 @@ export const userService = {
     });
     return res.data;
   },
-  async addCertificateToTech(userId: number, data: AssignCertificateRequest) {
-    const endpoint = ENDPOINTS.users.updateCer(userId)
-
-    const res = await api.request({
-      method: endpoint.method,
-      url: endpoint.url,
-      data: data
-    });
-
-    return res.data;
-  },
 
   //~ 3. Admin xóa chứng chỉ của Tech
   async removeCertificateFromTech(techId: number, certificateId: number) {
@@ -185,6 +180,16 @@ export const userService = {
 
   async updateUser(userId: number, data: any) {
     const endpoint = ENDPOINTS.users.update(userId);
+    const res = await api.request({
+      method: endpoint.method,
+      url: endpoint.url,
+      data: data
+    });
+    return res.data;
+  },
+
+  async updateCertificateForUser(userId: number, certId: number, data: UpdateCertRequest) {
+    const endpoint = ENDPOINTS.users.updateCer(userId, certId);
     const res = await api.request({
       method: endpoint.method,
       url: endpoint.url,

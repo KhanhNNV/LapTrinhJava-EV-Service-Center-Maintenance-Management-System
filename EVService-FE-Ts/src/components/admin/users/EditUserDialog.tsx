@@ -1,5 +1,3 @@
-// src/components/admin/users/EditUserDialog.tsx
-
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
@@ -12,12 +10,12 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Trash2, Plus, Loader2, Calendar as CalendarIcon } from "lucide-react";
+import { Trash2, Plus, Loader2, Edit, Save, X } from "lucide-react";
 
 // Import services
 import { userService, User } from "@/services/userService";
-import { serviceCenterService, ServiceCenter } from "@/services/serviceCenterService"; // Nhớ import type
-import { certificateService, Certificate, TechnicianCertificate } from "@/services/certificateService"; // Nhớ import type
+import { serviceCenterService, ServiceCenter } from "@/services/serviceCenterService";
+import { certificateService, Certificate } from "@/services/certificateService";
 
 interface EditUserDialogProps {
   user: User | null;
@@ -27,24 +25,28 @@ interface EditUserDialogProps {
 }
 
 export function EditUserDialog({ user, open, onOpenChange, onSuccess }: EditUserDialogProps) {
-  // Form hook
+  // Form hook cho User Info
   const { register, handleSubmit, setValue, reset, watch } = useForm();
-  
+
   // Local State
   const [serviceCenters, setServiceCenters] = useState<ServiceCenter[]>([]);
-  const [allCertificates, setAllCertificates] = useState<Certificate[]>([]);
-  const [userCertificates, setUserCertificates] = useState<any[]>([]); // Dùng any hoặc type DTO trả về
+  const [allCertificates, setAllCertificates] = useState<Certificate[]>([]); // Danh sách loại chứng chỉ để chọn
+  const [userCertificates, setUserCertificates] = useState<any[]>([]); // Danh sách chứng chỉ CỦA User
   const [loading, setLoading] = useState(false);
 
-  // State cho form thêm chứng chỉ (Tech only)
-  const [newCertId, setNewCertId] = useState<string>("");
-  const [newCertDate, setNewCertDate] = useState<string>("");
-  const [newCertCode, setNewCertCode] = useState<string>("");
+  // State cho form chứng chỉ
+  const [certForm, setCertForm] = useState({
+    certificateId: "",
+    credentialId: "",
+    issueDate: "",
+    notes: ""
+  });
+  const [editingCertId, setEditingCertId] = useState<number | null>(null); // ID của loại chứng chỉ đang sửa (nếu có)
 
   // --- 1. LOAD DỮ LIỆU KHI MỞ DIALOG ---
   useEffect(() => {
     if (open && user) {
-      // Reset form với dữ liệu user hiện tại
+      // Reset form User Info
       reset({
         fullName: user.fullName,
         phoneNumber: user.phoneNumber,
@@ -52,7 +54,6 @@ export function EditUserDialog({ user, open, onOpenChange, onSuccess }: EditUser
         role: user.role,
         email: user.email,
         username: user.username,
-        // serviceCenterId sẽ được set trong loadReferenceData sau khi có list
       });
 
       loadReferenceData();
@@ -61,40 +62,34 @@ export function EditUserDialog({ user, open, onOpenChange, onSuccess }: EditUser
 
   // --- 2. HÀM TẢI DỮ LIỆU THAM CHIẾU ---
   const loadReferenceData = async () => {
+    if (!user) return;
     try {
       // 2.1 Load Service Centers (Nếu là Staff/Tech)
-      if (user?.role === "STAFF" || user?.role === "TECHNICIAN") {
+      if (user.role === "STAFF" || user.role === "TECHNICIAN") {
         const centers = await serviceCenterService.getAllServiceCenters();
         setServiceCenters(centers);
 
-        // Logic mapping Center Name -> Center ID để hiển thị mặc định
+        // Map Center Name -> ID
         if (user.centerName) {
-            const currentCenter = centers.find((c) => c.centerName === user.centerName);
-            if (currentCenter) {
-                setValue("serviceCenterId", currentCenter.centerId.toString());
-            }
+          const currentCenter = centers.find((c) => c.centerName === user.centerName);
+          if (currentCenter) {
+            setValue("serviceCenterId", currentCenter.centerId.toString());
+          }
         }
       }
 
       // 2.2 Load Certificates (Nếu là Tech)
-      if (user?.role === "TECHNICIAN") {
-        // Lấy danh sách định nghĩa chứng chỉ (để dropdown)
-        // const certs = await certificateService.getAllCertificates(); // Dùng API
-        
-        // HOẶC FIX CỨNG (nếu API get all certs đang lỗi như bạn gặp trước đó)
-        const certs = [
-             { certificateId: 1, certificateName: "Chứng chỉ sửa chữa Ô tô điện" },
-             { certificateId: 2, certificateName: "Chứng chỉ sửa chữa Xe máy điện" }
-        ] as Certificate[];
-        
-        setAllCertificates(certs);
+      if (user.role === "TECHNICIAN") {
+        // Lấy danh sách tất cả loại chứng chỉ hệ thống
+        const allCerts = await certificateService.getAllCertificates();
+        setAllCertificates(allCerts);
 
         // Lấy danh sách chứng chỉ CỦA USER này
         await loadUserCertificates(user.userId);
       }
     } catch (error) {
-      console.error("Lỗi tải dữ liệu:", error);
-      // toast.error("Không tải được dữ liệu tham chiếu"); // Có thể ẩn để đỡ phiền
+      console.error("Lỗi tải dữ liệu tham chiếu:", error);
+      toast.error("Không thể tải dữ liệu danh mục.");
     }
   };
 
@@ -103,77 +98,109 @@ export function EditUserDialog({ user, open, onOpenChange, onSuccess }: EditUser
       const data = await userService.getCertificatesByUserId(userId);
       setUserCertificates(data);
     } catch (e) {
-      console.log("User này chưa có chứng chỉ hoặc lỗi API:", e);
-      setUserCertificates([]); 
+      console.log("Lỗi lấy chứng chỉ user:", e);
+      setUserCertificates([]);
     }
   };
 
   // --- 3. XỬ LÝ SUBMIT CẬP NHẬT USER ---
-  const onSubmit = async (data: any) => {
+  const onSubmitUser = async (data: any) => {
     if (!user) return;
     try {
       setLoading(true);
-
-      // Chuẩn bị payload
       const updatePayload = {
         fullName: data.fullName,
         phoneNumber: data.phoneNumber,
         address: data.address,
-        // Chỉ gửi serviceCenterId nếu là Staff/Tech
-        centerId: (user.role === "STAFF" || user.role === "TECHNICIAN") 
-            ? Number(data.serviceCenterId) : null
+        centerId: (user.role === "STAFF" || user.role === "TECHNICIAN")
+          ? Number(data.serviceCenterId) : null
       };
 
       await userService.updateUser(user.userId, updatePayload);
-      
+
       toast.success(`Đã cập nhật thông tin cho ${user.username}`);
-      onSuccess(); 
+      onSuccess();
       onOpenChange(false);
-    } catch (error) {
-      toast.error("Cập nhật thất bại. Vui lòng thử lại.");
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Cập nhật thất bại.");
     } finally {
       setLoading(false);
     }
   };
 
-  // --- 4. CÁC HÀM XỬ LÝ CHỨNG CHỈ (TECH ONLY) ---
-  const handleAddCert = async () => {
-    if (!user || !newCertId || !newCertDate || !newCertCode) {
-        toast.warning("Vui lòng nhập đầy đủ thông tin chứng chỉ");
-        return;
+  // --- 4. CÁC HÀM XỬ LÝ CHỨNG CHỈ ---
+
+  // Chọn chứng chỉ để sửa
+  const handleEditCertClick = (cert: any) => {
+    setEditingCertId(cert.certificateId); // Lưu lại ID loại chứng chỉ đang sửa
+    setCertForm({
+      certificateId: cert.certificateId.toString(),
+      credentialId: cert.credentialId,
+      issueDate: cert.issueDate,
+      notes: cert.notes || ""
+    });
+  };
+
+  // Hủy chế độ sửa
+  const handleCancelCert = () => {
+    setEditingCertId(null);
+    setCertForm({ certificateId: "", credentialId: "", issueDate: "", notes: "" });
+  };
+
+  // Lưu chứng chỉ (Thêm mới hoặc Cập nhật)
+  const handleSaveCert = async () => {
+    if (!user) return;
+    
+    // Validate cơ bản
+    if (!certForm.certificateId || !certForm.credentialId || !certForm.issueDate) {
+      toast.warning("Vui lòng nhập đủ Loại, Mã số và Ngày cấp.");
+      return;
     }
+
     try {
-        await userService.addCertificateToTech(user.userId, {
-            certificateId: Number(newCertId),
-            issueDate: newCertDate,
-            credentialId: newCertCode,
-            notes: "Added by Admin via Edit Form"
+      if (editingCertId) {
+        // === LOGIC SỬA ===
+        // Gọi API update: /api/users/{userId}/certificates/{certificateId}
+        await userService.updateCertificateForUser(user.userId, editingCertId, {
+          credentialId: certForm.credentialId,
+          issueDate: certForm.issueDate,
+          notes: certForm.notes
         });
-        toast.success("Đã thêm chứng chỉ thành công");
-        
-        await loadUserCertificates(user.userId);
-        // Reset form nhỏ
-        setNewCertId(""); 
-        setNewCertDate(""); 
-        setNewCertCode("");
+        toast.success("Cập nhật chứng chỉ thành công!");
+      } else {
+        // === LOGIC THÊM MỚI ===
+        // Gọi API add: /api/users/{userId}/certificates
+        await userService.addCertificateToUser(user.userId, {
+          certificateId: Number(certForm.certificateId),
+          credentialId: certForm.credentialId,
+          issueDate: certForm.issueDate,
+          notes: certForm.notes
+        });
+        toast.success("Thêm chứng chỉ thành công!");
+      }
+
+      // Reset form và load lại list
+      handleCancelCert();
+      await loadUserCertificates(user.userId);
+
     } catch (error: any) {
-        toast.error(error.response?.data?.message || "Lỗi thêm chứng chỉ (Có thể mã số đã tồn tại)");
+      console.error(error);
+      toast.error(error.response?.data?.message || "Lỗi khi lưu chứng chỉ. Kiểm tra lại thông tin.");
     }
   };
 
+  // Xóa chứng chỉ
   const handleRemoveCert = async (certId: number) => {
-     if (!user) return;
-     if (!confirm("Bạn chắc chắn muốn xóa chứng chỉ này?")) return;
+    if (!user) return;
+    if (!confirm("Bạn chắc chắn muốn xóa chứng chỉ này khỏi hồ sơ nhân viên?")) return;
 
-     try {
-       // Lưu ý: certId ở đây là certificateId (loại chứng chỉ)
-       // API removeCer trong endpoints đang dùng path: /api/users/{userId}/certificates/{certId}
-       await userService.removeCertificateFromTech(user.userId, certId);
-       toast.success("Đã xóa chứng chỉ");
-       await loadUserCertificates(user.userId);
-     } catch (error) {
-       toast.error("Lỗi xóa chứng chỉ");
-     }
+    try {
+      await userService.removeCertificateFromTech(user.userId, certId);
+      toast.success("Đã xóa chứng chỉ");
+      await loadUserCertificates(user.userId);
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Lỗi xóa chứng chỉ.");
+    }
   };
 
   if (!user) return null;
@@ -182,12 +209,12 @@ export function EditUserDialog({ user, open, onOpenChange, onSuccess }: EditUser
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Chỉnh sửa người dùng</DialogTitle>
+          <DialogTitle>Chỉnh sửa người dùng: {user.fullName}</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          
-          {/* --- KHỐI READ-ONLY --- */}
+        {/* FORM USER INFO */}
+        <form onSubmit={handleSubmit(onSubmitUser)} className="space-y-6">
+          {/* Read-only info block */}
           <div className="grid grid-cols-3 gap-4 bg-muted/50 p-4 rounded-lg border">
             <div>
               <Label className="text-xs text-muted-foreground">Username</Label>
@@ -203,30 +230,28 @@ export function EditUserDialog({ user, open, onOpenChange, onSuccess }: EditUser
             </div>
           </div>
 
-          {/* --- KHỐI EDIT --- */}
+          {/* Editable fields */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Họ và tên</Label>
-              <Input {...register("fullName")} placeholder="Nhập họ tên..." />
+              <Input {...register("fullName")} />
             </div>
-
             <div className="space-y-2">
               <Label>Số điện thoại</Label>
-              <Input {...register("phoneNumber")} placeholder="09xxx..." />
+              <Input {...register("phoneNumber")} />
             </div>
-
             <div className="col-span-2 space-y-2">
               <Label>Địa chỉ</Label>
-              <Input {...register("address")} placeholder="Địa chỉ liên hệ..." />
+              <Input {...register("address")} />
             </div>
 
-            {/* Dropdown Service Center */}
+            {/* Service Center Dropdown */}
             {(user.role === "STAFF" || user.role === "TECHNICIAN") && (
               <div className="col-span-2 space-y-2 p-3 bg-blue-50 rounded border border-blue-100">
                 <Label className="text-blue-700 font-semibold">Trạm dịch vụ trực thuộc</Label>
-                <Select 
+                <Select
                   onValueChange={(val) => setValue("serviceCenterId", val)}
-                  defaultValue={watch("serviceCenterId")} 
+                  defaultValue={watch("serviceCenterId")}
                 >
                   <SelectTrigger className="bg-white">
                     <SelectValue placeholder="-- Chọn trạm dịch vụ --" />
@@ -243,82 +268,129 @@ export function EditUserDialog({ user, open, onOpenChange, onSuccess }: EditUser
             )}
           </div>
 
-          {/* --- KHỐI CHỨNG CHỈ (TECHNICIAN) --- */}
+          {/* --- KHỐI QUẢN LÝ CHỨNG CHỈ (Chỉ hiện nếu là Technician) --- */}
           {user.role === "TECHNICIAN" && (
             <div className="border-t pt-4 mt-4">
-              <h3 className="font-semibold text-sm mb-3 flex items-center gap-2">
-                  📜 Hồ sơ chứng chỉ 
+              <div className="flex justify-between items-center mb-3">
+                <h3 className="font-semibold text-sm flex items-center gap-2">
+                  Chứng chỉ
                   <span className="text-xs bg-gray-200 px-2 py-0.5 rounded-full font-normal">
-                      {userCertificates.length}
+                    {userCertificates.length}
                   </span>
-              </h3>
-              
-              {/* List */}
-              <div className="space-y-2 mb-4 max-h-[150px] overflow-y-auto pr-1">
+                </h3>
+              </div>
+
+              {/* Danh sách chứng chỉ hiện có */}
+              <div className="space-y-2 mb-4 max-h-[180px] overflow-y-auto pr-1 border rounded p-2 bg-slate-50">
                 {userCertificates.length === 0 && (
-                    <p className="text-xs text-gray-400 italic text-center py-2 border border-dashed rounded">Chưa có chứng chỉ.</p>
+                  <p className="text-xs text-gray-400 italic text-center">Chưa có chứng chỉ nào.</p>
                 )}
                 {userCertificates.map((cert) => (
-                  <div key={cert.certificateId} className="flex justify-between items-center bg-white p-2 rounded border text-sm">
+                  <div key={cert.certificateId} className="flex justify-between items-center bg-white p-2 rounded border text-sm shadow-sm">
                     <div>
-                        <div className="font-medium text-blue-900">{cert.certificateName}</div>
-                        <div className="text-xs text-gray-500">
-                            Ngày cấp: {cert.issueDate} | Mã: {cert.credentialId}
-                        </div>
+                      <div className="font-medium text-blue-900">{cert.certificateName}</div>
+                      <div className="text-xs text-gray-500">
+                        Ngày cấp: {cert.issueDate} | Mã: {cert.credentialId}
+                      </div>
+                      {cert.notes && <div className="text-xs text-gray-400 italic">Note: {cert.notes}</div>}
                     </div>
-                    <Button 
-                        type="button" variant="ghost" size="icon" className="h-6 w-6 text-red-500"
+                    <div className="flex gap-1">
+                      <Button
+                        type="button" variant="ghost" size="icon" className="h-7 w-7 text-blue-600 hover:bg-blue-50"
+                        onClick={() => handleEditCertClick(cert)}
+                      >
+                        <Edit className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button
+                        type="button" variant="ghost" size="icon" className="h-7 w-7 text-red-500 hover:bg-red-50"
                         onClick={() => handleRemoveCert(cert.certificateId)}
-                    >
-                        <Trash2 className="h-3 w-3" />
-                    </Button>
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
                   </div>
                 ))}
               </div>
 
-              {/* Form Thêm */}
-              <div className="grid grid-cols-12 gap-2 items-end bg-gray-50 p-2 rounded border">
-                  <div className="col-span-5">
-                     <Select onValueChange={setNewCertId} value={newCertId}>
-                        <SelectTrigger className="h-8 text-xs bg-white"><SelectValue placeholder="Loại chứng chỉ..." /></SelectTrigger>
-                        <SelectContent>
-                             {allCertificates.map(c => (
-                                 <SelectItem key={c.certificateId} value={c.certificateId.toString()}>
-                                     {c.certificateName}
-                                 </SelectItem>
-                             ))}
-                        </SelectContent>
-                     </Select>
+              {/* Form Thêm / Sửa Chứng chỉ */}
+              <div className="p-3 rounded border border-dashed bg-blue-50/50">
+                <Label className="text-xs font-semibold mb-2 block text-blue-700">
+                  {editingCertId ? "✏️ Đang chỉnh sửa chứng chỉ" : "➕ Thêm chứng chỉ mới"}
+                </Label>
+                <div className="grid grid-cols-12 gap-2 items-end">
+                  {/* Dropdown Loại chứng chỉ */}
+                  <div className="col-span-4">
+                    <Select 
+                      value={certForm.certificateId} 
+                      onValueChange={(val) => setCertForm({ ...certForm, certificateId: val })}
+                      // Khi đang sửa thì không cho đổi loại chứng chỉ (vì ID là khóa chính)
+                      disabled={!!editingCertId}
+                    >
+                      <SelectTrigger className="h-8 text-xs bg-white">
+                        <SelectValue placeholder="Loại chứng chỉ..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {allCertificates.map(c => (
+                          <SelectItem key={c.certificateId} value={c.certificateId.toString()}>
+                            {c.certificateName}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
+
+                  {/* Input Mã số */}
                   <div className="col-span-3">
-                     <Input 
-                        className="h-8 text-xs bg-white" 
-                        placeholder="Mã số..." 
-                        value={newCertCode} 
-                        onChange={e => setNewCertCode(e.target.value)}
-                     />
+                    <Input
+                      className="h-8 text-xs bg-white"
+                      placeholder="Mã số (ABC-123)"
+                      value={certForm.credentialId}
+                      onChange={e => setCertForm({ ...certForm, credentialId: e.target.value })}
+                    />
                   </div>
+
+                  {/* Input Ngày cấp */}
                   <div className="col-span-3">
-                     <Input 
-                        type="date" className="h-8 text-xs bg-white" 
-                        value={newCertDate} 
-                        onChange={e => setNewCertDate(e.target.value)}
-                     />
+                    <Input
+                      type="date"
+                      className="h-8 text-xs bg-white"
+                      value={certForm.issueDate}
+                      onChange={e => setCertForm({ ...certForm, issueDate: e.target.value })}
+                    />
                   </div>
-                  <div className="col-span-1">
-                      <Button type="button" size="icon" className="h-8 w-8" onClick={handleAddCert}>
-                         <Plus className="h-4 w-4"/>
+
+                  {/* Nút Action */}
+                  <div className="col-span-2 flex gap-1">
+                    <Button type="button" size="sm" className="h-8 px-2 bg-blue-600 hover:bg-blue-700" onClick={handleSaveCert}>
+                      {editingCertId ? <Save className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+                    </Button>
+                    {editingCertId && (
+                      <Button type="button" variant="ghost" size="sm" className="h-8 px-2 text-red-500" onClick={handleCancelCert}>
+                        <X className="h-4 w-4" />
                       </Button>
+                    )}
                   </div>
+                </div>
+                <div className="mt-2">
+                   <Input 
+                      className="h-8 text-xs bg-white" 
+                      placeholder="Ghi chú thêm (tùy chọn)..."
+                      value={certForm.notes}
+                      onChange={e => setCertForm({...certForm, notes: e.target.value})}
+                   />
+                </div>
               </div>
             </div>
           )}
 
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Hủy</Button>
+          {/* Footer Dialog */}
+          <DialogFooter className="mt-6">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              Đóng
+            </Button>
             <Button type="submit" disabled={loading}>
-                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Lưu thay đổi
+              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Lưu thông tin User
             </Button>
           </DialogFooter>
         </form>

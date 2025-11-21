@@ -6,6 +6,7 @@ import edu.uth.evservice.dtos.UserDto;
 import edu.uth.evservice.models.enums.Role;
 import edu.uth.evservice.requests.AddCertificateRequest;
 import edu.uth.evservice.requests.CreateUserRequest;
+import edu.uth.evservice.requests.UpdateTechnicianCertificateRequest;
 import edu.uth.evservice.services.IProfitReportService;
 import edu.uth.evservice.services.ISalaryService;
 import edu.uth.evservice.services.ITechnicianCertificateService;
@@ -31,6 +32,7 @@ public class UserController {
     private final ISalaryService salaryService;
     private final IProfitReportService profitReportService;
     private final ITechnicianCertificateService techCertService;
+
     // Tìm kiếm user theo username hoặc fullname (chữ thường)
     @GetMapping("/search")
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
@@ -45,13 +47,12 @@ public class UserController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> getUsersByRole(@PathVariable String role) {
         try {
-            Role userRole = Role.valueOf(role.toUpperCase()); //Chuyển sang Enum
+            Role userRole = Role.valueOf(role.toUpperCase()); // Chuyển sang Enum
             return ResponseEntity.ok(userService.getUsersByRole(userRole));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body("Role không hợp lệ: " + role);
         }
     }
-
 
     // Tìm user theo ID
     @GetMapping("/{id:\\d+}")
@@ -64,7 +65,7 @@ public class UserController {
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> updateUser(@PathVariable Integer id,
-                                        @RequestBody CreateUserRequest request) {
+            @RequestBody CreateUserRequest request) {
         return ResponseEntity.ok(userService.updateUser(id, request));
     }
 
@@ -75,6 +76,7 @@ public class UserController {
         userService.deleteUser(id);
         return ResponseEntity.ok("Đã xóa user có ID = " + id);
     }
+
     // Tạo Technician
     @PostMapping("/createTechnician")
     @PreAuthorize("hasRole('ADMIN')")
@@ -82,6 +84,7 @@ public class UserController {
         request.setRole(Role.TECHNICIAN.name());
         return ResponseEntity.ok(userService.createUser(request));
     }
+
     // Tạo Staff
     @PostMapping("/createStaff")
     @PreAuthorize("hasRole('ADMIN')")
@@ -89,32 +92,35 @@ public class UserController {
         request.setRole(Role.STAFF.name());
         return ResponseEntity.ok(userService.createUser(request));
     }
-    //In danh sách lương của tất cả nhân viên trong một tháng
+
+    // In danh sách lương của tất cả nhân viên trong một tháng
     @GetMapping("/calculate")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<SalaryDto>> calculateSalaries(
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM") YearMonth month) {
         return ResponseEntity.ok(salaryService.calculateMonthlySalaries(month));
     }
-    //Báo cáo lợi nhuận trong 1 tháng
+
+    // Báo cáo lợi nhuận trong 1 tháng
     @GetMapping("/profit")
     @PreAuthorize("hasRole('ADMIN')")
     public ProfitReportDto getMonthlyProfit(@RequestParam int year, @RequestParam int month) {
         return profitReportService.getMonthlyProfitReport(year, month);
     }
 
-    //Lấy thông tin của cá nhân
+    // Lấy thông tin của cá nhân
     @GetMapping("/profile")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<UserDto> updateMyProfile(Authentication authentication) {
-        
+
         Integer userId = Integer.parseInt(authentication.getName());
         return ResponseEntity.ok(userService.getUserById(userId));
     }
 
     @PutMapping("/profile")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<UserDto> updateMyProfile(@RequestBody CreateUserRequest request, Authentication authentication) {
+    public ResponseEntity<UserDto> updateMyProfile(@RequestBody CreateUserRequest request,
+            Authentication authentication) {
         Integer userId = Integer.parseInt(authentication.getName());
         return ResponseEntity.ok(userService.updateUser(userId, request));
     }
@@ -122,10 +128,9 @@ public class UserController {
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Page<UserDto>> getUserByRole(
-        @RequestParam(name= "role") Role role,
-        @RequestParam(name= "page", defaultValue = "0") int page,
-        @RequestParam(name= "limit",defaultValue = "10") int limit
-    ){
+            @RequestParam(name = "role") Role role,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "limit", defaultValue = "10") int limit) {
         Page<UserDto> result = userService.getListUsersByRole(role, page, limit);
         return ResponseEntity.ok(result);
     }
@@ -133,8 +138,24 @@ public class UserController {
     @PostMapping("/{userId}/certificates")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> addCertificateToUser(
-        @PathVariable Integer userId,
-        @RequestBody AddCertificateRequest request) {
-    return ResponseEntity.ok(techCertService.addCertificateToMyProfile(request, userId));
-}
+            @PathVariable Integer userId,
+            @RequestBody AddCertificateRequest request) {
+        return ResponseEntity.ok(techCertService.addCertificateToMyProfile(request, userId));
+    }
+
+    @GetMapping("/{userId}/certificates")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')") // Cho phép Admin và Staff xem
+    public ResponseEntity<?> getCertificatesByUser(@PathVariable Integer userId) {
+        return ResponseEntity.ok(techCertService.getCertificatesByTechnicianId(userId));
+    }
+
+    @PutMapping("/{userId}/certificates/{certificateId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> updateCertificate(
+            @PathVariable Integer userId,
+            @PathVariable Integer certificateId,
+            @RequestBody UpdateTechnicianCertificateRequest request) {
+        
+        return ResponseEntity.ok(techCertService.updateCertificateForTechnician(userId, certificateId, request));
+    }
 }
