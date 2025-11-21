@@ -197,7 +197,14 @@ export const userService = {
     });
     return res.data;
   },
-  
+  async deleteUser(userId: number) {
+    const endpoint = ENDPOINTS.users.delete(userId);
+    const res = await api.request({
+      method: endpoint.method,
+      url: endpoint.url,
+    });
+    return res.data;
+  },
 };
 
 

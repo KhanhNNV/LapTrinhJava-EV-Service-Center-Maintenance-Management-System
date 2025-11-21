@@ -1,142 +1,100 @@
-// import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-// import api from "@/services/api.ts";
-// import { ENDPOINTS } from "@/config/endpoints.ts";
-// import { toast } from "sonner";
-
-// export interface AppointmentDto {
-//     appointmentId: number;
-//     appointmentDate: string; // Backend gửi về LocalDate/LocalDateTime dạng string
-//     appointmentTime: string;
-//     serviceType: string;
-//     status: 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELED'; // Khớp với Enum backend
-//     note?: string;
-    
-//     // Các object lồng nhau
-//     vehicle?: {
-//         vehicleId: number;
-//         licensePlate: string;
-//         make: string;
-//         model: string;
-//     };
-    
-//     serviceTicket?: {
-//         ticketId: number;
-//         status: string;
-//         invoice?: {
-//             invoiceId: number;
-//             totalAmount: number;
-//             paymentMethod: string;
-//             paymentStatus: string;
-//         }
-//     };
-// }
-
-// export interface ServiceTicketDto {
-//     ticketId: number;
-//     startTime: string;
-//     endTime?: string;
-//     status: string;
-//     appointment: {
-//         serviceType: string;
-//         vehicle: {
-//             licensePlate: string;
-//             make: string;
-//             model: string;
-//         }
-//     };
-// }
-
-// // Lấy danh sách xe của người dùng
-// export function useCustomerVehicles() {
-//     return useQuery({
-//         queryKey: ["customer-vehicles"],
-//         queryFn: async () => {
-//             const res = await api.get(ENDPOINTS.vehicles.list.url);
-//             return res.data;
-//         },
-//     });
-// }
-
-// // Lấy lịch hẹn của người dùng
-// export function useCustomerAppointments() {
-//     return useQuery({
-//         queryKey: ["customer-appointments"],
-//         queryFn: async () => {
-//             const res = await api.get("/api/appointments/myAppointments");
-//             return res.data;
-//         },
-//     });
-// }
-
-// // Đặt lịch hẹn
-// export function useBookAppointment() {
-//     const queryClient = useQueryClient();
-
-//     return useMutation({
-//         mutationFn: async (data: any) => {
-//             const response = await api.post("/api/appointments", {
-//                 ...data,
-//                 appointmentDate: `${data.appointmentDate}T${data.appointmentTime}`,
-//                 centerId: 1,
-//                 contractId: 1,
-//             });
-//             return response.data;
-//         },
-
-//         onSuccess: () => {
-//             toast.success("Đã đặt lịch hẹn thành công!");
-//             queryClient.invalidateQueries({ queryKey: ["customer-appointments"] });
-//         },
-
-//         onError: () => {
-//             toast.error("Không thể đặt lịch. Vui lòng thử lại.");
-//         },
-//     });
-// }
-// // Hàm lấy lịch sử khách hàng (Dùng cho Admin xem chi tiết)
-// export const getCustomerAppointmentHistory = async (customerId: number | string): Promise<AppointmentDto[]> => {
-//     const endpoint = ENDPOINTS.appointments.historyByCustomer(customerId);
-//     const res = await api.get(endpoint.url);
-//     return res.data;
-// };
-
-// // Hàm lấy lịch sử làm việc của kỹ thuật viên (Dùng cho Admin xem chi tiết)
-// export const getTechnicianWorkHistory = async (technicianId: number | string): Promise<ServiceTicketDto[]> => {
-//     const endpoint = ENDPOINTS.serviceTickets.historyByTechnician(technicianId);
-//     const res = await api.get(endpoint.url);
-//     return res.data;
-// };
-
-
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import api from "./api";
 import { ENDPOINTS } from "@/config/endpoints";
 
-// Định nghĩa Interface cho chuẩn dữ liệu
-export interface AppointmentHistoryDto {
-  appointmentId: number;
-  appointmentDate: string;
-  appointmentTime: string;
-  serviceType: string;
-  status: string;
-  note?: string;
-  vehicle?: {
-    vehicleId: number;
-    licensePlate: string;
-    brand: string;
-    model: string;
-  };
-  serviceTicket?: {
-    ticketId: number;
-    invoice?: {
-      totalAmount: number;
-      paymentStatus: string;
-    }
-  };
-  technicianName?: string;
-  staffName?: string;
-  staffId?: number;
-  customerName?: string; // Dành cho Staff view
+// --- INTERFACES (Dùng chung hoặc riêng tùy nhu cầu) ---
+
+export interface AppointmentDto {
+    appointmentId: number;
+    appointmentDate: string;
+    appointmentTime: string;
+    serviceType: string;
+    status: 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELED' | 'IN_PROGRESS';
+    note?: string;
+    vehicle?: {
+        vehicleId: number;
+        licensePlate: string;
+        make?: string;
+        brand?: string; // Merge brand/make
+        model: string;
+    };
+    serviceTicket?: {
+        ticketId: number;
+        status: string;
+        invoice?: {
+            invoiceId: number;
+            totalAmount: number;
+            paymentMethod: string;
+            paymentStatus: string;
+        }
+    };
 }
+
+// Interface mở rộng cho History (có thể dùng chung AppointmentDto nếu muốn)
+export interface AppointmentHistoryDto extends AppointmentDto {
+    technicianName?: string;
+    staffName?: string;
+    staffId?: number;
+    customerName?: string;
+}
+
+// --- PART 1: REACT QUERY HOOKS (Dành cho Customer Client-side) ---
+
+// 1. Lấy danh sách xe của người dùng (Customer)
+export function useCustomerVehicles() {
+    return useQuery({
+        queryKey: ["customer-vehicles"],
+        queryFn: async () => {
+             // Fallback nếu ENDPOINTS chưa có structure này, bạn có thể thay bằng chuỗi cứng '/api/vehicles/my-vehicles'
+            const url = ENDPOINTS.vehicles?.list?.url || '/api/vehicles/my-vehicles'; 
+            const res = await api.get(url);
+            return res.data;
+        },
+    });
+}
+
+// 2. Lấy lịch hẹn của người dùng (Customer)
+export function useCustomerAppointments() {
+    return useQuery({
+        queryKey: ["customer-appointments"],
+        queryFn: async () => {
+            const res = await api.get("/api/appointments/myAppointments");
+            return res.data;
+        },
+    });
+}
+
+// 3. Đặt lịch hẹn (Customer)
+export function useBookAppointment() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (data: any) => {
+            const response = await api.post("/api/appointments", {
+                ...data,
+                // Format lại ngày giờ nếu cần thiết để khớp backend
+                appointmentDate: data.appointmentDate, 
+                // appointmentTime backend thường nhận string "HH:mm" hoặc "HH:mm:ss"
+                centerId: 1, // Hardcode tạm hoặc lấy từ form
+                 // contractId: 1, // Bỏ comment nếu cần
+            });
+            return response.data;
+        },
+
+        onSuccess: () => {
+            toast.success("Đã đặt lịch hẹn thành công!");
+            queryClient.invalidateQueries({ queryKey: ["customer-appointments"] });
+        },
+
+        onError: (error: any) => {
+            console.error(error);
+            toast.error("Không thể đặt lịch. Vui lòng thử lại.");
+        },
+    });
+}
+
+// --- PART 2: SERVICE OBJECT (Dành cho Admin/Staff/Refactored Components) ---
 
 export const appointmentService = {
   // Lấy lịch sử của Customer
@@ -162,7 +120,7 @@ export const appointmentService = {
   // Lấy lịch sử làm việc của Technician (Thông qua Service Ticket)
   async getTechnicianHistory(technicianId: number | string) {
     const endpoint = ENDPOINTS.serviceTickets.historyByTechnician(technicianId);
-    const res = await api.request<any[]>({ // Có thể define interface TicketDto riêng
+    const res = await api.request<any[]>({
       method: endpoint.method,
       url: endpoint.url,
     });

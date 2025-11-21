@@ -1,26 +1,30 @@
+// src/components/admin/users/UserDetailDialog.tsx
+
 import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
     Dialog,
     DialogContent,
-    DialogClose
+    DialogClose // Lưu ý: DialogClose chưa được dùng trong UI nhưng giữ lại nếu cần
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import {
     User, Mail, Phone, MapPin, Calendar, Car,
     CreditCard, Wrench, BadgeCheck,
-    Clock, Activity, X, Shield,
-    CheckCircle2, AlertTriangle, DollarSign, Briefcase,
+    Clock, Activity, Shield,
+    CheckCircle2, DollarSign, Briefcase,
     Building2
 } from 'lucide-react';
 import { format } from 'date-fns';
-import api from '@/services/api';
+
+
 import { userService } from '@/services/userService';
-import { getCustomerAppointmentHistory } from '@/services/appointmentService';
+import { appointmentService } from '@/services/appointmentService';
+import { vehicleService } from '@/services/vehicleService';
+
 import {
     Table,
     TableBody,
@@ -44,24 +48,20 @@ const formatDate = (dateString?: string, includeTime: boolean = false) => {
     }
 };
 
-const getInitials = (name: string) => {
-    return name ? name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : "EV";
-};
-
 const renderStatusBadge = (status: string) => {
     const s = status?.toUpperCase();
-    if (['COMPLETED', 'PAID', 'CONFIRMED', 'ACTIVE'].includes(s)) {
+    if (['COMPLETED', 'PAID', 'CONFIRMED', 'ACTIVE', 'SUCCESS'].includes(s)) {
         return <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100">{status}</Badge>;
     }
-    if (['CANCELED', 'CANCELLED', 'REJECTED', 'INACTIVE'].includes(s)) {
+    if (['CANCELED', 'CANCELLED', 'REJECTED', 'INACTIVE', 'FAILED'].includes(s)) {
         return <Badge className="bg-red-50 text-red-700 border-red-200 hover:bg-red-100">{status}</Badge>;
     }
     return <Badge className="bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-50">{status}</Badge>;
 };
 
-// --- NEW UI COMPONENTS ---
+// --- UI COMPONENTS ---
 
-// Thẻ thống kê đẹp (Stat Card)
+// Thẻ thống kê (Stat Card)
 const StatCard = ({ title, value, icon: Icon, colorClass, subtext }: any) => (
     <div className="bg-white p-5 rounded-xl border shadow-sm flex items-start justify-between transition-all hover:shadow-md">
         <div>
@@ -86,7 +86,7 @@ const ProfileRow = ({ icon: Icon, label, value }: any) => (
     </div>
 );
 
-// --- MAIN COMPONENT ---
+
 
 interface UserDetailDialogProps {
     user: any | null;
@@ -98,34 +98,33 @@ const UserDetailDialog: React.FC<UserDetailDialogProps> = ({ user, isOpen, onClo
     const [activeTab, setActiveTab] = useState("overview");
     const [selectedVehicleHistory, setSelectedVehicleHistory] = useState<any | null>(null);
 
-    // --- 1. DATA FETCHING (Tối ưu hóa gọi API) ---
 
-    // A. Lấy xe (Customer) - Dùng API chung và lọc client-side
+
+    // A. Lấy xe (Customer)
     const { data: vehicles = [] } = useQuery({
         queryKey: ['admin-user-vehicles', user?.userId],
         queryFn: async () => {
-            // Gọi thẳng API lấy xe của user đó
-            const res = await api.get(`/api/vehicles/user/${user.userId}`);
-            return res.data;
+            return await vehicleService.getVehiclesByUserId(user.userId);
         },
         enabled: !!user && user.role === 'CUSTOMER' && isOpen
     });
 
-    // B. Lấy lịch sử (Chung cho mọi role)
+
     const { data: historyList = [] } = useQuery({
         queryKey: ['admin-user-history', user?.userId],
         queryFn: async () => {
-            if (user.role === 'CUSTOMER') {
-                return await getCustomerAppointmentHistory(user.userId);
-            } else if (user.role === 'TECHNICIAN') {
-                const res = await api.get(`/api/service-tickets/technician/${user.userId}/history`);
-                return res.data;
-            } else if (user.role === 'STAFF') {
-                // Giả lập API lấy lịch sử Staff bằng cách lọc all appointments
-const res = await api.get(`/api/appointments/staff/${user.userId}`);
-    return res.data;
-}
-            return [];
+            if (!user) return [];
+
+            switch (user.role) {
+                case 'CUSTOMER':
+                    return await appointmentService.getCustomerHistory(user.userId);
+                case 'TECHNICIAN':
+                    return await appointmentService.getTechnicianHistory(user.userId);
+                case 'STAFF':
+                    return await appointmentService.getStaffHistory(user.userId);
+                default:
+                    return [];
+            }
         },
         enabled: !!user && isOpen
     });
@@ -139,19 +138,20 @@ const res = await api.get(`/api/appointments/staff/${user.userId}`);
         enabled: !!user && user.role === 'TECHNICIAN' && isOpen
     });
 
-    // --- 2. DATA PROCESSING (Tính toán số liệu từ dữ liệu đã tải) ---
+    // --- 2. DATA PROCESSING ---
 
     const stats = useMemo(() => {
         if (!user) return {};
 
         if (user.role === 'CUSTOMER') {
             const totalSpent = historyList.reduce((sum: number, item: any) => {
+
                 if (['COMPLETED', 'PAID'].includes(item.status)) {
                     return sum + (item.serviceTicket?.invoice?.totalAmount || 0);
                 }
                 return sum;
             }, 0);
-            const completedAppts = historyList.filter((a: any) => ['COMPLETED', 'PAID'].includes(a.status)).length;
+            const completedAppts = historyList.filter((a: any) => ['COMPLETED', 'PAID', 'CONFIRMED'].includes(a.status)).length;
 
             return {
                 card1: { title: "Tổng chi tiêu", value: formatCurrency(totalSpent), icon: DollarSign, color: "bg-emerald-100 text-emerald-600" },
@@ -162,7 +162,7 @@ const res = await api.get(`/api/appointments/staff/${user.userId}`);
 
         if (user.role === 'TECHNICIAN') {
             const completedTickets = historyList.filter((t: any) => t.status === 'COMPLETED').length;
-            // Giả sử tính giờ làm từ lịch sử (nếu có field duration) hoặc đếm số ticket
+            // Giả sử tính giờ làm từ số lượng ticket (ước lượng)
             const hoursEstimate = completedTickets * 2; // Giả định 2h/ticket
 
             return {
@@ -174,22 +174,25 @@ const res = await api.get(`/api/appointments/staff/${user.userId}`);
 
         if (user.role === 'STAFF') {
             const handledAppts = historyList.length;
-            const todayAppts = historyList.filter((a: any) => new Date(a.appointmentDate).toDateString() === new Date().toDateString()).length;
+            // Lọc lịch sử xử lý trong ngày
+            const todayAppts = historyList.filter((a: any) => {
+                const date = a.createdAt || a.appointmentDate;
+                return new Date(date).toDateString() === new Date().toDateString();
+            }).length;
 
             return {
                 card1: { title: "Lịch hẹn đã xử lý", value: handledAppts, icon: Calendar, color: "bg-blue-100 text-blue-600" },
                 card2: { title: "Xử lý hôm nay", value: todayAppts, icon: Activity, color: "bg-green-100 text-green-600" },
-                card3: { title: "Vai trò", value: "Nhân viên", icon: Briefcase, color: "bg-gray-100 text-gray-600" }
+                card3: { title: "Nghỉ phép (1 tháng)", value: `0`, icon: Clock, color: "bg-indigo-100 text-indigo-600" }
             };
         }
 
         return {};
     }, [user, historyList, vehicles, certificates]);
 
-    // Lọc danh sách thanh toán (Có tiền)
+    // Lọc danh sách thanh toán (Có tiền) cho Customer
     const paymentHistory = useMemo(() => {
         return historyList.filter((item: any) =>
-            // Có hóa đơn và số tiền > 0
             item.serviceTicket?.invoice?.totalAmount > 0
         );
     }, [historyList]);
@@ -200,14 +203,12 @@ const res = await api.get(`/api/appointments/staff/${user.userId}`);
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="max-w-[97vw] w-[1500px] h-[95vh] p-0 gap-0 flex flex-col bg-gray-50 overflow-hidden border-none shadow-2xl">
 
-                {/* === HEADER GỌN GÀNG === */}
+                {/* === HEADER === */}
                 <div className="bg-white px-8 py-5 border-b flex items-center justify-between shrink-0">
                     <div className="flex items-center gap-4">
-
                         <div>
                             <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
                                 {user.fullName}
-
                             </h2>
                             <div className="flex items-center gap-4 text-sm text-gray-500 mt-1">
                                 <span className="flex items-center gap-1"><Shield className="w-3.5 h-3.5" /> {user.role}</span>
@@ -219,7 +220,7 @@ const res = await api.get(`/api/appointments/staff/${user.userId}`);
 
                 </div>
 
-                {/* === NAVIGATION === */}
+                {/* === NAVIGATION TABS === */}
                 <div className="bg-white px-8 border-b shrink-0">
                     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                         <TabsList className="bg-transparent p-0 h-12 gap-6 w-full justify-start">
@@ -247,14 +248,14 @@ const res = await api.get(`/api/appointments/staff/${user.userId}`);
                     </Tabs>
                 </div>
 
-                {/* === MAIN CONTENT AREA === */}
+                {/* === CONTENT AREA === */}
                 <ScrollArea className="flex-1 bg-gray-50/50">
                     <div className="p-8 max-w-[1400px] mx-auto">
 
                         {/* 1. TAB TỔNG QUAN */}
                         {activeTab === 'overview' && (
                             <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                                {/* Row 1: Stats Cards */}
+                                {/* Stats Cards */}
                                 {user.role !== 'ADMIN' && (
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                         <StatCard {...stats.card1} />
@@ -263,9 +264,9 @@ const res = await api.get(`/api/appointments/staff/${user.userId}`);
                                     </div>
                                 )}
 
-                                {/* Row 2: 2 Columns Layout */}
+                                {/* 2 Columns Layout */}
                                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                                    {/* Left Col: Profile */}
+                                    {/* Left: Profile Info */}
                                     <div className="lg:col-span-1">
                                         <div className="bg-white p-6 rounded-xl shadow-sm border">
                                             <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
@@ -283,7 +284,7 @@ const res = await api.get(`/api/appointments/staff/${user.userId}`);
                                         </div>
                                     </div>
 
-                                    {/* Right Col: Recent Activity Timeline */}
+                                    {/* Right: Recent Activity */}
                                     <div className="lg:col-span-2">
                                         <div className="bg-white p-6 rounded-xl shadow-sm border h-full">
                                             <div className="flex justify-between items-center mb-6">
@@ -307,7 +308,6 @@ const res = await api.get(`/api/appointments/staff/${user.userId}`);
                                                                 </div>
                                                                 {renderStatusBadge(item.status)}
                                                             </div>
-                                                            {/* Hiển thị thêm thông tin tùy role */}
                                                             {item.vehicle && (
                                                                 <div className="mt-2 text-sm text-gray-600 bg-white p-2 rounded border inline-block">
                                                                     <Car className="w-3 h-3 inline mr-1" /> {item.vehicle.brand} {item.vehicle.model}
@@ -324,7 +324,7 @@ const res = await api.get(`/api/appointments/staff/${user.userId}`);
                             </div>
                         )}
 
-                        {/* 2. TAB VEHICLES (CUSTOMER) - Hiển thị chi tiết trong Tab luôn */}
+                        {/* 2. TAB VEHICLES (CUSTOMER) */}
                         {activeTab === 'vehicles' && (
                             <div className="space-y-6 animate-in fade-in">
                                 {!selectedVehicleHistory ? (
@@ -358,7 +358,6 @@ const res = await api.get(`/api/appointments/staff/${user.userId}`);
                                         {vehicles.length === 0 && <div className="col-span-2 text-center py-12 text-gray-500 border-dashed border-2 rounded-xl">Khách hàng chưa đăng ký xe nào.</div>}
                                     </div>
                                 ) : (
-                                    // CHI TIẾT LỊCH SỬ XE
                                     <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
                                         <div className="p-4 border-b bg-gray-50 flex justify-between items-center">
                                             <h3 className="font-bold text-gray-900 flex items-center gap-2">
@@ -378,7 +377,7 @@ const res = await api.get(`/api/appointments/staff/${user.userId}`);
                                                 </TableRow>
                                             </TableHeader>
                                             <TableBody>
-                                                {historyList.filter((h: any) => h.vehicleId === selectedVehicleHistory.vehicleId).map((h: any) => (
+                                                {historyList.filter((h: any) => h.vehicle?.vehicleId === selectedVehicleHistory.vehicleId).map((h: any) => (
                                                     <TableRow key={h.appointmentId}>
                                                         <TableCell>{formatDate(h.appointmentDate)}</TableCell>
                                                         <TableCell className="font-medium">{h.serviceType}</TableCell>
@@ -387,7 +386,7 @@ const res = await api.get(`/api/appointments/staff/${user.userId}`);
                                                         <TableCell>{renderStatusBadge(h.status)}</TableCell>
                                                     </TableRow>
                                                 ))}
-                                                {historyList.filter((h: any) => h.vehicleId === selectedVehicleHistory.vehicleId).length === 0 && (
+                                                {historyList.filter((h: any) => h.vehicle?.vehicleId === selectedVehicleHistory.vehicleId).length === 0 && (
                                                     <TableRow><TableCell colSpan={5} className="text-center py-8 text-gray-500">Chưa có lịch sử sửa chữa cho xe này.</TableCell></TableRow>
                                                 )}
                                             </TableBody>
@@ -397,8 +396,8 @@ const res = await api.get(`/api/appointments/staff/${user.userId}`);
                             </div>
                         )}
 
-                        {/* 3. TAB THANH TOÁN (CUSTOMER/STAFF) */}
-                        {(activeTab === 'payments' || activeTab === 'transactions') && (
+                        {/* 3. TAB THANH TOÁN */}
+                        {activeTab === 'payments' && (
                             <div className="bg-white rounded-xl shadow-sm border overflow-hidden animate-in fade-in">
                                 <Table>
                                     <TableHeader>
@@ -419,7 +418,7 @@ const res = await api.get(`/api/appointments/staff/${user.userId}`);
                                                 <TableCell>
                                                     <div className="flex flex-col">
                                                         <span className="font-medium">{item.serviceType}</span>
-                                                        <span className="text-xs text-gray-500">{user.role === 'STAFF' ? item.customerName : item.vehicle?.licensePlate}</span>
+                                                        <span className="text-xs text-gray-500">{item.vehicle?.licensePlate}</span>
                                                     </div>
                                                 </TableCell>
                                                 <TableCell>
@@ -439,7 +438,7 @@ const res = await api.get(`/api/appointments/staff/${user.userId}`);
                             </div>
                         )}
 
-                        {/* 4. TAB LỊCH HẸN (CUSTOMER) & LỊCH SỬ STAFF */}
+                        {/* 4. TAB LỊCH HẸN / STAFF HISTORY */}
                         {(activeTab === 'appointments' || activeTab === 'staff_history') && (
                             <div className="bg-white rounded-xl shadow-sm border overflow-hidden animate-in fade-in">
                                 <Table>
@@ -470,7 +469,7 @@ const res = await api.get(`/api/appointments/staff/${user.userId}`);
                             </div>
                         )}
 
-                        {/* 5. TAB LỊCH SỬ SỬA XE (TECHNICIAN) */}
+                        {/* 5. TAB LỊCH SỬ TECHNICIAN */}
                         {activeTab === 'tech_history' && (
                             <div className="space-y-4 animate-in fade-in">
                                 {historyList.map((ticket: any) => (

@@ -1,5 +1,3 @@
-// src/pages/admin/users/RoleBaseUserList.tsx
-
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { User, Role, userService } from "@/services/userService";
@@ -7,27 +5,23 @@ import { UserTable } from "@/components/admin/users/UserTable";
 import { Input } from "@/components/ui/input";
 import { Search, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { CreateUserDialog } from "@/components/admin/users/CreateUserDialog"; // Import component mới
+import { CreateUserDialog } from "@/components/admin/users/CreateUserDialog";
 import { EditUserDialog } from "@/components/admin/users/EditUserDialog";
 
 export default function RoleBasedUserList() {
-  // 1. Lấy role từ URL
+  // ... (Các phần code state và fetchUsers giữ nguyên) ...
   const { role } = useParams<{ role: string }>();
-
-  // 2. State quản lý dữ liệu
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-
-  // State phân trang
   const [currentPage, setCurrentPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
-
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [isEditOpen, setIsEditOpen] = useState(false);
-  // 3. Hàm lấy tiêu đề trang
+
+
   const getPageTitle = (r?: string) => {
     switch (r) {
       case "CUSTOMER": return "Quản lý Khách hàng";
@@ -38,15 +32,12 @@ export default function RoleBasedUserList() {
     }
   };
 
-  // 4. Hàm gọi API lấy danh sách
   const fetchUsers = async () => {
     if (!role) return;
-
     setLoading(true);
     try {
       const targetRole = role as Role;
       const response = await userService.getListUserByRole(targetRole, currentPage, limit);
-
       setUsers(response.content);
       setTotalPages(response.totalPages);
       setTotalElements(response.totalElements);
@@ -58,40 +49,42 @@ export default function RoleBasedUserList() {
     }
   };
 
-  // 5. Effect trigger
   useEffect(() => {
     setCurrentPage(1);
   }, [role]);
 
   useEffect(() => {
     fetchUsers();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [role, currentPage, limit]);
 
-  // 6. Xử lý hành động
+
   const handleEdit = (user: User) => {
-    setEditingUser(user); // Lưu thông tin user vào state
-    setIsEditOpen(true);  // Mở dialog lên
+    setEditingUser(user);
+    setIsEditOpen(true);
   };
 
+  // --- [CẬP NHẬT QUAN TRỌNG] HÀM XÓA MỚI ---
   const handleDelete = async (user: User) => {
-    if (confirm(`Bạn có chắc muốn xóa ${user.fullName}?`)) {
-      try {
-        // Giả định có hàm delete
-        // await userService.deleteUser(user.userId); 
-        toast.info(`Đã gửi yêu cầu xóa ${user.userId} (API delete chưa được nối trong demo này)`);
-        fetchUsers();
-      } catch (e) {
-        toast.error("Xóa thất bại");
-      }
+
+    try {
+      // Gọi API xóa thật sự
+      await userService.deleteUser(user.userId);
+      
+      toast.success(`Đã xóa người dùng ${user.username} thành công`);
+      
+      // Tải lại danh sách để cập nhật giao diện
+      fetchUsers();
+    } catch (error) {
+      console.error("Delete error:", error);
+      toast.error("Xóa thất bại. Có thể người dùng đang có dữ liệu liên quan.");
     }
   };
 
   const handleView = (user: User) => {
-    toast.info(`Xem chi tiết: ${user.fullName}`);
+    console.log("View detail requested for:", user.fullName);
   };
 
-  // Lọc local
+  // ... (Phần filter và render giữ nguyên) ...
   const filteredUsers = users.filter(u =>
     u.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     u.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -100,7 +93,6 @@ export default function RoleBasedUserList() {
 
   return (
     <div className="space-y-6">
-      {/* Header: Tiêu đề & Nút Thêm (Thay bằng Component Dialog) */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">{getPageTitle(role)}</h1>
@@ -108,12 +100,9 @@ export default function RoleBasedUserList() {
             Danh sách {role?.toLowerCase()} trong hệ thống.
           </p>
         </div>
-
-        {/* Nút Thêm Mới được nhúng ở đây, tự quản lý trạng thái mở Dialog */}
         <CreateUserDialog onSuccess={fetchUsers} />
       </div>
 
-      {/* Toolbar: Tìm kiếm */}
       <div className="flex items-center gap-2">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -127,7 +116,6 @@ export default function RoleBasedUserList() {
         </div>
       </div>
 
-      {/* Table Data */}
       {loading ? (
         <div className="flex h-64 items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -143,17 +131,16 @@ export default function RoleBasedUserList() {
           onLimitChange={setLimit}
           onEdit={handleEdit}
           onDelete={handleDelete}
-          onView={handleView}
+
         />
       )}
-
 
       <EditUserDialog
         open={isEditOpen}
         onOpenChange={setIsEditOpen}
         user={editingUser}
-        onSuccess={fetchUsers} // Load lại bảng sau khi sửa xong
+        onSuccess={fetchUsers}
       />
     </div>
   );
-} 
+}
