@@ -51,4 +51,10 @@ public class InventoryController {
         List<InventoryDto> inventories = inventoryService.getInventoryByTechnician(technicianId);
         return ResponseEntity.ok(inventories);
     }
+
+    @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN')")
+    public ResponseEntity<List<InventoryDto>> getAllInventories() {
+        return ResponseEntity.ok(inventoryService.getAllInventories());
+    }
 }

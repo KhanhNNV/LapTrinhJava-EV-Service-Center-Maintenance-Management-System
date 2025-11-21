@@ -39,6 +39,15 @@ public class InventoryServiceImpl implements IInventoryService {
     private final IUserRepository userRepo;
 
     @Override
+    public List<InventoryDto> getAllInventories() {
+        List<Inventory> inventories = inventoryRepository.findAll();
+
+        return inventories.stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public InventoryDto addStock(AddStockRequest request) {
         if (request.getQuantityToAdd() <= 0) {
             throw new IllegalArgumentException("Số lượng không được âm.");
@@ -86,18 +95,24 @@ public class InventoryServiceImpl implements IInventoryService {
         return inventories.stream().map(this::toDto).collect(Collectors.toList());
     }
 
-    private InventoryDto toDto(Inventory inv) {
+    private InventoryDto toDto(Inventory inventory) {
         return InventoryDto.builder()
-                .inventoryId(inv.getInventoryId())
-                .quantity(inv.getQuantity())
-                .minQuantity(inv.getMinQuantity())
-                .unitPrice(inv.getPart().getUnitPrice())
-                .createdAt(inv.getCreatedAt())
-                .updatedAt(inv.getUpdatedAt())
-                .partId(inv.getPart().getPartId())
-                .partName(inv.getPart().getPartName())
-                .centerId(inv.getServiceCenter().getCenterId())
-                .centerName(inv.getServiceCenter().getCenterName())
+                .inventoryId(inventory.getInventoryId())
+                .quantity(inventory.getQuantity())
+                // Lấy minQuantity để Frontend so sánh cảnh báo
+                .minQuantity(inventory.getMinQuantity())
+                .createdAt(inventory.getCreatedAt())
+                .updatedAt(inventory.getUpdatedAt())
+
+                // Map thông tin từ bảng Part
+                .partId(inventory.getPart() != null ? inventory.getPart().getPartId() : null)
+                .partName(inventory.getPart() != null ? inventory.getPart().getPartName() : "Unknown Part")
+                .unitPrice(inventory.getPart() != null ? inventory.getPart().getUnitPrice() : 0.0)
+
+                // Map thông tin từ bảng ServiceCenter
+                .centerId(inventory.getServiceCenter() != null ? inventory.getServiceCenter().getCenterId() : null)
+                .centerName(inventory.getServiceCenter() != null ? inventory.getServiceCenter().getCenterName() : "Unknown Center")
+
                 .build();
     }
 

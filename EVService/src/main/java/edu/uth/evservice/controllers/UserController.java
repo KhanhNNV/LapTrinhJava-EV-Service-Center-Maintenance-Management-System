@@ -49,6 +49,12 @@ public class UserController {
     private final ISalaryService salaryService;
     private final IProfitReportService profitReportService;
 
+    @GetMapping("/all")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<UserDto>> getAllUsers() {
+        return ResponseEntity.ok(userService.getAllUsers());
+    }
+
     // Tìm kiếm user theo username hoặc fullname (chữ thường)
     @GetMapping("/search")
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
