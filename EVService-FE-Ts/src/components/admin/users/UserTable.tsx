@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { User, Role } from "@/services/userService";
 import {
   Table,
@@ -19,6 +19,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Eye, Edit, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
 import { format } from "date-fns"
+import UserDetailDialog from './UserDetailDialog';
+
 
 interface UserTableProps {
   data: User[];
@@ -45,7 +47,9 @@ export const UserTable: React.FC<UserTableProps> = ({
   onDelete,
   onView,
 }) => {
-  
+  const [selectedDetailUser, setSelectedDetailUser] = useState<any | null>(null);
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
+
   const getRoleBadgeColor = (role: Role) => {
     switch (role) {
       case "ADMIN": return "destructive";
@@ -73,20 +77,20 @@ export const UserTable: React.FC<UserTableProps> = ({
             <TableRow>
 
               <TableHead className="w-[50px]">ID</TableHead>
-              
+
 
               <TableHead className="text-left">Tài khoản</TableHead>
-              
+
               <TableHead className="text-left">Họ và Tên</TableHead>
               <TableHead className="text-left">Email</TableHead>
               <TableHead className="text-left">SĐT</TableHead>
-              
+
               <TableHead className="text-center">Cơ sở</TableHead>
-              
+
               <TableHead className="text-center">Vai trò</TableHead>
-              
+
               <TableHead className="text-left">Ngày tham gia</TableHead>
-              
+
               <TableHead className="text-center">Hành động</TableHead>
             </TableRow>
           </TableHeader>
@@ -106,17 +110,17 @@ export const UserTable: React.FC<UserTableProps> = ({
                   <TableCell className="font-medium text-blue-600">
                     {user.username}
                   </TableCell>
-                  
+
                   <TableCell>{user.fullName}</TableCell>
                   <TableCell>{user.email}</TableCell>
                   <TableCell>{user.phoneNumber || "---"}</TableCell>
-                  
-                
+
+
                   <TableCell className="text-center">
                     {user.centerName ? (
-                       <span className="font-medium text-gray-700">{user.centerName}</span>
+                      <span className="font-medium text-gray-700">{user.centerName}</span>
                     ) : (
-                       <span className="text-muted-foreground text-xs">---</span>
+                      <span className="text-muted-foreground text-xs">---</span>
                     )}
                   </TableCell>
 
@@ -125,18 +129,25 @@ export const UserTable: React.FC<UserTableProps> = ({
                       {user.role}
                     </Badge>
                   </TableCell>
-                  
+
                   {/* Hiển thị ngày giờ */}
                   <TableCell className="text-sm text-muted-foreground">
                     {formatDateTime(user.createdAt)}
                   </TableCell>
-                  
+
                   <TableCell className="text-center">
                     <div className="flex justify-end gap-2">
                       <Button variant="ghost" size="icon" onClick={() => onEdit(user)}>
                         <Edit className="h-4 w-4 text-slate-800" />
                       </Button>
-                      <Button variant="ghost" size="icon" onClick={() => onView(user)}>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          setSelectedDetailUser(user);
+                          setIsDetailOpen(true);
+                        }}
+                      >
                         <Eye className="h-4 w-4 text-orange-400" />
                       </Button>
                       <Button variant="ghost" size="icon" onClick={() => onDelete(user)}>
@@ -180,6 +191,11 @@ export const UserTable: React.FC<UserTableProps> = ({
           </div>
         </div>
       </div>
+      <UserDetailDialog
+        user={selectedDetailUser}
+        isOpen={isDetailOpen}
+        onClose={() => setIsDetailOpen(false)}
+      />
     </div>
   );
 };

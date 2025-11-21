@@ -3,6 +3,49 @@ import api from "@/services/api.ts";
 import { ENDPOINTS } from "@/config/endpoints.ts";
 import { toast } from "sonner";
 
+export interface AppointmentDto {
+    appointmentId: number;
+    appointmentDate: string; // Backend gửi về LocalDate/LocalDateTime dạng string
+    appointmentTime: string;
+    serviceType: string;
+    status: 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELED'; // Khớp với Enum backend
+    note?: string;
+    
+    // Các object lồng nhau
+    vehicle?: {
+        vehicleId: number;
+        licensePlate: string;
+        make: string;
+        model: string;
+    };
+    
+    serviceTicket?: {
+        ticketId: number;
+        status: string;
+        invoice?: {
+            invoiceId: number;
+            totalAmount: number;
+            paymentMethod: string;
+            paymentStatus: string;
+        }
+    };
+}
+
+export interface ServiceTicketDto {
+    ticketId: number;
+    startTime: string;
+    endTime?: string;
+    status: string;
+    appointment: {
+        serviceType: string;
+        vehicle: {
+            licensePlate: string;
+            make: string;
+            model: string;
+        }
+    };
+}
+
 // Lấy danh sách xe của người dùng
 export function useCustomerVehicles() {
     return useQuery({
@@ -50,3 +93,16 @@ export function useBookAppointment() {
         },
     });
 }
+// Hàm lấy lịch sử khách hàng (Dùng cho Admin xem chi tiết)
+export const getCustomerAppointmentHistory = async (customerId: number | string): Promise<AppointmentDto[]> => {
+    const endpoint = ENDPOINTS.appointments.historyByCustomer(customerId);
+    const res = await api.get(endpoint.url);
+    return res.data;
+};
+
+// Hàm lấy lịch sử làm việc của kỹ thuật viên (Dùng cho Admin xem chi tiết)
+export const getTechnicianWorkHistory = async (technicianId: number | string): Promise<ServiceTicketDto[]> => {
+    const endpoint = ENDPOINTS.serviceTickets.historyByTechnician(technicianId);
+    const res = await api.get(endpoint.url);
+    return res.data;
+};

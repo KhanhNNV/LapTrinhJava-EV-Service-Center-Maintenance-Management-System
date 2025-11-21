@@ -123,4 +123,12 @@ public class AppointmentController {
                 return ResponseEntity.ok(appointments);
         }
 
+        //. Admin/Staff xem lịch sử hẹn của một khách hàng cụ thể
+        @GetMapping("/customer/{customerId}/history")
+        @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+        public ResponseEntity<List<AppointmentDto>> getAppointmentsByCustomerId(@PathVariable Integer customerId) {
+
+                List<AppointmentDto> history = appointmentService.getByCustomer(customerId);
+                return ResponseEntity.ok(history);
+        }
 }
