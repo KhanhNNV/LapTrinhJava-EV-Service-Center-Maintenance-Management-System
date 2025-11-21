@@ -11,6 +11,7 @@ import {
   Briefcase,
   ShieldCheck,
   LogOut,
+  Bell
 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -54,6 +55,7 @@ const items = [
     url: "/dashboard/admin",
     icon: LayoutDashboard,
   },
+  { title: "Thông báo", url: "/dashboard/admin/notifications", icon: Bell },
   {
     title: "Quản lý người dùng",
     icon: Users,

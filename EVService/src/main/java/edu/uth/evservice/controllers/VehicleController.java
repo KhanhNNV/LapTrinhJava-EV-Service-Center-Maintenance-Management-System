@@ -22,7 +22,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/vehicles")
-@PreAuthorize("hasAnyRole('CUSTOMER','ADMIN')") 
+@PreAuthorize("hasAnyRole('CUSTOMER','ADMIN')")
 @RequiredArgsConstructor
 public class VehicleController {
 
@@ -47,12 +47,28 @@ public class VehicleController {
         return ResponseEntity.ok(vehicles);
     }
 
+    // GET /api/vehicles/customer/{customerId} (Lấy tất cả xe của khách hàng -
+    // admin/staff)
+    @GetMapping("/customer/{customerId}")
+    @PreAuthorize("hasAnyRole('ADMIN','STAFF')")
+    public ResponseEntity<List<VehicleDto>> getVehiclesByCustomer(@PathVariable Integer customerId) {
+        return ResponseEntity.ok(vehicleService.getMyVehicles(customerId));
+    }
+
     // GET /api/vehicles/{id} (Lấy 1 xe của tôi)
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('CUSTOMER','STAFF','TECHNICIAN','ADMIN')") 
+    @PreAuthorize("hasAnyRole('CUSTOMER','STAFF','TECHNICIAN','ADMIN')")
     public ResponseEntity<VehicleDto> getMyVehicleById(@PathVariable("id") Integer id, Authentication authentication) {
         Integer UserId = Integer.parseInt(authentication.getName());
         VehicleDto vehicle = vehicleService.getMyVehicleById(id, UserId);
+        return ResponseEntity.ok(vehicle);
+    }
+
+    // Lấy xe cho phần quản lý (theo id xe)
+    @GetMapping("/manage/{id}")
+    @PreAuthorize("hasAnyRole('STAFF','TECHNICIAN','ADMIN')")
+    public ResponseEntity<VehicleDto> getVehicleById(@PathVariable("id") Integer id) {
+        VehicleDto vehicle = vehicleService.getVehicleById(id);
         return ResponseEntity.ok(vehicle);
     }
 

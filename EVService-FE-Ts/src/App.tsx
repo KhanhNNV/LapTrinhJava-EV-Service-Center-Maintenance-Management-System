@@ -15,20 +15,25 @@ import CustomerDashboard from "./pages/customer/Dashboard";
 import Vehicles from "./pages/customer/Vehicles";
 import Appointments from "./pages/customer/Appointments";
 import History from "./pages/customer/History";
+import Payments from '@/pages/customer/Payments';
+import Notifications from "./pages/customer/Notifications";
+import CustomerChat from "./pages/customer/CustomerChat";
 import StaffDashboard from "./pages/staff/Dashboard";
 import StaffAppointments from "./pages/staff/Appointments";
 import StaffCustomers from "./pages/staff/Customers";
-import StaffServiceTickets from "./pages/staff/ServiceTickets";
 import StaffMessages from "./pages/staff/Messages";
+import StaffNotifications from "./pages/staff/Notifications";
 import AdminDashboard from "./pages/admin/Dashboard";
 import AdminUsers from "./pages/admin/Users";
 import AdminServiceCenters from "./pages/admin/ServiceCenters";
 import AdminPartsInventory from "./pages/admin/PartsInventory";
 import AdminServicePackages from "./pages/admin/ServicePackages";
 import AdminAnalytics from "./pages/admin/Analytics";
+import AdminNotifications from "./pages/admin/Notifications";
 import TechnicianDashboard from "./pages/technician/Dashboard";
 import TechnicianMyAppointments from "./pages/technician/MyAppointments";
 import TechnicianServiceTickets from "./pages/technician/ServiceTickets";
+import TechnicianNotifications from "./pages/technician/Notifications";
 import NotFound from "./pages/NotFound";
 import AuthCallbackPage from "./pages/auth/AuthCallbackPage";
 import VerifyEmailPage from "./pages/auth/VerifyEmailPage";
@@ -40,6 +45,7 @@ import RoleBasedUserList from "./pages/admin/users/RoleBaseUserList";
 import EmployeesSalary from "@/pages/admin/EmployeesSalary.tsx";
 import Performance from "@/pages/admin/Performance.tsx";
 import Details from "@/pages/admin/Profit.tsx";
+import StaffQuotes from "./pages/staff/Quotes";
 
 const queryClient = new QueryClient();
 
@@ -56,7 +62,7 @@ const App = () => (
           <Route path="/auth/callback" element={<AuthCallbackPage />} />
           <Route path="/auth/verify-email" element={<VerifyEmailPage />} />
           <Route
-            path="/auth/email-sent"
+            path="/auth/email-verify-sent"
             element={<EmailVerificationSentPage />}
           />
           <Route
@@ -78,6 +84,9 @@ const App = () => (
             <Route path="vehicles" element={<Vehicles />} />
             <Route path="appointments" element={<Appointments />} />
             <Route path="history" element={<History />} />
+            <Route path="payments" element={<Payments />} />
+            <Route path="notifications" element={<Notifications />} />
+            <Route path="messages" element={<CustomerChat />} />
             <Route path="settings" element={<SettingsPage />} />
           </Route>
 
@@ -93,8 +102,9 @@ const App = () => (
             <Route index element={<StaffDashboard />} />
             <Route path="appointments" element={<StaffAppointments />} />
             <Route path="customers" element={<StaffCustomers />} />
-            <Route path="tickets" element={<StaffServiceTickets />} />
+            <Route path="quotes" element={<StaffQuotes />} />
             <Route path="messages" element={<StaffMessages />} />
+            <Route path="notifications" element={<StaffNotifications />} />
             <Route path="settings" element={<SettingsPage />} />
           </Route>
 
@@ -116,6 +126,7 @@ const App = () => (
               <Route path="employees-salary" element={<EmployeesSalary />} />
               <Route path="performance" element={<Performance />} />
               <Route path="details" element={<Details />} />
+            <Route path="notifications" element={<AdminNotifications />} />
             <Route path="settings" element={<SettingsPage />} />
             <Route path="users/:role" element={<RoleBasedUserList />} />
 
@@ -133,6 +144,7 @@ const App = () => (
             <Route index element={<TechnicianDashboard />} />
             <Route path="appointments" element={<TechnicianMyAppointments />} />
             <Route path="tickets" element={<TechnicianServiceTickets />} />
+            <Route path="notifications" element={<TechnicianNotifications />} />
             <Route path="settings" element={<SettingsPage />} />
           </Route>
 

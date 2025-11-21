@@ -10,7 +10,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/ai/service-items")
+@RequestMapping("/api/ai/suggestions")
 @RequiredArgsConstructor
 @Tag(name = "AI Service Item Suggestions", description = "APIs for AI-powered service item part suggestions")
 public class AIServiceItemController {
@@ -18,7 +18,7 @@ public class AIServiceItemController {
     private final ServiceItemAIService serviceItemAIService;
 
     @Operation(summary = "Get AI part suggestions for a service item")
-    @GetMapping("/{serviceItemId}/suggestions")
+    @GetMapping("/{serviceItemId}")
     @PreAuthorize("hasAnyRole('TECHNICIAN', 'STAFF', 'ADMIN')")
     public ResponseEntity<AIServiceItemSuggestion> getAISuggestionsForServiceItem(
             @PathVariable Integer serviceItemId) {

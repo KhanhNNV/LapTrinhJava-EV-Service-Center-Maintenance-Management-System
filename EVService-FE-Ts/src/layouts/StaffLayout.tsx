@@ -9,7 +9,7 @@ export const StaffLayout = () => {
       <div className="min-h-screen flex w-full bg-background">
         <StaffSidebar />
         <div className="flex-1 flex flex-col">
-          <DashboardHeader title="Staff Portal" />
+          <DashboardHeader title="Cổng thông tin nhân viên" />
           <main className="flex-1 p-6">
             <Outlet />
           </main>

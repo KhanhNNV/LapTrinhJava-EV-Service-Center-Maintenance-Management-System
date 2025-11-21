@@ -6,20 +6,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import edu.uth.evservice.dtos.AppointmentDto;
 import edu.uth.evservice.dtos.TechnicianWithCertificateDto;
 import edu.uth.evservice.requests.AppointmentRequest;
 import edu.uth.evservice.requests.AssignTechnicianRequest;
 import edu.uth.evservice.services.IAppointmentService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -29,13 +23,28 @@ public class AppointmentController {
 
         private final IAppointmentService appointmentService;
 
+        // Lay tat ca lich hen
+        @GetMapping
+        @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+        public ResponseEntity<List<AppointmentDto>> getAllAppointments() {
+                List<AppointmentDto> appointments = appointmentService.getAllAppointments();
+                return ResponseEntity.ok(appointments);
+        }
+
         // Customer lay danh sach lich hen cua minh
         @GetMapping("/myAppointments")
-        @PreAuthorize("hasAnyRole('CUSTOMER')")
+        @PreAuthorize("hasAnyRole('CUSTOMER', 'STAFF', 'TECHNICIAN')")
         public ResponseEntity<List<AppointmentDto>> getMyAppointments(Authentication authentication) {
-                Integer customerId = Integer.parseInt(authentication.getName());
-                List<AppointmentDto> myAppointments = appointmentService.getByCustomer(customerId);
+                Integer userId = Integer.parseInt(authentication.getName());
+                List<AppointmentDto> myAppointments = appointmentService.getMyAppointments(userId);
                 return ResponseEntity.ok(myAppointments);
+        }
+
+        // lay danh sach lich hen cua customer (admin/staff)
+        @GetMapping("/customer/{customerId}")
+        @PreAuthorize("hasAnyRole('ADMIN','STAFF')")
+        public ResponseEntity<List<AppointmentDto>> getAppointmentsByCustomer(@PathVariable Integer customerId) {
+                return ResponseEntity.ok(appointmentService.getMyAppointments(customerId));
         }
 
         // lay danh sach lich hen theo trang thai (admin/staff)
@@ -87,6 +96,7 @@ public class AppointmentController {
         @PutMapping("/{appointmentId}/check-in")
         @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
         public ResponseEntity<AppointmentDto> checkIn(@PathVariable Integer appointmentId) {
+
                 AppointmentDto result = appointmentService.checkInAppointment(appointmentId);
 
                 return ResponseEntity.ok(result);
@@ -106,8 +116,7 @@ public class AppointmentController {
         @PutMapping("/{appointmentId}/assignTechnician")
         @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
         public ResponseEntity<AppointmentDto> assignTechnician(
-                        @PathVariable Integer appointmentId,
-                        @RequestBody AssignTechnicianRequest request) {
+                        @PathVariable Integer appointmentId, @Valid @RequestBody AssignTechnicianRequest request) {
                 AppointmentDto updatedAppointment = appointmentService.assignTechnician(appointmentId,
                                 request.getTechnicianId());
                 return ResponseEntity.ok(updatedAppointment);
@@ -116,11 +125,16 @@ public class AppointmentController {
         // KTV xem danh sách LỊCH HẸN (chưa phải công việc) được gán
         @GetMapping("/technician")
         @PreAuthorize("hasRole('TECHNICIAN')")
-        public ResponseEntity<List<AppointmentDto>> getApointmentsByTechnician(Authentication authentication) {
-                Integer technicianId = Integer.parseInt(authentication.getName());
-                List<AppointmentDto> appointments = appointmentService
-                                .getAppointmentByTechinician(technicianId);
-                return ResponseEntity.ok(appointments);
+        public ResponseEntity<List<AppointmentDto>> getAppointmentsByTechnician(
+                Authentication authentication,
+                @RequestParam(required = false) String status
+        ) {
+            Integer technicianId = Integer.parseInt(authentication.getName());
+
+            List<AppointmentDto> appointments = appointmentService
+                    .getAppointmentByTechnician(technicianId, status);
+
+            return ResponseEntity.ok(appointments);
         }
 
 }

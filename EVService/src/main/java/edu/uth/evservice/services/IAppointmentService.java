@@ -4,6 +4,7 @@ import java.util.List;
 
 import edu.uth.evservice.dtos.AppointmentDto;
 import edu.uth.evservice.dtos.TechnicianWithCertificateDto;
+import edu.uth.evservice.models.User;
 import edu.uth.evservice.requests.AppointmentRequest;
 
 public interface IAppointmentService {
@@ -20,6 +21,8 @@ public interface IAppointmentService {
     List<AppointmentDto> getByCustomer(Integer customerId);
 
     List<AppointmentDto> getByStaff(Integer staffId);
+
+    List<AppointmentDto> getMyAppointments(Integer userId);
 
     // lay lich hen theo status
     List<AppointmentDto> getAppointmentsByStatus(String status);
@@ -47,6 +50,6 @@ public interface IAppointmentService {
     AppointmentDto cancelAppointmentForCustomer(Integer appointmentId, Integer customerId);
 
     // Methods for Technician
-    List<AppointmentDto> getAppointmentByTechinician(Integer technicianId);
+    List<AppointmentDto> getAppointmentByTechnician(Integer technicianId, String status);
 
 }

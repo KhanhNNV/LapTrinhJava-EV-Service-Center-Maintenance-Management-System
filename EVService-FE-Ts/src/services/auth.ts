@@ -11,8 +11,8 @@ export interface RegisterData {
   email: string;
   password: string;
   fullName: string;
-  phoneNumber: string;
-  address?: string;
+  // phoneNumber: string;
+  // address?: string;
 }
 
 export type Role = "CUSTOMER" | "STAFF" | "TECHNICIAN" | "ADMIN";

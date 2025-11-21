@@ -1,6 +1,7 @@
 package edu.uth.evservice.requests;
 
 import lombok.Data;
+import java.util.List;
 
 @Data
 public class ServicePackageRequest {
@@ -8,4 +9,6 @@ public class ServicePackageRequest {
     private Double price;
     private Integer duration;
     private String description;
+
+    private List<Integer> serviceItemIds;
 }

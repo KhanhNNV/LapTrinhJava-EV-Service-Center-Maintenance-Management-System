@@ -29,6 +29,8 @@ public class AppointmentDto {
 
     Integer customerId;
     String customerName;
+    String phoneNumber;
+
     Integer staffId;
     String staffName;
     Integer vehicleId;
@@ -37,6 +39,7 @@ public class AppointmentDto {
     String technicianName;
     Integer contractId;
     String contractName;
+    Integer ticketId;
 
     LocalDateTime createdAt;
     LocalDateTime updatedAt;

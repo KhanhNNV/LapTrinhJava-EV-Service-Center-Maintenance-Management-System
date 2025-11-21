@@ -9,8 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import edu.uth.evservice.requests.NotificationRequest;
-import edu.uth.evservice.services.INotificationService;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
@@ -33,7 +31,9 @@ import edu.uth.evservice.repositories.ITechnicianCertificateRepository;
 import edu.uth.evservice.repositories.IUserRepository;
 import edu.uth.evservice.repositories.IVehicleRepository;
 import edu.uth.evservice.requests.AppointmentRequest;
+import edu.uth.evservice.requests.NotificationRequest;
 import edu.uth.evservice.services.IAppointmentService;
+import edu.uth.evservice.services.INotificationService;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -48,7 +48,6 @@ public class AppointmentServiceImpl implements IAppointmentService {
     private final ITechnicianCertificateRepository technicianCertificateRepository;
     //
     private final INotificationService notificationService;
-
 
     // lay tat ca lich hen danh cho admin
     @Override
@@ -127,6 +126,32 @@ public class AppointmentServiceImpl implements IAppointmentService {
                 .stream().map(this::toDto).collect(Collectors.toList());
     }
 
+    @Override
+    public List<AppointmentDto> getMyAppointments(Integer userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy người dùng với ID: " + userId));
+
+        List<Appointment> appointments;
+
+        switch (user.getRole()) {
+            case CUSTOMER:
+                appointments = appointmentRepository.findByCustomer_UserId(userId);
+                break;
+            case STAFF:
+                appointments = appointmentRepository.findByStaff_UserId(userId);
+                break;
+            case TECHNICIAN:
+                appointments = appointmentRepository.findByAssignedTechnician_UserId(userId);
+                break;
+            default:
+                throw new AccessDeniedException("Vai trò người dùng không hợp lệ để xem lịch hẹn.");
+        }
+
+        return appointments.stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
+    }
+
     // lay lich hen theo status (admin/staff)
     @Override
     public List<AppointmentDto> getAppointmentsByStatus(String status) {
@@ -153,8 +178,8 @@ public class AppointmentServiceImpl implements IAppointmentService {
                         () -> new ResourceNotFoundException("Không tìm thấy nhân viên với username: " + staffId));
 
         // kiem tra neu appointment da bi huy
-        if (appointment.getStatus() == AppointmentStatus.CANCELED) {
-        throw new IllegalStateException("Không thể xác nhận lịch hẹn đã bị hủy.");
+        if (appointment.getStatus() == AppointmentStatus.CANCELLED) {
+            throw new IllegalStateException("Không thể xác nhận lịch hẹn đã bị hủy.");
         }
         // if (appointment.getStatus() == AppointmentStatus.CONFIRMED) {
         // throw new IllegalStateException("Lịch hẹn đã được xác nhận từ trước.");
@@ -177,7 +202,8 @@ public class AppointmentServiceImpl implements IAppointmentService {
         customerNoti.setUserId(savedAppointment.getCustomer().getUserId()); // ID người nhận (Khách hàng)
         customerNoti.setTitle("Lịch hẹn của bạn đã được xác nhận!");
         customerNoti.setMessage("Lịch hẹn #" + savedAppointment.getAppointmentId() +
-                " của bạn đã được nhân viên của chúng tôi xác nhận.");
+                " đã được nhân viên xác nhận. Vui lòng đến quầy và check-in lúc " +
+                savedAppointment.getAppointmentTime() + " ngày " + savedAppointment.getAppointmentDate() + ".");
 
         notificationService.createNotification(customerNoti); // Gửi đi
 
@@ -309,15 +335,26 @@ public class AppointmentServiceImpl implements IAppointmentService {
     }
 
     @Override
-    public List<AppointmentDto> getAppointmentByTechinician(Integer technicianId) {
+    public List<AppointmentDto> getAppointmentByTechnician(Integer technicianId,String statusStr) {
         User tech = userRepository.findById(technicianId)
                 .orElseThrow(
                         () -> new ResourceNotFoundException(
-                                "Không tìm thấy kỹ thuật viên với username : " + technicianId));
+                                "Không tìm thấy kỹ thuật viên với id : " + technicianId));
 
-        return appointmentRepository
-                .findByAssignedTechnician_UserId(tech.getUserId())
-                .stream()
+        List<Appointment> appointments;
+
+        if (statusStr != null && !statusStr.isEmpty() && !statusStr.equals("ALL")) {
+            try {
+                AppointmentStatus status = AppointmentStatus.valueOf(statusStr);
+                appointments = appointmentRepository.findByAssignedTechnician_UserIdAndStatus(tech.getUserId(), status);
+            } catch (IllegalArgumentException e) {
+                appointments = List.of();
+            }
+        } else {
+            appointments = appointmentRepository.findByAssignedTechnician_UserId(tech.getUserId());
+        }
+
+        return appointments.stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());
     }
@@ -397,7 +434,7 @@ public class AppointmentServiceImpl implements IAppointmentService {
                     "Cuộc hẹn không thể bị hủy khi ở trạng thái " + appointment.getStatus());
         }
 
-        appointment.setStatus(AppointmentStatus.CANCELED);
+        appointment.setStatus(AppointmentStatus.CANCELLED);
         appointment.setNote(appointment.getNote() + " [Đã hủy bởi khách hàng]");
         appointment.setAssignedTechnician(null); // Bỏ gán kỹ thuật viên khi hủy
         appointment.setUpdatedAt(LocalDateTime.now());
@@ -415,6 +452,7 @@ public class AppointmentServiceImpl implements IAppointmentService {
                 .note(a.getNote())
                 .customerId(a.getCustomer().getUserId())
                 .customerName(a.getCustomer().getFullName())
+                .phoneNumber(a.getCustomer().getPhoneNumber())
                 .staffId(a.getStaff() != null ? a.getStaff().getUserId() : null)
                 .staffName(a.getStaff() != null ? a.getStaff().getFullName() : null)
                 .technicianId(a.getAssignedTechnician() != null ? a.getAssignedTechnician().getUserId() : null)
@@ -423,6 +461,7 @@ public class AppointmentServiceImpl implements IAppointmentService {
                 .centerId(a.getCenter().getCenterId())
                 .contractId(a.getContract() != null ? a.getContract().getContractId() : null)
                 .contractName(a.getContract() != null ? a.getContract().getContractName() : null)
+                .ticketId(a.getServiceTicket() != null ? a.getServiceTicket().getTicketId() : null)
                 .createdAt(a.getCreatedAt())
                 .updatedAt(a.getUpdatedAt())
                 .build();
