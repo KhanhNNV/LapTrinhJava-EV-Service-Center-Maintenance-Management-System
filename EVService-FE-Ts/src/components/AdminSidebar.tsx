@@ -104,6 +104,23 @@ const items = [
             }
         ],
     },
+    {
+        title: "Phụ tùng và dịch vụ ",
+        icon: Wrench,
+        isActive: true,
+        items: [
+            {
+                title: "Phụ tùng",
+                url: "/dashboard/admin/parts",
+                icon: Package
+            },
+            {
+                title: "Dịch vụ",
+                url: "/dashboard/admin/serviceitems",
+                icon: Wrench
+            },
+        ],
+    },
   {
     title: "Cài đặt hệ thống",
     url: "/dashboard/admin/settings",

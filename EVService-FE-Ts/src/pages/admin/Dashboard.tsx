@@ -197,7 +197,7 @@ export default function AdminDashboard() {
 
             // 2. Lịch hẹn mới nhất
             const recentAppts = [...appointments]
-                .sort((a, b) => new Date(b.createdAt || b.appointmentDate).getTime() - new Date(a.createdAt || a.appointmentDate).getTime())
+                .sort((a, b) => new Date(b.createdAt || a.appointmentDate).getTime() - new Date(a.createdAt || a.appointmentDate).getTime())
                 .slice(0, 5);
 
             // 3. Cập nhật State

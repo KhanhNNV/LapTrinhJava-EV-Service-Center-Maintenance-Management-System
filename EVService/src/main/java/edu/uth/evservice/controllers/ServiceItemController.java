@@ -45,6 +45,13 @@ public class ServiceItemController {
         ServiceItemDto newItem = serviceItemService.updateServiceItem(itemid,serviceItemRequest);
         return new ResponseEntity<>(newItem,HttpStatus.OK);
     }
+    @DeleteMapping("/{itemid}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deleteServiceItem(@PathVariable("itemid") Integer itemid) {
+        serviceItemService.deleteServiceItem(itemid);
+        return ResponseEntity.noContent().build();
+    }
+
 
     // --- Quản lý Gợi ý (ServiceItemPart) ---
 
