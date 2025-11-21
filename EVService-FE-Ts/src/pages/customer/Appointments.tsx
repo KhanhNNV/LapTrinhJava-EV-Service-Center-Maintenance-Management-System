@@ -90,7 +90,7 @@ export default function Appointments() {
   // --- LOGIC LỌC DANH SÁCH ---
   const activeAppointments =
     appointments?.filter(
-      (a: AppointmentDto) => !["COMPLETED", "CANCELED"].includes(a.status)
+      (a: AppointmentDto) => !["COMPLETED", "CANCELLED"].includes(a.status)
     ) || [];
 
   // --- LOGIC SẮP XẾP VÀ LỌC ---
@@ -180,7 +180,7 @@ export default function Appointments() {
       CHECKED_IN: "bg-indigo-100 text-indigo-700 border-indigo-200",
       ASSIGNED: "bg-cyan-100 text-cyan-700 border-cyan-200",
       IN_PROGRESS: "bg-purple-100 text-purple-700 border-purple-200",
-      CANCELED: "bg-red-100 text-red-700 border-red-200",
+      CANCELLED: "bg-red-100 text-red-700 border-red-200",
       COMPLETED: "bg-green-100 text-green-700 border-green-200",
     };
     return colors[status] || "bg-gray-100 text-gray-700";

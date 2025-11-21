@@ -25,7 +25,7 @@ export default function CustomerDashboard() {
   // 2. Logic lọc trạng thái mới
   // Active: Tất cả trạng thái ngoại trừ COMPLETED và CANCELED
   const activeAppointments = appointments?.filter((a: AppointmentDto) => 
-    !['COMPLETED', 'CANCELED'].includes(a.status)
+    !['COMPLETED', 'CANCELLED'].includes(a.status)
   ) || [];
 
   // Lấy 3 lịch hẹn gần nhất để hiển thị
