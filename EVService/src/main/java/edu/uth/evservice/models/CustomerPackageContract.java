@@ -38,6 +38,9 @@ public class CustomerPackageContract {
     @JoinColumn(name = "package_id", referencedColumnName = "package_id", nullable = false)
     ServicePackage servicePackage;
 
+    @OneToMany(mappedBy = "contract", cascade = CascadeType.ALL)
+    private List<Invoice> invoices = new ArrayList<>();
+
     // them moi
     @OneToMany(mappedBy = "contract")
     private List<Appointment> appointments = new ArrayList<>();

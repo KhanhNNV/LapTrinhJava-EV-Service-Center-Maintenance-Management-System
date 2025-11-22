@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,7 +27,7 @@ public class Invoice {
     private Integer invoiceId;
 
     @Column(name = "invoice_date", nullable = false)
-    private LocalDate invoiceDate;
+    private LocalDateTime invoiceDate;
 
     @Column(name = "total_amount", nullable = false)
     private Double totalAmount;
@@ -39,9 +40,14 @@ public class Invoice {
     @Column(name = "payment_method", nullable = false)
     private PaymentMethod paymentMethod;
 
+
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ticket_id", nullable = false, unique = true)
+    @JoinColumn(name = "ticket_id", nullable = true, unique = true)
     private ServiceTicket serviceTicket;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "contract_id", nullable = true)
+    private CustomerPackageContract contract;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)

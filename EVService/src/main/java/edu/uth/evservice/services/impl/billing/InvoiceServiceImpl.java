@@ -1,6 +1,8 @@
 package edu.uth.evservice.services.impl.billing;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,7 +30,7 @@ import lombok.experimental.FieldDefaults;
 
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-@RequiredArgsConstructor // Dùng cái này thay cho AllArgsConstructor để gọn hơn với final fields
+@RequiredArgsConstructor
 public class InvoiceServiceImpl implements IInvoiceService {
 
     private final IInvoiceRepository invoiceRepo;
@@ -38,60 +40,76 @@ public class InvoiceServiceImpl implements IInvoiceService {
     private final IUserRepository userRepo;
     private final INotificationService notificationService;
 
-    // --- 1. HÀM HELPER RIÊNG (Để tái sử dụng logic lấy chi tiết) ---
+    // --- 1. HÀM HELPER RIÊNG ---
     private InvoiceDto convertToDetailedDto(Invoice invoice) {
-        Integer ticketId = invoice.getServiceTicket().getTicketId();
+        List<TicketServiceItem> serviceItems = new ArrayList<>();
+        List<TicketPart> parts = new ArrayList<>();
 
-        // Lấy items và parts
-        List<TicketServiceItem> serviceItems = ticketItemRepo.findByServiceTicket_TicketId(ticketId);
-        List<TicketPart> parts = ticketPartRepo.findByTicket_TicketId(ticketId);
+        // Thay đổi User thành String để linh hoạt
+        String technicianName = "N/A";
+        String staffName = "Hệ thống";
 
-        // Tính tổng tiền items
+        // TRƯỜNG HỢP 1: Hóa đơn từ Phiếu Dịch Vụ (Ticket)
+        if (invoice.getServiceTicket() != null) {
+            Integer ticketId = invoice.getServiceTicket().getTicketId();
+
+            serviceItems = ticketItemRepo.findByServiceTicket_TicketId(ticketId);
+            parts = ticketPartRepo.findByTicket_TicketId(ticketId);
+
+            // Lấy tên KTV
+            if (invoice.getServiceTicket().getTechnician() != null) {
+                technicianName = invoice.getServiceTicket().getTechnician().getFullName();
+            }
+
+            // Lấy tên nhân viên tiếp nhận (từ Appointment)
+            if (invoice.getServiceTicket().getAppointment() != null
+                    && invoice.getServiceTicket().getAppointment().getStaff() != null) {
+                staffName = invoice.getServiceTicket().getAppointment().getStaff().getFullName();
+            }
+        }
+        // TRƯỜNG HỢP 2: Hóa đơn từ Hợp đồng (Contract)
+        else if (invoice.getContract() != null) {
+            staffName = "Đăng ký gói Online";
+            // technicianName giữ mặc định là "N/A"
+            // Items và Parts để rỗng
+        }
+
         double subtotalItems = serviceItems.stream()
                 .mapToDouble(TicketServiceItem::getUnitPriceAtTimeOfService)
                 .sum();
 
-        // Tính tổng tiền parts
         double subtotalParts = parts.stream()
                 .mapToDouble(part -> part.getQuantity() * part.getUnitPriceAtTimeOfService())
                 .sum();
 
-        User assignTech = invoice.getServiceTicket().getTechnician();
-
-        // Gọi hàm map DTO gốc
-        return toDto(invoice, serviceItems, parts, subtotalItems, subtotalParts, assignTech);
+        // Truyền String names vào toDto thay vì Object User
+        return toDto(invoice, serviceItems, parts, subtotalItems, subtotalParts, staffName, technicianName);
     }
 
-    // --- 2. CẬP NHẬT getAllInvoices ---
     @Override
     public List<InvoiceDto> getAllInvoices() {
-        // Lấy tất cả hóa đơn, sắp xếp cái mới nhất lên đầu
         List<Invoice> invoices = invoiceRepo.findAll(Sort.by(Sort.Direction.DESC, "invoiceDate"));
-
-        // Map qua hàm helper để lấy full chi tiết
         return invoices.stream()
                 .map(this::convertToDetailedDto)
                 .collect(Collectors.toList());
     }
 
-    // --- CẬP NHẬT getMyInvoices ---
     @Override
     public Page<InvoiceDto> getMyInvoices(Integer userId, int page, int limit) {
         Pageable pageable = PageRequest.of(page, limit, Sort.by("invoiceDate").descending());
         Page<Invoice> invoicePage = invoiceRepo.findByUser_UserId(userId, pageable);
-
-        // Sử dụng lại hàm helper convertToDetailedDto
         return invoicePage.map(this::convertToDetailedDto);
     }
 
     @Override
     public InvoiceDto createInvoiceForTicket(Integer ticketId, Integer staffId) {
-        // ... (Giữ nguyên code kiểm tra logic cũ) ...
         ServiceTicket serviceTicket = serviceTicketRepo.findById(ticketId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy phiếu dịch vụ"));
 
         User staff = userRepo.findById(staffId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy user đang tạo hóa đơn"));
+
+        User tech = serviceTicket.getTechnician();
 
         if (serviceTicket.getStatus() != ServiceTicketStatus.COMPLETED) {
             throw new IllegalStateException("Phiếu dịch vụ này chưa hoàn thành, không thể tạo hóa đơn");
@@ -101,7 +119,6 @@ public class InvoiceServiceImpl implements IInvoiceService {
             throw new IllegalStateException("Hóa đơn cho phiếu dịch vụ này đã được tạo");
         }
 
-        // ... (Phần tính toán giữ nguyên hoặc dùng lại logic helper nếu muốn) ...
         List<TicketServiceItem> serviceItems = ticketItemRepo.findByServiceTicket_TicketId(ticketId);
         List<TicketPart> parts = ticketPartRepo.findByTicket_TicketId(ticketId);
 
@@ -112,7 +129,7 @@ public class InvoiceServiceImpl implements IInvoiceService {
         User customer = serviceTicket.getAppointment().getCustomer();
 
         Invoice invoice = Invoice.builder()
-                .invoiceDate(LocalDate.now())
+                .invoiceDate(LocalDateTime.now())
                 .totalAmount(grandTotal)
                 .paymentStatus(PaymentStatus.PENDING)
                 .paymentMethod(PaymentMethod.UNSPECIFIED)
@@ -125,7 +142,6 @@ public class InvoiceServiceImpl implements IInvoiceService {
         serviceTicket.setInvoice(savedInvoice);
         serviceTicketRepo.save(serviceTicket);
 
-        // Gửi thông báo
         NotificationRequest customerNoti = new NotificationRequest();
         customerNoti.setUserId(customer.getUserId());
         customerNoti.setTitle("Hóa đơn mới cho dịch vụ của bạn!");
@@ -133,27 +149,25 @@ public class InvoiceServiceImpl implements IInvoiceService {
                 savedInvoice.getTotalAmount() + " đã được tạo. Vui lòng thanh toán.");
         notificationService.createNotification(customerNoti);
 
-        return toDto(savedInvoice, serviceItems, parts, subtotalItems, subtotalParts, staff);
+        // Truyền tên trực tiếp vào hàm toDto
+        return toDto(savedInvoice, serviceItems, parts, subtotalItems, subtotalParts,
+                staff.getFullName(),
+                tech != null ? tech.getFullName() : "N/A");
     }
 
     @Override
     public InvoiceDto getInvoiceByTicketId(Integer ticketId) {
         Invoice invoice = invoiceRepo.findByServiceTicket_TicketId(ticketId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy Hóa đơn cho phiếu dịch vụ"));
-
-        // Sử dụng hàm helper cho gọn
         return convertToDetailedDto(invoice);
     }
-
 
     @Override
     @Transactional
     public InvoiceDto updatePaymentStatus(Integer invoiceId, String newStatus) {
-        // 1. Tìm hóa đơn
         Invoice invoice = invoiceRepo.findById(invoiceId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy hóa đơn với ID: " + invoiceId));
 
-        // 2. Validate trạng thái gửi lên
         PaymentStatus status;
         try {
             status = PaymentStatus.valueOf(newStatus.toUpperCase());
@@ -161,26 +175,19 @@ public class InvoiceServiceImpl implements IInvoiceService {
             throw new IllegalArgumentException("Trạng thái thanh toán không hợp lệ: " + newStatus);
         }
 
-        // 3. Logic kiểm tra nghiệp vụ
-        // Không cho phép chuyển từ PAID về PENDING (trừ khi hủy, nhưng logic đó nên tách riêng)
         if (invoice.getPaymentStatus() == PaymentStatus.PAID && status == PaymentStatus.PENDING) {
             throw new IllegalStateException("Hóa đơn đã thanh toán, không thể chuyển về trạng thái chờ.");
         }
 
-        // 4. Cập nhật trạng thái
         invoice.setPaymentStatus(status);
 
-        // --- LOGIC TỰ ĐỘNG SET TIỀN MẶT ---
-        // Nếu Staff xác nhận PAID mà phương thức đang là UNSPECIFIED -> Gán là CASH
         if (status == PaymentStatus.PAID &&
                 (invoice.getPaymentMethod() == PaymentMethod.UNSPECIFIED || invoice.getPaymentMethod() == null)) {
             invoice.setPaymentMethod(PaymentMethod.CASH);
         }
 
-        // 5. Lưu xuống DB
         Invoice savedInvoice = invoiceRepo.save(invoice);
 
-        // 6. Gửi thông báo cho Khách hàng
         try {
             NotificationRequest noti = new NotificationRequest();
             noti.setUserId(savedInvoice.getUser().getUserId());
@@ -188,45 +195,70 @@ public class InvoiceServiceImpl implements IInvoiceService {
             noti.setMessage("Hóa đơn #" + invoiceId + " đã được xác nhận thanh toán tiền mặt.");
             notificationService.createNotification(noti);
         } catch (Exception e) {
-            System.out.println("loi khi gui thong bao thanh toan bang tien mat" + e.getMessage() ) ;
+            System.out.println("Lỗi khi gửi thông báo thanh toán: " + e.getMessage());
         }
 
         return convertToDetailedDto(savedInvoice);
     }
 
-    // --- CÁC HÀM MAPPER DTO (GIỮ NGUYÊN) ---
+    // --- CÁC HÀM MAPPER DTO ---
     private InvoiceDto toDto(Invoice invoice,
                              List<TicketServiceItem> serviceItems,
                              List<TicketPart> parts,
                              double serviceTotal,
                              double partTotal,
-                             User staff) {
+                             String staffName,
+                             String technicianName)
+    {
         if (invoice == null) return null;
 
-        ServiceTicket ticket = invoice.getServiceTicket();
-        Appointment appointment = ticket.getAppointment();
-        User customer = appointment.getCustomer();
+        Integer ticketId = null;
+        Integer contractId = null;
+        Integer appointmentId = null;
+        String customerName = "";
+        String customerPhone = "";
+
+        if (invoice.getUser() != null) {
+            customerName = invoice.getUser().getFullName();
+            customerPhone = invoice.getUser().getPhoneNumber();
+        }
+
+        if (invoice.getServiceTicket() != null) {
+            ticketId = invoice.getServiceTicket().getTicketId();
+            if (invoice.getServiceTicket().getAppointment() != null) {
+                appointmentId = invoice.getServiceTicket().getAppointment().getAppointmentId();
+            }
+        }
+
+        if (invoice.getContract() != null) {
+            contractId = invoice.getContract().getContractId();
+        }
 
         List<TicketServiceItemDto> itemDtos = serviceItems.stream().map(this::toDto).collect(Collectors.toList());
         List<TicketPartDto> partDtos = parts.stream().map(this::toDto).collect(Collectors.toList());
 
-        double grandTotal = serviceTotal + partTotal;
+        double finalGrandTotal = invoice.getTotalAmount();
 
         return InvoiceDto.builder()
-                .id(ticket.getInvoice().getInvoiceId())
-                .ticketId(ticket.getTicketId())
-                .appointmentId(appointment.getAppointmentId())
-                .completedTime(ticket.getEndTime())
-                .customerName(customer.getFullName())
-                .customerPhone(customer.getPhoneNumber())
-                .technicianName(staff != null ? staff.getFullName() : "N/A")
-                .staffName(ticket.getAppointment().getStaff().getFullName() != null
-                        ? ticket.getAppointment().getStaff().getFullName() : "N/A")
+                .id(invoice.getInvoiceId())
+                .ticketId(ticketId)
+                .contractId(contractId)
+                .appointmentId(appointmentId)
+                .completedTime(invoice.getInvoiceDate())
+
+                .customerName(customerName)
+                .customerPhone(customerPhone)
+
+                .technicianName(technicianName)
+                .staffName(staffName)
+
                 .serviceItems(itemDtos)
                 .partsUsed(partDtos)
+
                 .serviceTotal(serviceTotal)
                 .partTotal(partTotal)
-                .grandTotal(grandTotal)
+                .grandTotal(finalGrandTotal)
+
                 .paymentStatus(invoice.getPaymentStatus())
                 .build();
     }

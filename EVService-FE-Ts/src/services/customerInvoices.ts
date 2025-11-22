@@ -16,7 +16,8 @@ export interface TicketPartDto {
 
 export interface InvoiceDto {
     id: number;
-    ticketId: number;
+    ticketId?: number | null;
+    contractId?: number | null;
     appointmentId: number;
     completedTime: string; // LocalDateTime trả về string ISO
 

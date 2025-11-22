@@ -120,9 +120,10 @@ export default function Invoices() {
         });
     };
 
+
+
     return (
         <div className="space-y-6">
-            {/* ... Phần Render UI giữ nguyên ... */}
             <div>
                 <h2 className="text-3xl font-bold tracking-tight text-gray-900">Hóa đơn của tôi</h2>
                 <p className="text-muted-foreground">Quản lý lịch sử dịch vụ và thanh toán</p>
@@ -139,82 +140,104 @@ export default function Invoices() {
                             </div>
                         ) : (
                             // currentInvoices lúc này đã là dữ liệu đã được sắp xếp và cắt trang
-                            currentInvoices.map((invoice: InvoiceDto) => (
-                                <Card key={invoice.id} className="shadow-sm hover:shadow-md transition-all flex flex-col">
-                                    {/* ... Nội dung Card ... */}
-                                    <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                                        <div className="font-bold text-lg flex items-center gap-2">
-                                            <Receipt className="w-5 h-5 text-green-600" />
-                                            Hóa đơn #{invoice.id}
-                                        </div>
+                            currentInvoices.map((invoice: InvoiceDto) => {
+                                // --- LOGIC QUAN TRỌNG Ở ĐÂY ---
 
-                                        {invoice.paymentStatus === 'PAID' ? (
+                                // Kiểm tra: Nếu không có ticketId thì coi là Hợp đồng (Contract)
+                                const isContract = !invoice.ticketId;
 
-                                            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-300">
-                                                Đã thanh toán
-                                            </Badge>
-                                        ) : (
-                                            <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
-                                                Chưa thanh toán
-                                            </Badge>
-                                        )}
-                                    </CardHeader>
+                                // Tính toán grid cho footer để nút bấm cân đối
+                                // Nếu là Service (có nút Chi tiết): Cần chia 2 hoặc 3 cột
+                                // Nếu là Contract (ẩn nút Chi tiết): Cần chia 1 hoặc 2 cột
+                                const footerGridClass = invoice.paymentStatus === 'PAID'
+                                    ? (isContract ? 'grid-cols-1' : 'grid-cols-2') // Đã thanh toán
+                                    : (isContract ? 'grid-cols-2' : 'grid-cols-3'); // Chưa thanh toán
 
-                                    <CardContent className="space-y-3 flex-1">
-                                        <div className="text-sm text-muted-foreground flex items-center gap-2">
-                                            <Calendar className="w-4 h-4" />
-                                            {invoice.completedTime ? new Date(invoice.completedTime).toLocaleString('vi-VN') : 'N/A'}
-                                        </div>
-                                        <div className="text-sm flex items-center gap-2">
-                                            <Wrench className="w-4 h-4 text-gray-500" />
-                                            Kỹ thuật viên: <span className="font-medium">{invoice.technicianName}</span>
-                                        </div>
-
-                                        <Separator />
-
-                                        <div className="flex justify-between items-center pt-2">
-                                            <span className="text-sm text-muted-foreground">Tổng thanh toán</span>
-                                            <span className="text-xl font-bold text-red-600">
-                                                {formatCurrency(invoice.grandTotal)}
-                                            </span>
-                                        </div>
-                                    </CardContent>
-
-                                    <CardFooter className="grid grid-cols-3 gap-3 bg-slate-50/50 p-4">
-                                        <Button
-                                            variant="outline"
-                                            className="w-full"
-                                            onClick={() => setSelectedInvoice(invoice)}
-                                        >
-                                            <Eye className="w-4 h-4 mr-2" /> Chi tiết
-                                        </Button>
-                                        {invoice.paymentStatus === 'PAID' ? (
-                                            <div className="w-full flex items-center justify-center text-green-600 font-bold border border-green-200 bg-green-50 rounded-md h-10">
-                                                <CheckCircle className="w-4 h-4 mr-2" /> Đã thanh toán
+                                return (
+                                    <Card key={invoice.id} className="shadow-sm hover:shadow-md transition-all flex flex-col">
+                                        <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+                                            <div className="font-bold text-lg flex items-center gap-2">
+                                                <Receipt className="w-5 h-5 text-green-600" />
+                                                {/* Đổi tiêu đề dựa theo loại */}
+                                                {isContract ? `Hóa đơn Hợp đồng #${invoice.id}` : `Hóa đơn Dịch vụ #${invoice.id}`}
                                             </div>
-                                        ) : (
-                                            <>
-                                                <Button
-                                                    className="w-full bg-blue-600 hover:bg-blue-700"
-                                                    type="button"
-                                                    onClick={(e) => handlePayment(invoice.id, e)}
-                                                    disabled={isPaying}
-                                                >
-                                                    {isPaying ? <Loader2 className="animate-spin w-4 h-4 mr-2" /> : "Thanh toán VNPay"}
-                                                </Button>
-                                                <Button
-                                                    variant="secondary"
-                                                    onClick={handleCashInstruction}
-                                                    className="bg-gray-100 hover:bg-gray-200 text-gray-700"
-                                                >
-                                                    <Banknote className="w-4 h-4 mr-2" /> Thanh toán tiền mặt
-                                                </Button>
-                                            </>
 
-                                        )}
-                                    </CardFooter>
-                                </Card>
-                            ))
+                                            {invoice.paymentStatus === 'PAID' ? (
+                                                <Badge variant="outline" className="bg-green-50 text-green-700 border-green-300">
+                                                    Đã thanh toán
+                                                </Badge>
+                                            ) : (
+                                                <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
+                                                    Chưa thanh toán
+                                                </Badge>
+                                            )}
+                                        </CardHeader>
+
+                                        <CardContent className="space-y-3 flex-1">
+                                            <div className="text-sm text-muted-foreground flex items-center gap-2">
+                                                <Calendar className="w-4 h-4" />
+                                                {invoice.completedTime ? new Date(invoice.completedTime).toLocaleString('vi-VN') : 'N/A'}
+                                            </div>
+
+                                            {/* CHỈ HIỆN KTV NẾU LÀ SERVICE (Có Ticket) */}
+                                            {!isContract && (
+                                                <div className="text-sm flex items-center gap-2">
+                                                    <Wrench className="w-4 h-4 text-gray-500" />
+                                                    Kỹ thuật viên: <span className="font-medium">{invoice.technicianName || 'N/A'}</span>
+                                                </div>
+                                            )}
+
+                                            <Separator />
+
+                                            <div className="flex justify-between items-center pt-2">
+                                                <span className="text-sm text-muted-foreground">Tổng thanh toán</span>
+                                                <span className="text-xl font-bold text-red-600">
+                                                    {formatCurrency(invoice.grandTotal)}
+                                                </span>
+                                            </div>
+                                        </CardContent>
+
+                                        {/* Footer Grid động theo biến footerGridClass */}
+                                        <CardFooter className={`grid gap-3 bg-slate-50/50 p-4 ${footerGridClass}`}>
+
+                                            {/* CHỈ HIỆN NÚT CHI TIẾT NẾU LÀ SERVICE */}
+                                            {!isContract && (
+                                                <Button
+                                                    variant="outline"
+                                                    className="w-full"
+                                                    onClick={() => setSelectedInvoice(invoice)}
+                                                >
+                                                    <Eye className="w-4 h-4 mr-2" /> Chi tiết
+                                                </Button>
+                                            )}
+
+                                            {invoice.paymentStatus === 'PAID' ? (
+                                                <div className="w-full flex items-center justify-center text-green-600 font-bold border border-green-200 bg-green-50 rounded-md h-10">
+                                                    <CheckCircle className="w-4 h-4 mr-2" /> Đã thanh toán
+                                                </div>
+                                            ) : (
+                                                <>
+                                                    <Button
+                                                        className="w-full bg-blue-600 hover:bg-blue-700"
+                                                        type="button"
+                                                        onClick={(e) => handlePayment(invoice.id, e)}
+                                                        disabled={isPaying}
+                                                    >
+                                                        {isPaying ? <Loader2 className="animate-spin w-4 h-4 mr-2" /> : "VNPay"}
+                                                    </Button>
+                                                    <Button
+                                                        variant="secondary"
+                                                        onClick={handleCashInstruction}
+                                                        className="bg-gray-100 hover:bg-gray-200 text-gray-700"
+                                                    >
+                                                        <Banknote className="w-4 h-4 mr-2" /> Tiền mặt
+                                                    </Button>
+                                                </>
+                                            )}
+                                        </CardFooter>
+                                    </Card>
+                                );
+                            })
                         )}
                     </div>
                     {/* ... Phần Pagination Controls giữ nguyên ... */}

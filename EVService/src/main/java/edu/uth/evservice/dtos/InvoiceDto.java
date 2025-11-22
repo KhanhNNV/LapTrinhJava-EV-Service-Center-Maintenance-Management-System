@@ -19,6 +19,7 @@ import java.util.List;
 public class InvoiceDto {
     private Integer id;
     private Integer ticketId;
+    private Integer contractId;
     private Integer appointmentId;
     private LocalDateTime completedTime;
 

@@ -1,5 +1,6 @@
 package edu.uth.evservice.dtos;
 
+import edu.uth.evservice.models.Invoice;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import java.time.LocalDate;
@@ -18,4 +19,5 @@ public class CustomerPackageContractDto {
     private LocalDate startDate;
     private LocalDate endDate;
     private String status;
+    private Integer invoiceId;
 }

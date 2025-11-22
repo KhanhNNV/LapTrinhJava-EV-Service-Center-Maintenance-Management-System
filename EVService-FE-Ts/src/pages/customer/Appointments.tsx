@@ -22,17 +22,17 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  Calendar,
-  Plus,
-  Clock,
-  MapPin,
-  Loader2,
-  Eye,
-  FileText,
-  Car,
-  User,
-  Filter,
-  ArrowUpDown,
+    Calendar,
+    Plus,
+    Clock,
+    MapPin,
+    Loader2,
+    Eye,
+    FileText,
+    Car,
+    User,
+    Filter,
+    ArrowUpDown, X,
 } from "lucide-react";
 
 import { toast } from "sonner";
@@ -331,68 +331,84 @@ export default function Appointments() {
                   </Select>
                 </div>
                 {/* Chọn gói dịch vụ đã đăng ký */}
-                <div className="space-y-2">
-                  <Label>Gói dịch vụ đã đăng ký</Label>
-                  <Select
-                    value={formData.contractId?.toString() || ""}
-                    onValueChange={(value) => {
-                      const selectedContract = contracts.find(
-                        (contract) => contract.contractId.toString() === value
-                      );
-                      if (selectedContract) {
-                        // Khi chọn hợp đồng, lưu thông tin hợp đồng và dịch vụ
-                        handleContractSelection(
-                          selectedContract.contractId,
-                          selectedContract.packageName
-                        );
-                      }
-                    }}
-                  >
-                    <SelectTrigger>
-                      <SelectValue
-                        placeholder={
-                          isLoadingContracts
-                            ? "Đang tải..."
-                            : "Chọn gói dịch vụ đã đăng ký"
-                        }
-                      />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {contracts?.length ? (
-                        contracts
-                          .filter(
-                            (c: CustomerContractDto) => c.status === "ACTIVE"
-                          ) // Chỉ lấy hợp đồng ACTIVE
-                          .map((c: CustomerContractDto) => (
-                            <SelectItem
-                              key={c.contractId}
-                              value={c.contractId.toString()}
-                            >
-                              <div className="flex flex-col items-start">
-                                <span className="font-medium">
-                                  {c.packageName} {/* Tên gói dịch vụ */}
-                                </span>
-                                <span className="text-xs text-muted-foreground">
-                                  {new Date(c.startDate).toLocaleDateString(
-                                    "vi-VN"
-                                  )}{" "}
-                                  →{" "}
-                                  {new Date(c.endDate).toLocaleDateString(
-                                    "vi-VN"
-                                  )}{" "}
-                                  {/* Ngày bắt đầu và kết thúc */}
-                                </span>
-                              </div>
-                            </SelectItem>
-                          ))
-                      ) : (
-                        <div className="p-2 text-sm text-muted-foreground">
-                          Bạn chưa đăng ký gói dịch vụ nào
-                        </div>
-                      )}
-                    </SelectContent>
-                  </Select>
-                </div>
+                  <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                          <Label>Gói dịch vụ đã đăng ký</Label>
+                          {/* 2. Hiển thị nút Bỏ chọn nếu đã có contractId */}
+                          {formData.contractId && (
+                              <button
+                                  type="button"
+                                  onClick={() => {
+                                      // Logic reset: Xóa contractId và reset serviceType
+                                      setFormData((prev) => ({
+                                          ...prev,
+                                          contractId: null, // hoặc undefined tùy type của bạn
+                                          serviceType: "", // Reset dịch vụ để người dùng chọn lại ở dưới
+                                      }));
+
+                                      // Nếu bạn có hàm handleContractSelection xử lý logic khác, hãy gọi nó với null
+                                      // handleContractSelection(null, "");
+                                  }}
+                                  className="text-xs text-red-500 hover:text-red-700 flex items-center cursor-pointer transition-colors"
+                              >
+                                  <X className="w-3 h-3 mr-1" /> Bỏ chọn gói
+                              </button>
+                          )}
+                      </div>
+
+                      <Select
+                          // 3. Xử lý value: Nếu null/undefined thì trả về chuỗi rỗng để placeholder hiện ra
+                          value={formData.contractId ? formData.contractId.toString() : ""}
+                          onValueChange={(value) => {
+                              const selectedContract = contracts.find(
+                                  (contract) => contract.contractId.toString() === value
+                              );
+                              if (selectedContract) {
+                                  handleContractSelection(
+                                      selectedContract.contractId,
+                                      selectedContract.packageName
+                                  );
+                              }
+                          }}
+                      >
+                          <SelectTrigger className="w-full"> {/* Thêm w-full để đẹp hơn */}
+                              <SelectValue
+                                  placeholder={
+                                      isLoadingContracts
+                                          ? "Đang tải..."
+                                          : "Chọn gói dịch vụ đã đăng ký"
+                                  }
+                              />
+                          </SelectTrigger>
+                          <SelectContent>
+                              {contracts?.length ? (
+                                  contracts
+                                      .filter((c: CustomerContractDto) => c.status === "ACTIVE")
+                                      .map((c: CustomerContractDto) => (
+                                          <SelectItem
+                                              key={c.contractId}
+                                              value={c.contractId.toString()}
+                                          >
+                                              <div className="flex flex-col items-start text-left"> {/* Thêm text-left */}
+                                                  <span className="font-medium">
+                  {c.packageName}
+                </span>
+                                                  <span className="text-xs text-muted-foreground">
+                  {new Date(c.startDate).toLocaleDateString("vi-VN")}
+                                                      {" → "}
+                                                      {new Date(c.endDate).toLocaleDateString("vi-VN")}
+                </span>
+                                              </div>
+                                          </SelectItem>
+                                      ))
+                              ) : (
+                                  <div className="p-2 text-sm text-muted-foreground text-center">
+                                      Bạn chưa đăng ký gói dịch vụ nào
+                                  </div>
+                              )}
+                          </SelectContent>
+                      </Select>
+                  </div>
 
                 {/* Nếu không có hợp đồng, chọn dịch vụ cứng (Bảo dưỡng xe và Sửa chữa xe) */}
                 {!formData.contractId && (
