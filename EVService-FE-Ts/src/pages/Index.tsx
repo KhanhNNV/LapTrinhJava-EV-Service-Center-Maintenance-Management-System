@@ -64,8 +64,8 @@ export default function Index() {
 
       {/* Hero Section */}
       <section className="relative pt-24 pb-20 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-hero opacity-10"></div>
-        <div className="container mx-auto px-4">
+          <div className="absolute inset-0 bg-gradient-hero opacity-10 pointer-events-none"></div>
+          <div className="container mx-auto px-4">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-6">
               <h1 className="text-5xl lg:text-6xl font-bold leading-tight">
@@ -80,17 +80,12 @@ export default function Index() {
                 Đặt lịch dễ dàng, theo dõi chi tiết, tiết kiệm thời gian.
               </p>
               <div className="flex flex-wrap gap-4">
-                <Link to="/register">
-                  <Button size="lg" className="bg-gradient-primary shadow-glow">
-                    Bắt đầu ngay
-                    <ArrowRight className="ml-2 w-5 h-5" />
-                  </Button>
-                </Link>
-                <Link to="/login">
-                  <Button size="lg" variant="outline">
-                    Đăng nhập
-                  </Button>
-                </Link>
+                  <Link to="/dashboard/customer">
+                      <Button size="lg" className="bg-gradient-primary shadow-glow">
+                          Bắt đầu ngay
+                          <ArrowRight className="ml-2 w-5 h-5" />
+                      </Button>
+                  </Link>
               </div>
             </div>
 
