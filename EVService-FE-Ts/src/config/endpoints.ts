@@ -68,6 +68,16 @@ export const ENDPOINTS = {
       method: "PUT" as const,
       url: `/api/appointments/${appointmentId}/confirmForCustomer`,
     }),
+    historyByStaff: (staffId: number | string) => ({
+      method: "GET" as const,
+      url: `/api/appointments/staff/${staffId}`,
+    }),
+    // API: Lấy lịch sử của Customer (đã có nhưng khai báo lại cho chắc)
+    historyByCustomer: (customerId: number | string) => ({
+      method: "GET" as const,
+      url: `/api/appointments/customer/${customerId}/history`,
+    }),
+
   },
 
   // ─── CertificateController ───────────────────────────────────────────────
@@ -256,7 +266,12 @@ export const ENDPOINTS = {
       method: "DELETE" as const,
       url: `/api/service-centers/${id}`,
     }),
+    historyByTechnician: (technicianId: number | string) => ({
+        method: "GET" as const,
+        url: `/api/service-tickets/technician/${technicianId}/history`,
+    }),
   },
+
 
   // ─── ServiceItemController ───────────────────────────────────────────────
   serviceItems: {
@@ -338,6 +353,11 @@ export const ENDPOINTS = {
       method: "DELETE" as const,
       url: `/api/service-tickets/${ticketId}/service-items/${itemId}`,
     }),
+    historyByTechnician: (technicianId: number | string) => ({
+      method: "GET" as const,
+      url: `/api/service-tickets/technician/${technicianId}/history`,
+    }),
+  
   },
 
   // ─── UserController ──────────────────────────────────────────────────────
@@ -389,7 +409,29 @@ export const ENDPOINTS = {
     getListUserByRole:{
       method: "GET" as const,
       url: "/api/users"
-    }
+    },
+    addCertificate: (id: number | string) => ({
+      method: "POST" as const,
+      url: `/api/users/${id}/certificates`,
+    }),
+    getCerbyUser: (userId: number | string) => ({
+      method: "GET" as const,
+      url: `/api/users/${userId}/certificates`, // Giả định BE có API này (hoặc bạn dùng tạm list all rồi filter)
+    }),
+    removeCer: (userId: number | string, certId: number | string) => ({
+      method: "DELETE" as const,
+      url: `/api/users/${userId}/certificates/${certId}`,
+    }),
+
+    updateCer: (userId: number | string, certId: number | string) => ({
+      method: "PUT" as const,
+      url: `/api/users/${userId}/certificates/${certId}`,
+    }),
+
+    updateUser: (userId: number| string) => ({
+      method: "PUT" as const,
+      url: `/api/${userId}`,
+    }),
   },
 
   // ─── VehicleController ───────────────────────────────────────────────────
@@ -413,6 +455,10 @@ export const ENDPOINTS = {
     delete: (id: number | string) => ({
       method: "DELETE" as const,
       url: `/api/vehicles/${id}`,
+    }),
+    byUser: (userId: number | string) => ({
+      method: "GET" as const,
+      url: `/api/vehicles/user/${userId}`,
     }),
   },
 

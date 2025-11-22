@@ -134,4 +134,11 @@ public class ServiceTicketController {
         return ResponseEntity.ok(updatedPart);
     }
 
+    //. Admin xem lịch sử làm việc của một Technician cụ thể
+    @GetMapping("/technician/{technicianId}/history")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<ServiceTicketDto>> getTicketsByTechnicianId(@PathVariable Integer technicianId) {
+        List<ServiceTicketDto> history = ticketService.getTicketsByTechnicianId(technicianId);
+        return ResponseEntity.ok(history);
+    }
 }

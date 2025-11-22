@@ -26,7 +26,7 @@ export interface UpdateBaseSalaryPayload {
 export type Role = 'CUSTOMER' | 'STAFF' | 'TECHNICIAN' | 'ADMIN';
 export interface User {
   userId: number;
-  username:string;
+  username: string;
   fullName: string;
   email: string;
   phoneNumber: string;
@@ -34,7 +34,7 @@ export interface User {
   createdAt?: string;
   centerName?: string;
   address?: string;
-
+  serviceCenterId?: number;
 }
 export interface UserResponse {
   content: User[];
@@ -42,6 +42,31 @@ export interface UserResponse {
   totalElements: number;
   size: number;
   number: number;
+}
+
+export interface CreateUserRequest {
+  username: string;
+  fullName: string;
+  email: string;
+  password: string;
+  phoneNumber?: string;
+  address?: string;
+  role?: string;
+  centerId?: number | null;
+
+}
+
+export interface UpdateCertRequest {
+    credentialId: string;
+    issueDate: string;
+    notes?: string;
+}
+
+export interface AssignCertificateRequest {
+  certificateId: number;
+  credentialId: string;
+  issueDate: string; // Định dạng YYYY-MM-DD
+  notes?: string;
 }
 export interface UpdateBaseSalaryByRolePayload {
     role: 'STAFF' | 'TECHNICIAN';
@@ -73,57 +98,144 @@ export const userService = {
         return res.data;
     },
 
-    //~ Lấy thông tin cá nhân
-    async getProfile(){
-      const endpoint = ENDPOINTS.users.get_profile;
-      const res = await api.request<UserProfile>({
-        method:endpoint.method,
-        url:endpoint.url
-      })
-      return res.data
-    },
+  //~ Lấy thông tin cá nhân
+  async getProfile() {
+    const endpoint = ENDPOINTS.users.get_profile;
+    const res = await api.request<UserProfile>({
+      method: endpoint.method,
+      url: endpoint.url
+    })
+    return res.data
+  },
 
-    //~ Cập nhật thông tin cá nhân
-    async updateProfile(data: UpdateProfile){
-        const endpoint = ENDPOINTS.users.update_profile
-        const res = await api.request<UserProfile>({
-          method: endpoint.method,
-          url:endpoint.url,
-          data:data
-        })
-        return res.data;
-    },
+  //~ Cập nhật thông tin cá nhân
+  async updateProfile(data: UpdateProfile) {
+    const endpoint = ENDPOINTS.users.update_profile
+    const res = await api.request<UserProfile>({
+      method: endpoint.method,
+      url: endpoint.url,
+      data: data
+    })
+    return res.data;
+  },
 
-    //~ Đổi mật khẩu
-    async changePassword(data: PasswordChangeForm){
-        const endpoint = ENDPOINTS.auth.change_password
-        const res = await api.request({
-          method: endpoint.method,
-          url:endpoint.url,
-          data:data
-        })
-        return res.data;
-    },
+  //~ Đổi mật khẩu
+  async changePassword(data: PasswordChangeForm) {
+    const endpoint = ENDPOINTS.auth.change_password
+    const res = await api.request({
+      method: endpoint.method,
+      url: endpoint.url,
+      data: data
+    })
+    return res.data;
+  },
 
-    //~ Hàm lấy danh sách user theo role
-    async getListUserByRole(
-      role: Role,
-      page: number = 1,
-      limit: number = 10
-    ): Promise<UserResponse> {
-      // Backend Spring Boot dùng page bắt đầu từ 0
-      // Frontend hiển thị bắt đầu từ 1 -> Cần trừ 1
-      const endpoint = ENDPOINTS.users.getListUserByRole;
-      const res = await api.request({
-        method:endpoint.method,
-        url:endpoint.url,
-        params: {
-          role,
-          page: page - 1,
-          limit,
-        },
-      });
-      return res.data;
-    }
+  //~ Hàm lấy danh sách user theo role
+  async getListUserByRole(
+    role: Role,
+    page: number = 1,
+    limit: number = 10
+  ): Promise<UserResponse> {
+    // Backend Spring Boot dùng page bắt đầu từ 0
+    // Frontend hiển thị bắt đầu từ 1 -> Cần trừ 1
+    const endpoint = ENDPOINTS.users.getListUserByRole;
+    const res = await api.request({
+      method: endpoint.method,
+      url: endpoint.url,
+      params: {
+        role,
+        page: page - 1,
+        limit,
+      },
+    });
+    return res.data;
+  },
 
-}
+  async createStaff(data: CreateUserRequest) {
+    const endpoint = ENDPOINTS.users.createStaff
+    const res = await api.request({
+      method: endpoint.method,
+      url: endpoint.url,
+      data: data
+    })
+    return res.data;
+  },
+
+
+  async createTechnician(data: CreateUserRequest) {
+    const endpoint = ENDPOINTS.users.createTechnician
+    const res = await api.request({
+      method: endpoint.method,
+      url: endpoint.url,
+      data: data
+    })
+    return res.data;
+  },
+
+
+  async addCertificateToUser(userId: number, data: {
+    certificateId: number;
+    credentialId: string;
+    issueDate: string;
+    notes?: string
+  }) {
+    const endpoint = ENDPOINTS.users.addCertificate(userId);
+    const res = await api.request({
+      method: endpoint.method,
+      url: endpoint.url,
+      data: data
+    });
+    return res.data;
+  },
+
+  async getCertificatesByUserId(userId: number) {
+    const endpoint = ENDPOINTS.users.getCerbyUser(userId);
+
+    const res = await api.request({
+      method: endpoint.method,
+      url: endpoint.url,
+    });
+    return res.data;
+  },
+
+  //~ 3. Admin xóa chứng chỉ của Tech
+  async removeCertificateFromTech(techId: number, certificateId: number) {
+    const endpoint = ENDPOINTS.users.removeCer(techId, certificateId);
+
+    const res = await api.request({
+      method: endpoint.method,
+      url: endpoint.url,
+    });
+    return res.data;
+  },
+
+  async updateUser(userId: number, data: any) {
+    const endpoint = ENDPOINTS.users.update(userId);
+    const res = await api.request({
+      method: endpoint.method,
+      url: endpoint.url,
+      data: data
+    });
+    return res.data;
+  },
+
+  async updateCertificateForUser(userId: number, certId: number, data: UpdateCertRequest) {
+    const endpoint = ENDPOINTS.users.updateCer(userId, certId);
+    const res = await api.request({
+      method: endpoint.method,
+      url: endpoint.url,
+      data: data
+    });
+    return res.data;
+  },
+  async deleteUser(userId: number) {
+    const endpoint = ENDPOINTS.users.delete(userId);
+    const res = await api.request({
+      method: endpoint.method,
+      url: endpoint.url,
+    });
+    return res.data;
+  },
+};
+
+

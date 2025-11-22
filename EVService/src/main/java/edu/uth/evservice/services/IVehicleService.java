@@ -22,4 +22,6 @@ public interface IVehicleService {
 
     // lấy xe theo id cho phần quản lý
     VehicleDto getVehicleById(Integer vehicleId);
+
+    List<VehicleDto> getVehiclesByUserId(Integer userId);
 }

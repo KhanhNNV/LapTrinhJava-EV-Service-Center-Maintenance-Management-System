@@ -18,6 +18,7 @@ import edu.uth.evservice.repositories.ICertificateRepository;
 import edu.uth.evservice.repositories.ITechnicianCertificateRepository;
 import edu.uth.evservice.repositories.IUserRepository;
 import edu.uth.evservice.requests.AddCertificateRequest;
+import edu.uth.evservice.requests.UpdateTechnicianCertificateRequest;
 import edu.uth.evservice.services.ITechnicianCertificateService;
 import lombok.RequiredArgsConstructor;
 
@@ -108,5 +109,41 @@ public class TechnicianCertificateServiceImpl implements ITechnicianCertificateS
         
         // 4. Xóa
         techCertRepository.deleteById(id);
+    }
+
+    @Override
+    public List<TechnicianCertificateDto> getCertificatesByTechnicianId(Integer technicianId) {
+        return techCertRepository.findByTechnician_UserId(technicianId)
+                .stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public TechnicianCertificateDto updateCertificateForTechnician(Integer technicianId, Integer certificateId, UpdateTechnicianCertificateRequest request) {
+
+        User technician = userRepository.findByUserId(technicianId)
+                .orElseThrow(() -> new RuntimeException("Technician not found"));
+
+
+        TechnicianCertificateId id = new TechnicianCertificateId(technician.getUserId(), certificateId);
+
+
+        TechnicianCertificate existingCert = techCertRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Chứng chỉ này không tồn tại trong hồ sơ kỹ thuật viên."));
+
+
+        if (request.getCredentialId() != null) existingCert.setCredentialId(request.getCredentialId());
+        if (request.getIssueDate() != null) {
+            existingCert.setIssueDate(request.getIssueDate());
+
+            int validityDays = existingCert.getCertificate().getValidityPeriod();
+            existingCert.setExpiryDate(request.getIssueDate().plusDays(validityDays));
+        }
+        if (request.getNotes() != null) existingCert.setNotes(request.getNotes());
+
+
+        return toDto(techCertRepository.save(existingCert));
     }
 }

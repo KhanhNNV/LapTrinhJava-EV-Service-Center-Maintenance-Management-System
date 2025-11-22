@@ -21,11 +21,14 @@ import edu.uth.evservice.dtos.SalaryDto;
 import edu.uth.evservice.dtos.UserDto;
 import edu.uth.evservice.models.User;
 import edu.uth.evservice.models.enums.Role;
+import edu.uth.evservice.requests.AddCertificateRequest;
 import edu.uth.evservice.requests.CreateUserRequest;
+import edu.uth.evservice.requests.UpdateTechnicianCertificateRequest;
 import edu.uth.evservice.requests.UpdateBaseSalaryByRoleRequest;
 import edu.uth.evservice.requests.UpdateBaseSalaryRequest;
 import edu.uth.evservice.services.IProfitReportService;
 import edu.uth.evservice.services.ISalaryService;
+import edu.uth.evservice.services.ITechnicianCertificateService;
 import edu.uth.evservice.services.IUserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -48,6 +51,8 @@ public class UserController {
     private final IUserService userService;
     private final ISalaryService salaryService;
     private final IProfitReportService profitReportService;
+    private final ITechnicianCertificateService techCertService;
+
 
     @GetMapping("/all")
     @PreAuthorize("hasRole('ADMIN')")
@@ -69,12 +74,13 @@ public class UserController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> getUsersByRole(@PathVariable String role) {
         try {
-            Role userRole = Role.valueOf(role.toUpperCase()); //Chuyển sang Enum
+            Role userRole = Role.valueOf(role.toUpperCase()); // Chuyển sang Enum
             return ResponseEntity.ok(userService.getUsersByRole(userRole));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body("Role không hợp lệ: " + role);
         }
     }
+
 
     // Tìm user theo ID
     @GetMapping("/{id:\\d+}")
@@ -85,8 +91,8 @@ public class UserController {
 
     // Cập nhật user theo ID
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
-    public ResponseEntity<UserDto> updateUser(@PathVariable Integer id,
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> updateUser(@PathVariable Integer id,
             @RequestBody CreateUserRequest request) {
         return ResponseEntity.ok(userService.updateUser(id, request));
     }
@@ -116,6 +122,7 @@ public class UserController {
     }
     //In danh sách lương của tất cả nhân viên trong một tháng
 
+
     @GetMapping("/calculate")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<SalaryDto>> calculateSalaries(
@@ -133,7 +140,7 @@ public class UserController {
     @GetMapping("/profile")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<UserDto> updateMyProfile(Authentication authentication) {
-
+        
         Integer userId = Integer.parseInt(authentication.getName());
         return ResponseEntity.ok(userService.getUserById(userId));
     }
@@ -176,4 +183,28 @@ public class UserController {
         return ResponseEntity.ok(updatedUsers);
     }
 
+
+    @PostMapping("/{userId}/certificates")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> addCertificateToUser(
+            @PathVariable Integer userId,
+            @RequestBody AddCertificateRequest request) {
+        return ResponseEntity.ok(techCertService.addCertificateToMyProfile(request, userId));
+    }
+
+    @GetMapping("/{userId}/certificates")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')") // Cho phép Admin và Staff xem
+    public ResponseEntity<?> getCertificatesByUser(@PathVariable Integer userId) {
+        return ResponseEntity.ok(techCertService.getCertificatesByTechnicianId(userId));
+    }
+
+    @PutMapping("/{userId}/certificates/{certificateId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> updateCertificate(
+            @PathVariable Integer userId,
+            @PathVariable Integer certificateId,
+            @RequestBody UpdateTechnicianCertificateRequest request) {
+
+        return ResponseEntity.ok(techCertService.updateCertificateForTechnician(userId, certificateId, request));
+    }
 }

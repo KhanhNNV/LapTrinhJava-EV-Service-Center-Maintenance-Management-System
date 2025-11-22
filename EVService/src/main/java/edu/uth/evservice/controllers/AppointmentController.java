@@ -25,6 +25,7 @@ public class AppointmentController {
 
         // Lay tat ca lich hen
         @GetMapping
+
         @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
         public ResponseEntity<List<AppointmentDto>> getAllAppointments() {
                 List<AppointmentDto> appointments = appointmentService.getAllAppointments();
@@ -135,6 +136,23 @@ public class AppointmentController {
                     .getAppointmentByTechnician(technicianId, status);
 
             return ResponseEntity.ok(appointments);
+        }
+
+        // . Admin/Staff xem lịch sử hẹn của một khách hàng cụ thể
+        @GetMapping("/customer/{customerId}/history")
+        @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+        public ResponseEntity<List<AppointmentDto>> getAppointmentsByCustomerId(@PathVariable Integer customerId) {
+
+                List<AppointmentDto> history = appointmentService.getByCustomer(customerId);
+                return ResponseEntity.ok(history);
+        }
+
+        // . [ADMIN] Lấy danh sách lịch hẹn do một Staff phụ trách
+        @GetMapping("/staff/{staffId}")
+        @PreAuthorize("hasAnyRole('ADMIN')")
+        public ResponseEntity<List<AppointmentDto>> getAppointmentsByStaffId(@PathVariable Integer staffId) {
+                // Hàm getByStaff đã có sẵn trong IAppointmentService
+                return ResponseEntity.ok(appointmentService.getByStaff(staffId));
         }
 
 }
