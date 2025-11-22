@@ -450,19 +450,18 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
             // 1. Kiểm tra xem số lượng có SẮP HẾT HÀNG không
             if (updatedInventory.getQuantity() <= updatedInventory.getMinQuantity()) {
 
-                // 2. Lấy danh sách nhân viên/admin tại trung tâm đó
-                List<User> usersToNotify = userRepo.findByServiceCenter_CenterIdAndRoleIn(
-                        techCenter.getCenterId(), List.of(Role.STAFF, Role.ADMIN));
+                // 2. Tìm danh sách ADMIN TỔNG (center_id = NULL)
+                List<User> admins = userRepo.findByRoleAndServiceCenterIsNull(Role.ADMIN);
 
-                // 3. Gửi thông báo cho từng người
-                for (User user : usersToNotify) {
+                // 3. Gửi thông báo cho các Admin này
+                for (User admin : admins) {
                     NotificationRequest notiRequest = new NotificationRequest();
-                    notiRequest.setUserId(user.getUserId());
+                    notiRequest.setUserId(admin.getUserId());
                     notiRequest.setTitle("Cảnh báo Tồn kho Thấp!");
-                    notiRequest.setMessage("Mặt hàng: '" + part.getPartName() +
-                            "' tại trung tâm " + techCenter.getCenterName() +
-                            " đã đạt mức tồn kho tối thiểu (" + updatedInventory.getMinQuantity()
-                            + "). Cần nhập thêm.");
+                    // Thông báo rõ: Kho nào đang thiếu hàng
+                    notiRequest.setMessage("Cảnh báo: Mặt hàng '" + part.getPartName() +
+                            "' tại " + techCenter.getCenterName() + // <-- Ghi rõ tên trung tâm thiếu hàng
+                            " đã xuống mức thấp (" + updatedInventory.getQuantity() + "/" + updatedInventory.getMinQuantity() + "). Cần điều phối nhập hàng.");
 
                     notificationService.createNotification(notiRequest);
                 }

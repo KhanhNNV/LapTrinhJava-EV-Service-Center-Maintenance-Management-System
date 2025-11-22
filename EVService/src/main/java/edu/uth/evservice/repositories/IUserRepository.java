@@ -43,4 +43,6 @@ public interface IUserRepository extends JpaRepository<User, Integer> {
     List<User> findByServiceCenter_CenterIdAndRole(Integer centerId, Role roles);
 
     Page<User> findByRole(Role role, Pageable pageable);
+    // Tìm user theo Role và không thuộc center nào (center_id IS NULL)
+    List<User> findByRoleAndServiceCenterIsNull(Role role);
 }
