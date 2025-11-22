@@ -754,7 +754,7 @@ export default function StaffAppointments() {
                 disabled={createdInvoices.has(viewingAppointment.appointmentId)}
               >
                 <FileText className="w-4 h-4 mr-2" />
-                {createdInvoices.has(viewingAppointment.ticketId)
+                {createdInvoices.has(viewingAppointment.appointmentId)
                   ? "Đã tạo hóa đơn"
                   : "Tạo hóa đơn"}
               </Button>

@@ -8,8 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import edu.uth.evservice.models.*;
-import edu.uth.evservice.repositories.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,9 +18,34 @@ import edu.uth.evservice.dtos.SuggestedPartsDto;
 import edu.uth.evservice.dtos.TicketPartDto;
 import edu.uth.evservice.dtos.TicketServiceItemDto;
 import edu.uth.evservice.exception.ResourceNotFoundException;
+import edu.uth.evservice.models.Appointment;
+import edu.uth.evservice.models.CustomerPackageContract;
+import edu.uth.evservice.models.Inventory;
+import edu.uth.evservice.models.Part;
+import edu.uth.evservice.models.ServiceCenter;
+import edu.uth.evservice.models.ServiceItem;
+import edu.uth.evservice.models.ServiceItemPart;
+import edu.uth.evservice.models.ServicePackage;
+import edu.uth.evservice.models.ServiceTicket;
+import edu.uth.evservice.models.TicketPart;
+import edu.uth.evservice.models.TicketPartId;
+import edu.uth.evservice.models.TicketServiceItem;
+import edu.uth.evservice.models.TicketServiceItemId;
+import edu.uth.evservice.models.User;
+import edu.uth.evservice.models.Vehicle;
 import edu.uth.evservice.models.enums.AppointmentStatus;
 import edu.uth.evservice.models.enums.Role;
 import edu.uth.evservice.models.enums.ServiceTicketStatus;
+import edu.uth.evservice.repositories.IAppointmentRepository;
+import edu.uth.evservice.repositories.IInventoryRepository;
+import edu.uth.evservice.repositories.IPartRepository;
+import edu.uth.evservice.repositories.IServiceItemPartRepository;
+import edu.uth.evservice.repositories.IServiceItemRepository;
+import edu.uth.evservice.repositories.IServiceTicketRepository;
+import edu.uth.evservice.repositories.ITicketPartRepository;
+import edu.uth.evservice.repositories.ITicketServiceItemRepository;
+import edu.uth.evservice.repositories.IUserRepository;
+import edu.uth.evservice.repositories.IVehicleRepository;
 import edu.uth.evservice.requests.AddServiceItemRequest;
 import edu.uth.evservice.requests.NotificationRequest;
 import edu.uth.evservice.requests.ServiceTicketRequest;
@@ -250,7 +273,8 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
 
     @Override
     public List<ServiceTicketDto> getTicketsByTechnicianId(Integer technicianId) {
-        User tech = userRepo.findById(technicianId).orElseThrow(()-> new ResourceNotFoundException("Không tìm thấy user này"));
+        User tech = userRepo.findById(technicianId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy user này"));
         return ticketRepo.findByTechnician_UserId(technicianId)
                 .stream().map(this::toDto).collect(Collectors.toList());
     }
@@ -471,7 +495,8 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
                 .notes(ticket.getNotes())
                 .serviceType(ticket.getAppointment().getServiceType())
                 .customerName(ticket.getAppointment().getCustomer().getFullName())
-                .staffName(ticket.getAppointment().getStaff() != null? ticket.getAppointment().getStaff().getFullName():null)
+                .staffName(ticket.getAppointment().getStaff() != null ? ticket.getAppointment().getStaff().getFullName()
+                        : null)
                 .noteCus(ticket.getAppointment().getNote())
                 .licensePlate(ticket.getAppointment().getVehicle().getLicensePlate())
                 .technicianId(ticket.getTechnician().getUserId())
@@ -500,17 +525,18 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
                 .build();
     }
 
-//    private AppointmentDto toAppointmentDto(Appointment appointment) {
-//        if (appointment == null) return null;
-//
-//        return AppointmentDto.builder()
-//                .serviceType(appointment.getServiceType())
-//                .status(appointment.getStatus().name())
-//                .customerName(appointment.getCustomer().getFullName())
-//                .staffName(appointment.getStaff().getFullName())
-//                .vehicleName(appointment.getVehicle().getBrand() + " " + appointment.getVehicle().getModel())
-//                .build();
-//    }
+    // private AppointmentDto toAppointmentDto(Appointment appointment) {
+    // if (appointment == null) return null;
+    //
+    // return AppointmentDto.builder()
+    // .serviceType(appointment.getServiceType())
+    // .status(appointment.getStatus().name())
+    // .customerName(appointment.getCustomer().getFullName())
+    // .staffName(appointment.getStaff().getFullName())
+    // .vehicleName(appointment.getVehicle().getBrand() + " " +
+    // appointment.getVehicle().getModel())
+    // .build();
+    // }
 
     private ServiceTicketPartDto toSuggestedDto(Part part, int suggestedQty, int stock) {
         return ServiceTicketPartDto.builder()
