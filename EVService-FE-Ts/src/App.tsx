@@ -15,7 +15,7 @@ import CustomerDashboard from "./pages/customer/Dashboard";
 import Vehicles from "./pages/customer/Vehicles";
 import Appointments from "./pages/customer/Appointments";
 import History from "./pages/customer/History";
-import Invoices from '@/pages/customer/Invoices.tsx';
+import Invoices from "@/pages/customer/Invoices.tsx";
 import Notifications from "./pages/customer/Notifications";
 import CustomerChat from "./pages/customer/CustomerChat";
 import StaffDashboard from "./pages/staff/Dashboard";
@@ -49,7 +49,9 @@ import StaffQuotes from "./pages/staff/Quotes";
 import PartsManagement from "@/pages/admin/PartsManagement.tsx";
 import ServiceItemManagement from "@/pages/admin/ServiceItemManagement.tsx";
 import TechnicianCertificates from "@/pages/technician/TechnicianCertificates.tsx";
-import {useCustomerInvoices} from "@/services/customerInvoices.ts";
+import { useCustomerInvoices } from "@/services/customerInvoices.ts";
+import CustomerPackagesPage from "@/pages/customer/CustomerPackagesPage.tsx";
+import MyContractsPage from "@/pages/customer/MyContractsPage.tsx";
 
 const queryClient = new QueryClient();
 
@@ -89,6 +91,15 @@ const App = () => (
             <Route path="appointments" element={<Appointments />} />
             <Route path="history" element={<History />} />
             <Route path="payments" element={<Invoices />} />
+            <Route
+              path="/dashboard/customer/packages"
+              element={<CustomerPackagesPage />}
+            />
+            <Route
+              path="/dashboard/customer/contracts"
+              element={<MyContractsPage />}
+            />
+
             <Route path="notifications" element={<Notifications />} />
             <Route path="messages" element={<CustomerChat />} />
             <Route path="settings" element={<SettingsPage />} />
@@ -127,15 +138,14 @@ const App = () => (
             <Route path="inventory" element={<InventoryManager />} />
             <Route path="packages" element={<AdminServicePackages />} />
             <Route path="analytics" element={<AdminAnalytics />} />
-              <Route path="employees-salary" element={<EmployeesSalary />} />
-              <Route path="performance" element={<Performance />} />
-              <Route path="details" element={<Details />} />
-              <Route path="parts" element={<PartsManagement />} />
-              <Route path="serviceitems" element={<ServiceItemManagement />} />
+            <Route path="employees-salary" element={<EmployeesSalary />} />
+            <Route path="performance" element={<Performance />} />
+            <Route path="details" element={<Details />} />
+            <Route path="parts" element={<PartsManagement />} />
+            <Route path="serviceitems" element={<ServiceItemManagement />} />
             <Route path="notifications" element={<AdminNotifications />} />
             <Route path="settings" element={<SettingsPage />} />
             <Route path="users/:role" element={<RoleBasedUserList />} />
-
           </Route>
 
           {/* Technician Routes */}
@@ -151,7 +161,7 @@ const App = () => (
             <Route path="appointments" element={<TechnicianMyAppointments />} />
             <Route path="tickets" element={<TechnicianServiceTickets />} />
             <Route path="notifications" element={<TechnicianNotifications />} />
-              <Route path="certificates" element={<TechnicianCertificates /> } />
+            <Route path="certificates" element={<TechnicianCertificates />} />
             <Route path="settings" element={<SettingsPage />} />
           </Route>
 

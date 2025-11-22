@@ -95,15 +95,22 @@ public class ServicePackageServiceImpl implements IServicePackageService {
         // 2. Xử lý Mối quan hệ Many-to-Many
         // Lấy danh sách ID từ request -> Tìm các Entity ServiceItem tương ứng -> Gán
         // vào Package
-        if (request.getServiceItemIds() != null && !request.getServiceItemIds().isEmpty()) {
-            List<ServiceItem> items = serviceItemRepository.findAll();
+        // --note1
+        // if (request.getServiceItemIds() != null &&
+        // !request.getServiceItemIds().isEmpty()) {
+        // List<ServiceItem> items = serviceItemRepository.findAll();
 
-            // Kiểm tra nếu tìm thiếu (Option)
-            if (items.size() != request.getServiceItemIds().size()) {
-                // Có thể throw lỗi hoặc log warning nếu id gửi lên không tồn tại
-            }
+        // // Kiểm tra nếu tìm thiếu (Option)
+        // if (items.size() != request.getServiceItemIds().size()) {
+        // // Có thể throw lỗi hoặc log warning nếu id gửi lên không tồn tại
+        // }
 
-            newPackage.setServiceItems(items); // JPA sẽ tự xử lý bảng trung gian
+        // newPackage.setServiceItems(items); // JPA sẽ tự xử lý bảng trung gian
+        // }
+        if (request.getServiceItemIds() != null) {
+            List<ServiceItem> newItems = serviceItemRepository.findAllById(request.getServiceItemIds());
+
+            newPackage.setServiceItems(newItems);
         }
 
         ServicePackage savedPackage = servicePackageRepository.save(newPackage);
@@ -134,11 +141,8 @@ public class ServicePackageServiceImpl implements IServicePackageService {
 
         // 2. Cập nhật danh sách Service Items (Many-to-Many)
         if (request.getServiceItemIds() != null) {
-            // Tìm danh sách item mới dựa trên list ID gửi lên
-            List<ServiceItem> newItems = serviceItemRepository.findAll();
+            List<ServiceItem> newItems = serviceItemRepository.findAllById(request.getServiceItemIds());
 
-            // Ghi đè danh sách cũ bằng danh sách mới
-            // JPA sẽ tự động xóa các dòng cũ trong bảng trung gian và thêm dòng mới
             existingPackage.setServiceItems(newItems);
         }
 
