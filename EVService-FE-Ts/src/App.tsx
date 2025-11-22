@@ -55,6 +55,7 @@ import TechnicianCertificates from "@/pages/technician/TechnicianCertificates.ts
 import { ServicesPage } from "./pages/ServicesPage";
 import { AboutPage } from "./pages/AboutPage";
 import { ContactPage } from "./pages/ContactPage";
+import AdminChatMonitor from "@/pages/admin/AdminChatMonitor.tsx";
 
 // Dọn dẹp Imports không sử dụng (AdminUsers, useCustomerInvoices đã bị xóa)
 
@@ -150,6 +151,7 @@ const App = () => (
                         <Route path="notifications" element={<AdminNotifications />} />
                         <Route path="settings" element={<SettingsPage />} />
                         <Route path="users/:role" element={<RoleBasedUserList />} />
+                        <Route path="chat" element={<AdminChatMonitor />} />
 
                     </Route>
 

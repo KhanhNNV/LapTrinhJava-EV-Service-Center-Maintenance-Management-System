@@ -1,17 +1,17 @@
 import {
-  LayoutDashboard,
-  Users,
-  Building2,
-  Package,
-  BarChart3,
-  Settings,
-  ChevronRight,
-  User,
-  Wrench,
-  Briefcase,
-  ShieldCheck,
-  LogOut,
-  Bell
+    LayoutDashboard,
+    Users,
+    Building2,
+    Package,
+    BarChart3,
+    Settings,
+    ChevronRight,
+    User,
+    Wrench,
+    Briefcase,
+    ShieldCheck,
+    LogOut,
+    Bell, MessageSquare
 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -55,6 +55,7 @@ const items = [
     url: "/dashboard/admin",
     icon: LayoutDashboard,
   },
+
   { title: "Thông báo", url: "/dashboard/admin/notifications", icon: Bell },
   {
     title: "Quản lý người dùng",
@@ -67,6 +68,11 @@ const items = [
       { title: "Quản trị viên", url: "/dashboard/admin/users/ADMIN", icon: ShieldCheck },
     ],
   },
+    {
+        title: "Quản lý tin nhắn",
+        url: "/dashboard/admin/chat",
+        icon: MessageSquare,
+    },
   {
     title: "Trung tâm dịch vụ",
     url: "/dashboard/admin/service-centers",
@@ -94,6 +100,8 @@ const items = [
             },
         ],
     },
+
+
     {
         title: "Báo cáo & Thống kê",
         icon: BarChart3,
