@@ -9,14 +9,17 @@ import {
     Table, TableBody, TableCell, TableHead, TableHeader, TableRow
 } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
-import { Receipt, Calendar, CreditCard, Loader2, Wrench, Eye, User, Phone } from 'lucide-react';
-import { useCustomerInvoices, InvoiceDto } from '@/services/customerInvoices.ts';
+import { Receipt, Calendar, CreditCard, Loader2, Wrench, Eye, User, Phone, CheckCircle } from 'lucide-react';
+import { useCustomerInvoices, InvoiceDto, useCreatePayment } from '@/services/customerInvoices.ts';
 import { usePagination } from "@/hooks/usePagination";
 import { PaginationControls } from "@/components/common/PaginationControls";
+import { useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 
 export default function Invoices() {
+    const queryClient = useQueryClient();
     const { data: invoices, isLoading } = useCustomerInvoices();
-
+    const { mutateAsync: createPayment, isPending: isPaying } = useCreatePayment();
     // 2. LOGIC SẮP XẾP: Mới nhất lên đầu
     const sortedInvoices = useMemo(() => {
         if (!invoices) return [];
@@ -75,6 +78,41 @@ export default function Invoices() {
         }, 0);
     };
 
+    const handlePayment = async (invoiceId: number, e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const paymentWindow = window.open('', '_blank');
+
+        if (paymentWindow) {
+            // Viết tạm nội dung thông báo trong lúc chờ Server trả link
+            paymentWindow.document.write(`
+                <html>
+                    <head><title>Đang xử lý...</title></head>
+                    <body style="display:flex;justify-content:center;align-items:center;height:100vh;font-family:sans-serif;">
+                        <div style="text-align:center;">
+                            <h2>Đang kết nối tới VNPay...</h2>
+                            <p>Vui lòng không tắt cửa sổ này.</p>
+                        </div>
+                    </body>
+                </html>
+            `);
+        }
+
+        try {
+            const data = await createPayment(invoiceId);
+
+            if (data?.paymentUrl) {
+                paymentWindow.location.href = data.paymentUrl;
+            } else {
+                paymentWindow.close();
+                toast.error("Lỗi: Không nhận được link thanh toán.");
+            }
+        } catch (error) {
+            paymentWindow.close();
+            // Lỗi đã được handle ở hook mutation
+        }
+    };
+
     return (
         <div className="space-y-6">
             {/* ... Phần Render UI giữ nguyên ... */}
@@ -84,7 +122,7 @@ export default function Invoices() {
             </div>
 
             {isLoading ? (
-                <div className="flex justify-center py-10"><Loader2 className="animate-spin"/></div>
+                <div className="flex justify-center py-10"><Loader2 className="animate-spin" /></div>
             ) : (
                 <>
                     <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-2">
@@ -99,9 +137,10 @@ export default function Invoices() {
                                     {/* ... Nội dung Card ... */}
                                     <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
                                         <div className="font-bold text-lg flex items-center gap-2">
-                                            <Receipt className="w-5 h-5 text-blue-600"/>
+                                            <Receipt className="w-5 h-5 text-blue-600" />
                                             Hóa đơn #{invoice.id}
                                         </div>
+                                        
                                         <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
                                             Hoàn thành
                                         </Badge>
@@ -109,11 +148,11 @@ export default function Invoices() {
 
                                     <CardContent className="space-y-3 flex-1">
                                         <div className="text-sm text-muted-foreground flex items-center gap-2">
-                                            <Calendar className="w-4 h-4"/>
+                                            <Calendar className="w-4 h-4" />
                                             {invoice.completedTime ? new Date(invoice.completedTime).toLocaleString('vi-VN') : 'N/A'}
                                         </div>
                                         <div className="text-sm flex items-center gap-2">
-                                            <Wrench className="w-4 h-4 text-gray-500"/>
+                                            <Wrench className="w-4 h-4 text-gray-500" />
                                             Kỹ thuật viên: <span className="font-medium">{invoice.technicianName}</span>
                                         </div>
 
@@ -133,13 +172,22 @@ export default function Invoices() {
                                             className="w-full"
                                             onClick={() => setSelectedInvoice(invoice)}
                                         >
-                                            <Eye className="w-4 h-4 mr-2"/> Chi tiết
+                                            <Eye className="w-4 h-4 mr-2" /> Chi tiết
                                         </Button>
-                                        <Button
-                                            className="w-full bg-blue-600 hover:bg-blue-700"
-                                        >
-                                            Thanh toán
-                                        </Button>
+                                        {invoice.paymentStatus === 'PAID' ? (
+                                            <div className="w-full flex items-center justify-center text-green-600 font-bold border border-green-200 bg-green-50 rounded-md h-10">
+                                                <CheckCircle className="w-4 h-4 mr-2" /> Đã thanh toán
+                                            </div>
+                                        ) : (
+                                            <Button
+                                                className="w-full bg-blue-600 hover:bg-blue-700"
+                                                type="button"
+                                                onClick={(e) => handlePayment(invoice.id, e)}
+                                                disabled={isPaying}
+                                            >
+                                                {isPaying ? <Loader2 className="animate-spin w-4 h-4 mr-2" /> : "Thanh toán"}
+                                            </Button>
+                                        )}
                                     </CardFooter>
                                 </Card>
                             ))
@@ -179,19 +227,19 @@ export default function Invoices() {
                             {/* Thông tin khách hàng */}
                             <div className="bg-slate-50 p-3 rounded-lg border space-y-1 text-sm">
                                 <div className="flex items-center gap-2">
-                                    <User className="w-4 h-4 text-gray-500"/>
+                                    <User className="w-4 h-4 text-gray-500" />
                                     Khách hàng: <span className="font-semibold">{selectedInvoice.customerName}</span>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <Phone className="w-4 h-4 text-gray-500"/>
+                                    <Phone className="w-4 h-4 text-gray-500" />
                                     SĐT: <span>{selectedInvoice.customerPhone}</span>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <Wrench className="w-4 h-4 text-gray-500"/>
+                                    <Wrench className="w-4 h-4 text-gray-500" />
                                     KTV thực hiện: <span>{selectedInvoice.technicianName}</span>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <Wrench className="w-4 h-4 text-gray-500"/>
+                                    <Wrench className="w-4 h-4 text-gray-500" />
                                     Nhân viên tiếp nhận: <span>{selectedInvoice.staffName}</span>
                                 </div>
                             </div>
@@ -271,7 +319,7 @@ export default function Invoices() {
                                 </div>
                             </div>
 
-                            <Separator className="my-4"/>
+                            <Separator className="my-4" />
 
                             <div className="flex justify-between items-center bg-blue-50 p-4 rounded-lg border border-blue-100">
                                 <span className="text-lg font-bold text-blue-900">TỔNG THANH TOÁN</span>
@@ -288,11 +336,23 @@ export default function Invoices() {
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setSelectedInvoice(null)}>Đóng</Button>
                         {selectedInvoice && (
-                            <Button
-                                className="bg-blue-600 hover:bg-blue-700"
-                            >
-                                Thanh toán ngay
-                            </Button>
+                            <>
+                                {selectedInvoice.paymentStatus === 'PAID' ? (
+                                    <Button disabled className="bg-green-100 text-green-700 border-green-200 opacity-100">
+                                        <CheckCircle className="w-4 h-4 mr-2" /> Đã thanh toán
+                                    </Button>
+                                ) : (
+                                    <Button
+                                        className="bg-blue-600 hover:bg-blue-700"
+                                        type="button"
+                                        onClick={(e) => handlePayment(selectedInvoice.id, e)}
+                                        disabled={isPaying}
+                                    >
+                                        {isPaying && <Loader2 className="animate-spin w-4 h-4 mr-2" />}
+                                        Thanh toán ngay
+                                    </Button>
+                                )}
+                            </>
                         )}
                     </DialogFooter>
                 </DialogContent>

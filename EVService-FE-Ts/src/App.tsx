@@ -50,6 +50,7 @@ import PartsManagement from "@/pages/admin/PartsManagement.tsx";
 import ServiceItemManagement from "@/pages/admin/ServiceItemManagement.tsx";
 import TechnicianCertificates from "@/pages/technician/TechnicianCertificates.tsx";
 import {useCustomerInvoices} from "@/services/customerInvoices.ts";
+import PaymentResult from "@/pages/PaymentResult";
 
 const queryClient = new QueryClient();
 
@@ -74,7 +75,7 @@ const App = () => (
             element={<ForgotPasswordPage />}
           />
           <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
-
+          <Route path="/payment-result" element={<PaymentResult />} />
           {/* Customer Routes */}
           <Route
             path="/dashboard/customer"
