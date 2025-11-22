@@ -59,56 +59,54 @@ import AdminChatMonitor from "@/pages/admin/AdminChatMonitor.tsx";
 
 // Dọn dẹp Imports không sử dụng (AdminUsers, useCustomerInvoices đã bị xóa)
 
+import {useCustomerInvoices} from "@/services/customerInvoices.ts";
+import PaymentResult from "@/pages/PaymentResult";
 
 const queryClient = new QueryClient();
 
 const App = () => (
-    <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-                <Routes>
-                    <Route path="/" element={<Index />} />
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/register" element={<Register />} />
-                    <Route path="/auth/callback" element={<AuthCallbackPage />} />
-                    <Route path="/auth/verify-email" element={<VerifyEmailPage />} />
-                    <Route
-                        path="/auth/email-verify-sent"
-                        element={<EmailVerificationSentPage />}
-                    />
-                    <Route
-                        path="/auth/forgot-password"
-                        element={<ForgotPasswordPage />}
-                    />
-                    <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
-
-                    {/* Public Routes for Marketing Pages */}
-                    {/* KHẮC PHỤC LỖI LOGIC ROUTER: Đặt các route này trước NotFound */}
-                    <Route path="/services" element={<ServicesPage />} />
-                    <Route path="/about" element={<AboutPage />} />
-                    <Route path="/contact" element={<ContactPage />} />
-
-
-                    {/* Customer Routes */}
-                    <Route
-                        path="/dashboard/customer"
-                        element={
-                            <ProtectedRoute allowedRoles={["CUSTOMER"]}>
-                                <CustomerLayout />
-                            </ProtectedRoute>
-                        }
-                    >
-                        <Route index element={<CustomerDashboard />} />
-                        <Route path="vehicles" element={<Vehicles />} />
-                        <Route path="appointments" element={<Appointments />} />
-                        <Route path="history" element={<History />} />
-                        <Route path="payments" element={<Invoices />} />
-                        <Route path="notifications" element={<Notifications />} />
-                        <Route path="messages" element={<CustomerChat />} />
-                        <Route path="settings" element={<SettingsPage />} />
-                    </Route>
+  <QueryClientProvider client={queryClient}>
+    <TooltipProvider>
+      <Toaster />
+      <Sonner />
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/auth/callback" element={<AuthCallbackPage />} />
+          <Route path="/auth/verify-email" element={<VerifyEmailPage />} />
+          <Route
+            path="/auth/email-verify-sent"
+            element={<EmailVerificationSentPage />}
+          />
+          <Route
+            path="/auth/forgot-password"
+            element={<ForgotPasswordPage />}
+          />
+          <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
+            <Route path="/payment-result" element={<PaymentResult />} />
+            <Route path="/services" element={<ServicesPage />} />
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/contact" element={<ContactPage />} />
+          {/* Customer Routes */}
+          <Route
+            path="/dashboard/customer"
+            element={
+              <ProtectedRoute allowedRoles={["CUSTOMER"]}>
+                <CustomerLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<CustomerDashboard />} />
+            <Route path="vehicles" element={<Vehicles />} />
+            <Route path="appointments" element={<Appointments />} />
+            <Route path="history" element={<History />} />
+            <Route path="payments" element={<Invoices />} />
+            <Route path="notifications" element={<Notifications />} />
+            <Route path="messages" element={<CustomerChat />} />
+            <Route path="settings" element={<SettingsPage />} />
+          </Route>
 
                     {/* Staff Routes */}
                     <Route

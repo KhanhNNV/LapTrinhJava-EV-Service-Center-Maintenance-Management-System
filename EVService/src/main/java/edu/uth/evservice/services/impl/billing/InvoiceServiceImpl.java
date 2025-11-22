@@ -15,20 +15,27 @@ import edu.uth.evservice.dtos.InvoiceDto;
 import edu.uth.evservice.dtos.TicketPartDto;
 import edu.uth.evservice.dtos.TicketServiceItemDto;
 import edu.uth.evservice.exception.ResourceNotFoundException;
+import edu.uth.evservice.models.*;
 import edu.uth.evservice.models.enums.PaymentMethod;
 import edu.uth.evservice.models.enums.PaymentStatus;
 import edu.uth.evservice.models.enums.ServiceTicketStatus;
-import edu.uth.evservice.repositories.IInvoiceRepository;
-import edu.uth.evservice.repositories.IServiceTicketRepository;
-import edu.uth.evservice.repositories.ITicketPartRepository;
-import edu.uth.evservice.repositories.ITicketServiceItemRepository;
-import edu.uth.evservice.repositories.IUserRepository;
+import edu.uth.evservice.repositories.*;
+import edu.uth.evservice.requests.CreateInvoiceRequest;
 import edu.uth.evservice.requests.NotificationRequest;
 import edu.uth.evservice.services.INotificationService;
 import edu.uth.evservice.services.billing.IInvoiceService;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -224,12 +231,13 @@ public class InvoiceServiceImpl implements IInvoiceService {
                                 .serviceItems(itemDtos)
                                 .partsUsed(partDtos)
 
-                                // Tổng tiền
-                                .serviceTotal(serviceTotal)
-                                .partTotal(partTotal)
-                                .grandTotal(grandTotal)
-                                .build();
-        }
+                // Tổng tiền
+                .serviceTotal(serviceTotal)
+                .partTotal(partTotal)
+                .grandTotal(grandTotal)
+                .paymentStatus(invoice.getPaymentStatus())
+                .build();
+    }
 
         private TicketServiceItemDto toDto(TicketServiceItem item) {
                 return TicketServiceItemDto.builder()

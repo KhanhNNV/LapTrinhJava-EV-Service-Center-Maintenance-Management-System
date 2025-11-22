@@ -513,6 +513,12 @@ export const ENDPOINTS = {
       url: `/api/ticket-service-items/${ticketId}/${itemId}`,
     }),
   },
+// ─── PaymentController ───────────────────────────────────────────────────
+  payments: {
+    createVnPay: (invoiceId: number | string) => ({
+      method: "POST" as const,
+      url: `/api/payments/vnpay/${invoiceId}`,
+    }),
+  },
 };
-
 export type EndpointConfig = typeof ENDPOINTS;

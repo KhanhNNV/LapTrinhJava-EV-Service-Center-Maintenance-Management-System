@@ -1,6 +1,8 @@
 package edu.uth.evservice.dtos;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+
+import edu.uth.evservice.models.enums.PaymentStatus;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -31,4 +33,5 @@ public class InvoiceDto {
     private double serviceTotal;
     private double partTotal;
     private double grandTotal;
+    private PaymentStatus paymentStatus;
 }
