@@ -256,6 +256,19 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
 
         notificationService.createNotification(customerNoti); // Gửi đi
 
+        // === 2. GỬI THÔNG BÁO CHO STAFF (MỚI THÊM) ===
+        User staff = appointment.getStaff(); // Lấy nhân viên phụ trách lịch hẹn
+        if (staff != null) {
+            NotificationRequest staffNoti = new NotificationRequest();
+            staffNoti.setUserId(staff.getUserId());
+            staffNoti.setTitle("Kỹ thuật viên đã hoàn thành công việc ✅");
+            staffNoti.setMessage("Phiếu dịch vụ #" + savedTicket.getTicketId() +
+                    " (Khách: " + customer.getFullName() + ") đã được hoàn tất. " +
+                    "Vui lòng kiểm tra và tạo hóa đơn.");
+
+            notificationService.createNotification(staffNoti);
+        }
+
         // 7. Trả về kết quả
         return toDto(savedTicket); // Giả sử bạn có hàm toDto
     }
