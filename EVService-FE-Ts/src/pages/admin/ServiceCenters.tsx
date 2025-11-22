@@ -62,7 +62,9 @@ export default function AdminServiceCenters() {
     fetchCenters();
   }, []);
 
-
+  useEffect(() => {
+    filterAndSearchCenters();
+  }, [centers, searchTerm, cityFilter]);
 
   const fetchCenters = async () => {
     try {
@@ -91,9 +93,40 @@ export default function AdminServiceCenters() {
     });
   };
 
+  // ======= Hàm trích xuất thành phố từ địa chỉ (vì db k phân rõ tp/tỉnh nên do kiểu này) =====
+  const extractCity = (address: string): string => {
+    const lowerAddress = address.toLowerCase();
+    if (lowerAddress.includes("hồ chí minh") || lowerAddress.includes("hcm") || lowerAddress.includes("tp hcm")) {
+      return "hồ chí minh";
+    } else if (lowerAddress.includes("hà nội") || lowerAddress.includes("hanoi") || lowerAddress.includes("hn")) {
+      return "hà nội";
+    }
+    return "khác";
+  };
 
+  // Lọc và tìm kiếm trung tâm
+  const filterAndSearchCenters = () => {
+    let result = centers;
 
+    // Lọc theo từ khóa tìm kiếm
+    if (searchTerm) {
+      const lowerSearchTerm = searchTerm.toLowerCase();
+      result = result.filter(center =>
+        center.centerName.toLowerCase().includes(lowerSearchTerm) ||
+        center.address.toLowerCase().includes(lowerSearchTerm)
+      );
+    }
 
+    // Lọc theo thành phố
+    if (cityFilter !== "all") {
+      result = result.filter(center => 
+        extractCity(center.address) === cityFilter
+      );
+    }
+
+    setFilteredCenters(result);
+    setCurrentPage(1); // Reset về trang đầu khi filter thay đổi
+  };
 
   // Phân trang
   const totalPages = Math.ceil(filteredCenters.length / itemsPerPage);
