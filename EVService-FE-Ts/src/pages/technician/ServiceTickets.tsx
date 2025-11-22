@@ -555,7 +555,7 @@ export default function TechnicianServiceTickets() {
                                                         {selectedTicket.items?.map((item: any, index: number) => (
                                                             <TableRow key={index} className="h-9">
                                                                 <TableCell className="py-1 text-sm font-medium">{item.itemName || item.name}</TableCell>
-                                                                <TableCell className="py-1 text-sm text-center">{formatMoney(item.unitPriceAtTimeOfService || item.price)}</TableCell>
+                                                                <TableCell className="py-1 text-sm text-center">{formatMoney(item.unitPriceAtTimeOfService)}</TableCell>
                                                                 <TableCell className="py-1 text-sm text-center">
                                                                     {/* --- NÚT GỢI Ý AI --- */}
                                                                     <Button
