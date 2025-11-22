@@ -58,10 +58,10 @@ export function TechnicianSidebar() {
                         <SidebarMenu>
                             {menuItems.map((item) => (
                                 <SidebarMenuItem key={item.title}>
-                                    <SidebarMenuButton asChild>
+                                    <SidebarMenuButton asChild tooltip={item.title}>
                                         <NavLink
                                             to={item.url}
-                                            end={item.url === "/dashboard/staff"}
+                                            end={item.url === "/dashboard/technician"}
                                             className="hover:bg-muted/50"
                                             activeClassName="bg-primary/10 text-primary font-medium"
                                         >

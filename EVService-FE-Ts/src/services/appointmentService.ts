@@ -4,7 +4,11 @@ import { toast } from "sonner";
 import { ENDPOINTS } from "@/config/endpoints";
 
 // --- INTERFACES (Dùng chung hoặc riêng tùy nhu cầu) ---
-
+export interface UserSummaryDto {
+    userId: number;
+    fullName: string;
+    username: string;
+}
 //Thông
 export interface AdminAppointmentDto {
     appointmentId: number;
@@ -20,6 +24,10 @@ export interface AdminAppointmentDto {
         brand?: string; // Merge brand/make
         model: string;
     };
+    customer?: UserSummaryDto;           // Chủ xe
+    staff?: UserSummaryDto;              // NV Lễ tân/CSKH nhận lịch
+    assignedTechnician?: UserSummaryDto;
+
     serviceTicket?: {
         ticketId: number;
         status: string;
@@ -170,18 +178,7 @@ export function useDeleteVehicle() {
 
 // --- PART 1: REACT QUERY HOOKS (Dành cho Customer Client-side) ---
 
-// 1. Lấy danh sách xe của người dùng (Customer) (Thông)
-export function useMyCustomerVehicles() {
-    return useQuery({
-        queryKey: ["customer-vehicles"],
-        queryFn: async () => {
-             // Fallback nếu ENDPOINTS chưa có structure này, bạn có thể thay bằng chuỗi cứng '/api/vehicles/my-vehicles'
-            const url = ENDPOINTS.vehicles?.list?.url || '/api/vehicles/my-vehicles';
-            const res = await api.get(url);
-            return res.data;
-        },
-    });
-}
+
 export function useCustomerVehicles() {
     return useQuery<VehicleDto[]>({
         queryKey: ["customer-vehicles"],

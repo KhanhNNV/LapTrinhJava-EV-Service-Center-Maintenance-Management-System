@@ -5,7 +5,8 @@ import { useQuery } from '@tanstack/react-query';
 import {
     Dialog,
     DialogContent,
-    DialogClose // Lưu ý: DialogClose chưa được dùng trong UI nhưng giữ lại nếu cần
+    DialogHeader, // Thêm
+    DialogTitle,  // Thêm
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -13,13 +14,14 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import {
     User, Mail, Phone, MapPin, Calendar, Car,
-    CreditCard, Wrench, BadgeCheck,
+    Wrench, BadgeCheck,
     Clock, Activity, Shield,
-    CheckCircle2, DollarSign, Briefcase,
-    Building2
+    CheckCircle2, DollarSign,
+    Building2,
+    Eye, // Thêm icon mắt để xem chi tiết
+    FileText // Icon cho hóa đơn
 } from 'lucide-react';
 import { format } from 'date-fns';
-
 
 import { userService } from '@/services/userService';
 import { appointmentService } from '@/services/appointmentService';
@@ -61,7 +63,6 @@ const renderStatusBadge = (status: string) => {
 
 // --- UI COMPONENTS ---
 
-// Thẻ thống kê (Stat Card)
 const StatCard = ({ title, value, icon: Icon, colorClass, subtext }: any) => (
     <div className="bg-white p-5 rounded-xl border shadow-sm flex items-start justify-between transition-all hover:shadow-md">
         <div>
@@ -75,7 +76,6 @@ const StatCard = ({ title, value, icon: Icon, colorClass, subtext }: any) => (
     </div>
 );
 
-// Dòng thông tin profile
 const ProfileRow = ({ icon: Icon, label, value }: any) => (
     <div className="flex items-center py-3 border-b border-dashed last:border-0">
         <div className="flex items-center gap-3 w-1/3 text-gray-500">
@@ -86,8 +86,6 @@ const ProfileRow = ({ icon: Icon, label, value }: any) => (
     </div>
 );
 
-
-
 interface UserDetailDialogProps {
     user: any | null;
     isOpen: boolean;
@@ -97,8 +95,9 @@ interface UserDetailDialogProps {
 const UserDetailDialog: React.FC<UserDetailDialogProps> = ({ user, isOpen, onClose }) => {
     const [activeTab, setActiveTab] = useState("overview");
     const [selectedVehicleHistory, setSelectedVehicleHistory] = useState<any | null>(null);
-
-
+    
+    // State để xem chi tiết ticket/hóa đơn
+    const [viewDetailItem, setViewDetailItem] = useState<any | null>(null);
 
     // A. Lấy xe (Customer)
     const { data: vehicles = [] } = useQuery({
@@ -109,12 +108,10 @@ const UserDetailDialog: React.FC<UserDetailDialogProps> = ({ user, isOpen, onClo
         enabled: !!user && user.role === 'CUSTOMER' && isOpen
     });
 
-
     const { data: historyList = [] } = useQuery({
         queryKey: ['admin-user-history', user?.userId],
         queryFn: async () => {
             if (!user) return [];
-
             switch (user.role) {
                 case 'CUSTOMER':
                     return await appointmentService.getCustomerHistory(user.userId);
@@ -138,14 +135,12 @@ const UserDetailDialog: React.FC<UserDetailDialogProps> = ({ user, isOpen, onClo
         enabled: !!user && user.role === 'TECHNICIAN' && isOpen
     });
 
-    // --- 2. DATA PROCESSING ---
-
+    // --- DATA PROCESSING ---
     const stats = useMemo(() => {
         if (!user) return {};
 
         if (user.role === 'CUSTOMER') {
             const totalSpent = historyList.reduce((sum: number, item: any) => {
-
                 if (['COMPLETED', 'PAID'].includes(item.status)) {
                     return sum + (item.serviceTicket?.invoice?.totalAmount || 0);
                 }
@@ -162,8 +157,7 @@ const UserDetailDialog: React.FC<UserDetailDialogProps> = ({ user, isOpen, onClo
 
         if (user.role === 'TECHNICIAN') {
             const completedTickets = historyList.filter((t: any) => t.status === 'COMPLETED').length;
-            // Giả sử tính giờ làm từ số lượng ticket (ước lượng)
-            const hoursEstimate = completedTickets * 2; // Giả định 2h/ticket
+            const hoursEstimate = completedTickets * 2; 
 
             return {
                 card1: { title: "Phiếu hoàn thành", value: completedTickets, icon: Wrench, color: "bg-blue-100 text-blue-600" },
@@ -174,7 +168,6 @@ const UserDetailDialog: React.FC<UserDetailDialogProps> = ({ user, isOpen, onClo
 
         if (user.role === 'STAFF') {
             const handledAppts = historyList.length;
-            // Lọc lịch sử xử lý trong ngày
             const todayAppts = historyList.filter((a: any) => {
                 const date = a.createdAt || a.appointmentDate;
                 return new Date(date).toDateString() === new Date().toDateString();
@@ -183,14 +176,12 @@ const UserDetailDialog: React.FC<UserDetailDialogProps> = ({ user, isOpen, onClo
             return {
                 card1: { title: "Lịch hẹn đã xử lý", value: handledAppts, icon: Calendar, color: "bg-blue-100 text-blue-600" },
                 card2: { title: "Xử lý hôm nay", value: todayAppts, icon: Activity, color: "bg-green-100 text-green-600" },
-                card3: { title: "Nghỉ phép (1 tháng)", value: `0`, icon: Clock, color: "bg-indigo-100 text-indigo-600" }
+                card3: { title: "Nghỉ phép (tháng)", value: `0`, icon: Clock, color: "bg-indigo-100 text-indigo-600" }
             };
         }
-
         return {};
     }, [user, historyList, vehicles, certificates]);
 
-    // Lọc danh sách thanh toán (Có tiền) cho Customer
     const paymentHistory = useMemo(() => {
         return historyList.filter((item: any) =>
             item.serviceTicket?.invoice?.totalAmount > 0
@@ -217,7 +208,6 @@ const UserDetailDialog: React.FC<UserDetailDialogProps> = ({ user, isOpen, onClo
                             </div>
                         </div>
                     </div>
-
                 </div>
 
                 {/* === NAVIGATION TABS === */}
@@ -264,9 +254,8 @@ const UserDetailDialog: React.FC<UserDetailDialogProps> = ({ user, isOpen, onClo
                                     </div>
                                 )}
 
-                                {/* 2 Columns Layout */}
+                                {/* Profile Info */}
                                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                                    {/* Left: Profile Info */}
                                     <div className="lg:col-span-1">
                                         <div className="bg-white p-6 rounded-xl shadow-sm border">
                                             <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
@@ -284,7 +273,6 @@ const UserDetailDialog: React.FC<UserDetailDialogProps> = ({ user, isOpen, onClo
                                         </div>
                                     </div>
 
-                                    {/* Right: Recent Activity */}
                                     <div className="lg:col-span-2">
                                         <div className="bg-white p-6 rounded-xl shadow-sm border h-full">
                                             <div className="flex justify-between items-center mb-6">
@@ -308,11 +296,18 @@ const UserDetailDialog: React.FC<UserDetailDialogProps> = ({ user, isOpen, onClo
                                                                 </div>
                                                                 {renderStatusBadge(item.status)}
                                                             </div>
-                                                            {item.vehicle && (
-                                                                <div className="mt-2 text-sm text-gray-600 bg-white p-2 rounded border inline-block">
-                                                                    <Car className="w-3 h-3 inline mr-1" /> {item.vehicle.brand} {item.vehicle.model}
-                                                                </div>
-                                                            )}
+                                                            <div className="mt-2 flex gap-3 text-sm text-gray-600">
+                                                                {item.vehicle && (
+                                                                    <span className="bg-white px-2 py-1 rounded border flex items-center gap-1">
+                                                                        <Car className="w-3 h-3" /> {item.vehicle.brand} {item.vehicle.model}
+                                                                    </span>
+                                                                )}
+                                                                {item.technicianName && (
+                                                                    <span className="bg-white px-2 py-1 rounded border flex items-center gap-1" title="Kỹ thuật viên">
+                                                                        <Wrench className="w-3 h-3" /> {item.technicianName}
+                                                                    </span>
+                                                                )}
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 ))}
@@ -374,6 +369,7 @@ const UserDetailDialog: React.FC<UserDetailDialogProps> = ({ user, isOpen, onClo
                                                     <TableHead>Kỹ thuật viên</TableHead>
                                                     <TableHead>Chi phí</TableHead>
                                                     <TableHead>Trạng thái</TableHead>
+                                                    <TableHead className="w-[50px]"></TableHead>
                                                 </TableRow>
                                             </TableHeader>
                                             <TableBody>
@@ -381,13 +377,29 @@ const UserDetailDialog: React.FC<UserDetailDialogProps> = ({ user, isOpen, onClo
                                                     <TableRow key={h.appointmentId}>
                                                         <TableCell>{formatDate(h.appointmentDate)}</TableCell>
                                                         <TableCell className="font-medium">{h.serviceType}</TableCell>
-                                                        <TableCell>{h.technicianName || "---"}</TableCell>
+                                                        <TableCell>
+                                                            {h.technicianName ? (
+                                                                <div className="flex items-center gap-2">
+                                                                    <User className="w-3 h-3 text-gray-400" />
+                                                                    {h.technicianName}
+                                                                </div>
+                                                            ) : "---"}
+                                                        </TableCell>
                                                         <TableCell>{h.serviceTicket?.invoice ? formatCurrency(h.serviceTicket.invoice.totalAmount) : "---"}</TableCell>
                                                         <TableCell>{renderStatusBadge(h.status)}</TableCell>
+                                                        <TableCell>
+                                                            <Button 
+                                                                variant="ghost" size="icon" className="h-8 w-8"
+                                                                onClick={() => setViewDetailItem(h)}
+                                                                title="Xem chi tiết sửa chữa"
+                                                            >
+                                                                <Eye className="w-4 h-4 text-blue-600" />
+                                                            </Button>
+                                                        </TableCell>
                                                     </TableRow>
                                                 ))}
                                                 {historyList.filter((h: any) => h.vehicle?.vehicleId === selectedVehicleHistory.vehicleId).length === 0 && (
-                                                    <TableRow><TableCell colSpan={5} className="text-center py-8 text-gray-500">Chưa có lịch sử sửa chữa cho xe này.</TableCell></TableRow>
+                                                    <TableRow><TableCell colSpan={6} className="text-center py-8 text-gray-500">Chưa có lịch sử sửa chữa cho xe này.</TableCell></TableRow>
                                                 )}
                                             </TableBody>
                                         </Table>
@@ -408,6 +420,7 @@ const UserDetailDialog: React.FC<UserDetailDialogProps> = ({ user, isOpen, onClo
                                             <TableHead>Nhân viên (ID)</TableHead>
                                             <TableHead>Số tiền</TableHead>
                                             <TableHead>Trạng thái</TableHead>
+                                            <TableHead className="w-[50px]"></TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -430,9 +443,18 @@ const UserDetailDialog: React.FC<UserDetailDialogProps> = ({ user, isOpen, onClo
                                                     {formatCurrency(item.serviceTicket?.invoice?.totalAmount)}
                                                 </TableCell>
                                                 <TableCell>{renderStatusBadge(item.status)}</TableCell>
+                                                <TableCell>
+                                                    <Button 
+                                                        variant="ghost" size="icon" className="h-8 w-8"
+                                                        onClick={() => setViewDetailItem(item)}
+                                                        title="Xem hóa đơn"
+                                                    >
+                                                        <FileText className="w-4 h-4 text-blue-600" />
+                                                    </Button>
+                                                </TableCell>
                                             </TableRow>
                                         ))}
-                                        {paymentHistory.length === 0 && <TableRow><TableCell colSpan={6} className="text-center py-8 text-gray-500">Không có dữ liệu thanh toán.</TableCell></TableRow>}
+                                        {paymentHistory.length === 0 && <TableRow><TableCell colSpan={7} className="text-center py-8 text-gray-500">Không có dữ liệu thanh toán.</TableCell></TableRow>}
                                     </TableBody>
                                 </Table>
                             </div>
@@ -448,6 +470,7 @@ const UserDetailDialog: React.FC<UserDetailDialogProps> = ({ user, isOpen, onClo
                                             <TableHead>Dịch vụ</TableHead>
                                             <TableHead>Phương tiện</TableHead>
                                             {user.role === 'STAFF' && <TableHead>Khách hàng</TableHead>}
+                                            <TableHead>Phụ trách</TableHead> 
                                             <TableHead>Ghi chú</TableHead>
                                             <TableHead>Trạng thái</TableHead>
                                         </TableRow>
@@ -457,13 +480,37 @@ const UserDetailDialog: React.FC<UserDetailDialogProps> = ({ user, isOpen, onClo
                                             <TableRow key={h.appointmentId}>
                                                 <TableCell>{formatDate(h.appointmentDate)} <span className="text-gray-400">{h.appointmentTime}</span></TableCell>
                                                 <TableCell className="font-medium">{h.serviceType}</TableCell>
-                                                <TableCell>{h.vehicle?.licensePlate}</TableCell>
+                                                <TableCell>
+                                                    <div className="flex flex-col">
+                                                        <span>{h.vehicle?.licensePlate}</span>
+                                                        <span className="text-xs text-gray-400">{h.vehicle?.brand} {h.vehicle?.model}</span>
+                                                    </div>
+                                                </TableCell>
+                                                
                                                 {user.role === 'STAFF' && <TableCell>{h.customerName}</TableCell>}
+                                                
+                                                <TableCell>
+                                                    <div className="flex flex-col gap-1">
+                                                        {user.role === 'STAFF' && h.technicianName && (
+                                                            <span className="text-xs flex items-center gap-1 text-blue-600" title="Kỹ thuật viên">
+                                                                <Wrench className="w-3 h-3" /> {h.technicianName}
+                                                            </span>
+                                                        )}
+                                                        {user.role === 'CUSTOMER' && (
+                                                            <>
+                                                                {h.staffName && <span className="text-xs flex items-center gap-1 text-gray-600" title="Nhân viên xếp lịch"><User className="w-3 h-3" /> {h.staffName}</span>}
+                                                                {h.technicianName && <span className="text-xs flex items-center gap-1 text-blue-600" title="Kỹ thuật viên"><Wrench className="w-3 h-3" /> {h.technicianName}</span>}
+                                                            </>
+                                                        )}
+                                                        {!h.staffName && !h.technicianName && "---"}
+                                                    </div>
+                                                </TableCell>
+
                                                 <TableCell className="max-w-xs truncate text-gray-500" title={h.note}>{h.note || '---'}</TableCell>
                                                 <TableCell>{renderStatusBadge(h.status)}</TableCell>
                                             </TableRow>
                                         ))}
-                                        {historyList.length === 0 && <TableRow><TableCell colSpan={6} className="text-center py-8 text-gray-500">Chưa có lịch hẹn nào.</TableCell></TableRow>}
+                                        {historyList.length === 0 && <TableRow><TableCell colSpan={7} className="text-center py-8 text-gray-500">Chưa có lịch hẹn nào.</TableCell></TableRow>}
                                     </TableBody>
                                 </Table>
                             </div>
@@ -479,18 +526,35 @@ const UserDetailDialog: React.FC<UserDetailDialogProps> = ({ user, isOpen, onClo
                                                 <div className="bg-purple-50 p-2 rounded text-purple-600"><Wrench className="w-5 h-5" /></div>
                                                 <div>
                                                     <h4 className="font-bold text-gray-900">Ticket #{ticket.ticketId}</h4>
-                                                    <p className="text-sm text-gray-500">{formatDate(ticket.startTime, true)}</p>
+                                                    <div className="flex items-center gap-3 mt-1">
+                                                        <p className="text-sm text-gray-500 flex items-center gap-1">
+                                                            <Clock className="w-3.5 h-3.5" /> {formatDate(ticket.startTime, true)}
+                                                        </p>
+                                                        {ticket.staffName && (
+                                                            <p className="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded border border-blue-100 flex items-center gap-1">
+                                                                <User className="w-3 h-3" /> Staff: {ticket.staffName}
+                                                            </p>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             </div>
                                             {renderStatusBadge(ticket.status)}
                                         </div>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                             <div>
-                                                <p className="text-xs font-semibold text-gray-500 uppercase mb-2">Thông tin xe</p>
-                                                <div className="bg-gray-50 p-3 rounded text-sm">
-                                                    <p className="font-medium">{ticket.appointment?.vehicle?.brand} {ticket.appointment?.vehicle?.model}</p>
-                                                    <p className="text-gray-500">{ticket.appointment?.vehicle?.licensePlate}</p>
-                                                    <p className="mt-1 text-gray-500">KH: {ticket.appointment?.user?.fullName}</p>
+                                                <p className="text-xs font-semibold text-gray-500 uppercase mb-2">Thông tin xe & Khách hàng</p>
+                                                <div className="bg-gray-50 p-3 rounded text-sm border">
+                                                    <div className="flex justify-between items-center mb-2 border-b pb-2 border-dashed">
+                                                        <span className="font-bold text-gray-900">{ticket.customerName || ticket.appointment?.user?.fullName || "Khách vãng lai"}</span>
+                                                        <Badge variant="outline" className="text-[10px]">{ticket.appointment?.vehicle?.vehicleType || "Xe"}</Badge>
+                                                    </div>
+                                                    <p className="font-medium text-gray-800 flex items-center gap-2">
+                                                        <Car className="w-4 h-4 text-gray-500" />
+                                                        {ticket.licensePlate || ticket.appointment?.vehicle?.licensePlate}
+                                                    </p>
+                                                    <p className="text-gray-500 text-xs mt-1 ml-6">
+                                                        {ticket.appointment?.vehicle?.brand} {ticket.appointment?.vehicle?.model}
+                                                    </p>
                                                 </div>
                                             </div>
                                             <div>
@@ -502,6 +566,7 @@ const UserDetailDialog: React.FC<UserDetailDialogProps> = ({ user, isOpen, onClo
                                                     {ticket.parts?.map((p: any, idx: number) => (
                                                         <li key={idx} className="flex justify-between text-blue-600"><span>+ {p.partName}</span> <span>x{p.quantity}</span></li>
                                                     ))}
+                                                    {!ticket.items?.length && !ticket.parts?.length && <li className="text-gray-400 italic">Chưa có chi tiết công việc</li>}
                                                 </ul>
                                             </div>
                                         </div>
@@ -540,6 +605,108 @@ const UserDetailDialog: React.FC<UserDetailDialogProps> = ({ user, isOpen, onClo
 
                     </div>
                 </ScrollArea>
+
+                {/* === DIALOG CHI TIẾT SỬA CHỮA / HÓA ĐƠN === */}
+                {viewDetailItem && (
+                    <Dialog open={!!viewDetailItem} onOpenChange={(open) => !open && setViewDetailItem(null)}>
+                        <DialogContent className="max-w-3xl bg-white">
+                            <DialogHeader className="border-b pb-4">
+                                <DialogTitle className="text-xl font-bold flex items-center gap-2">
+                                    {viewDetailItem.serviceTicket?.invoice ? (
+                                        <> <FileText className="w-6 h-6 text-blue-600" /> Chi tiết Hóa đơn #{viewDetailItem.serviceTicket.invoice.invoiceId} </>
+                                    ) : (
+                                        <> <Wrench className="w-6 h-6 text-orange-600" /> Chi tiết Phiếu Sửa chữa </>
+                                    )}
+                                </DialogTitle>
+                                <div className="flex gap-4 text-sm text-gray-500 mt-2">
+                                    <span className="flex items-center gap-1"><Calendar className="w-4 h-4" /> {formatDate(viewDetailItem.appointmentDate || viewDetailItem.startTime, true)}</span>
+                                    <span className="w-px h-4 bg-gray-300"></span>
+                                    {renderStatusBadge(viewDetailItem.status)}
+                                </div>
+                            </DialogHeader>
+
+                            <div className="py-4 space-y-6">
+                                {/* 1. Thông tin chung */}
+                                <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg border">
+                                    <div>
+                                        <p className="text-xs text-gray-500 font-semibold uppercase">Dịch vụ chính</p>
+                                        <p className="font-medium">{viewDetailItem.serviceType}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-gray-500 font-semibold uppercase">Phương tiện</p>
+                                        <p className="font-medium">{viewDetailItem.vehicle?.brand} {viewDetailItem.vehicle?.model} - {viewDetailItem.vehicle?.licensePlate}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-gray-500 font-semibold uppercase">Kỹ thuật viên</p>
+                                        <p className="font-medium text-blue-600">{viewDetailItem.technicianName || "---"}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-gray-500 font-semibold uppercase">Nhân viên hỗ trợ</p>
+                                        <p className="font-medium text-gray-700">{viewDetailItem.staffName || "---"}</p>
+                                    </div>
+                                </div>
+
+                                {/* 2. Chi tiết công việc (Items & Parts) */}
+                                {viewDetailItem.serviceTicket ? (
+                                    <div className="border rounded-lg overflow-hidden">
+                                        <div className="bg-gray-100 px-4 py-2 font-semibold text-sm text-gray-700 border-b">Hạng mục thực hiện</div>
+                                        <Table>
+                                            <TableHeader>
+                                                <TableRow>
+                                                    <TableHead>Tên hạng mục</TableHead>
+                                                    <TableHead className="text-center">SL</TableHead>
+                                                    <TableHead className="text-right">Đơn giá</TableHead>
+                                                    <TableHead className="text-right">Thành tiền</TableHead>
+                                                </TableRow>
+                                            </TableHeader>
+                                            <TableBody>
+                                                {/* Dịch vụ con */}
+                                                {viewDetailItem.serviceTicket.items?.map((item: any, idx: number) => (
+                                                    <TableRow key={`svc-${idx}`}>
+                                                        <TableCell className="font-medium">{item.itemName}</TableCell>
+                                                        <TableCell className="text-center">1</TableCell>
+                                                        <TableCell className="text-right">{formatCurrency(item.unitPriceAtTimeOfService || 0)}</TableCell>
+                                                        <TableCell className="text-right">{formatCurrency(item.unitPriceAtTimeOfService || 0)}</TableCell>
+                                                    </TableRow>
+                                                ))}
+                                                {/* Phụ tùng */}
+                                                {viewDetailItem.serviceTicket.parts?.map((part: any, idx: number) => (
+                                                    <TableRow key={`part-${idx}`}>
+                                                        <TableCell className="font-medium text-blue-600">{part.partName}</TableCell>
+                                                        <TableCell className="text-center">{part.quantity}</TableCell>
+                                                        <TableCell className="text-right">{formatCurrency(part.unitPriceAtTimeOfService || 0)}</TableCell>
+                                                        <TableCell className="text-right">{formatCurrency((part.unitPriceAtTimeOfService || 0) * part.quantity)}</TableCell>
+                                                    </TableRow>
+                                                ))}
+                                            </TableBody>
+                                        </Table>
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-8 text-gray-400 italic border border-dashed rounded-lg">
+                                        Chưa có dữ liệu phiếu sửa chữa chi tiết.
+                                    </div>
+                                )}
+
+                                {/* 3. Tổng tiền (Invoice) */}
+                                {viewDetailItem.serviceTicket?.invoice && (
+                                    <div className="flex justify-end border-t pt-4">
+                                        <div className="w-1/2 space-y-2">
+                                            <div className="flex justify-between text-sm">
+                                                <span className="text-gray-500">Phương thức thanh toán:</span>
+                                                <span className="font-medium">{viewDetailItem.serviceTicket.invoice.paymentMethod || "---"}</span>
+                                            </div>
+                                            <div className="flex justify-between text-xl font-bold text-emerald-600 border-t pt-2 mt-2">
+                                                <span>Tổng cộng:</span>
+                                                <span>{formatCurrency(viewDetailItem.serviceTicket.invoice.totalAmount)}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </DialogContent>
+                    </Dialog>
+                )}
+
             </DialogContent>
         </Dialog>
     );
