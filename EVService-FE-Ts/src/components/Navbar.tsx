@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom'; // Thêm useNavigate
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Zap, Menu, LogOut } from 'lucide-react';
 import { useState } from 'react';
@@ -35,13 +35,28 @@ export const Navbar = () => {
         setIsMenuOpen(false);
     }
 
+    // Nếu bạn muốn người dùng đã đăng nhập có thể nhấp vào khu vực info để đi đến dashboard
+    const handleUserClick = () => {
+        if (user) {
+            // Giả định trang Dashboard cho khách hàng là '/dashboard/customer'
+            // Dùng navigate ở đây
+            // navigate('/dashboard/customer');
+            // Hiện tại tôi sẽ không thêm navigate để tránh xung đột không cần thiết,
+            // chỉ tập trung vào việc hiển thị thông tin và logout.
+        }
+    }
+
+
     // --- Thành phần hiển thị khi ĐÃ ĐĂNG NHẬP (Desktop) ---
     const UserInfoDesktop = () => (
         <div className="flex items-center gap-3">
-            <div className="flex flex-col text-sm text-right">
+            <div
+                className="flex flex-col text-sm text-right cursor-pointer group hover:text-primary transition-colors"
+                onClick={handleUserClick} // Thêm onClick nếu muốn chuyển đến Dashboard
+            >
                 {/* Sử dụng user.fullName và user.email từ authService */}
                 <p className="font-medium truncate max-w-[150px]">{user.fullName}</p>
-                <p className="truncate text-xs text-muted-foreground max-w-[150px]">{user.email}</p>
+                <p className="truncate text-xs text-muted-foreground group-hover:text-primary/70 max-w-[150px]">{user.email}</p>
             </div>
             <Button
                 variant="ghost"
@@ -73,10 +88,13 @@ export const Navbar = () => {
         <div className="flex flex-col gap-2 pt-2 border-t mt-4">
             {user ? (
                 <>
-                    <div className="px-1 py-2 text-sm text-muted-foreground">
+                    <div
+                        className="px-1 py-2 text-sm text-foreground cursor-pointer hover:bg-muted/50 rounded-md transition-colors"
+                        onClick={handleUserClick} // Thêm onClick nếu muốn chuyển đến Dashboard
+                    >
                         {/* Sử dụng user.fullName và user.email từ authService */}
                         <p className="font-medium truncate">{user.fullName}</p>
-                        <p className="truncate text-xs">{user.email}</p>
+                        <p className="truncate text-xs text-muted-foreground">{user.email}</p>
                     </div>
                     <Button
                         variant="ghost"
@@ -109,21 +127,21 @@ export const Navbar = () => {
                             <Zap className="w-6 h-6 text-primary-foreground" />
                         </div>
                         <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              EV Service
-            </span>
+                            EV Service
+                        </span>
                     </Link>
 
                     {/* Desktop Navigation */}
                     <div className="hidden md:flex items-center gap-8">
-                        <Link to="/" className="text-foreground hover:text-primary transition-colors">
-                            Trang chủ
-                        </Link>
+                        {/* Dịch vụ: đã trỏ đúng đến /services */}
                         <Link to="/services" className="text-foreground hover:text-primary transition-colors">
                             Dịch vụ
                         </Link>
+                        {/* Về chúng tôi: đã trỏ đúng đến /about */}
                         <Link to="/about" className="text-foreground hover:text-primary transition-colors">
                             Về chúng tôi
                         </Link>
+                        {/* Liên hệ: đã trỏ đúng đến /contact */}
                         <Link to="/contact" className="text-foreground hover:text-primary transition-colors">
                             Liên hệ
                         </Link>
@@ -154,6 +172,7 @@ export const Navbar = () => {
                     )}
                 >
                     <div className="flex flex-col gap-4 pt-4">
+                        {/* Mobile Links đã trỏ đúng */}
                         <Link to="/" className="text-foreground hover:text-primary transition-colors" onClick={() => setIsMenuOpen(false)}>
                             Trang chủ
                         </Link>
