@@ -1,11 +1,13 @@
 package edu.uth.evservice.repositories;
 
+import edu.uth.evservice.dtos.CustomerPackageContractDto;
 import edu.uth.evservice.models.CustomerPackageContract;
 import edu.uth.evservice.models.enums.ContractStatus;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,4 +25,7 @@ public interface ICustomerPackageContractRepository extends JpaRepository<Custom
     boolean existsByUser_UserIdAndServicePackage_PackageIdAndStatus(
         Integer UserId, Integer packageId, ContractStatus status
     );
+
+    List<CustomerPackageContract> findAllByStatus(ContractStatus status);
+    List<CustomerPackageContract> findByStatusAndEndDateBefore(ContractStatus status, LocalDate date);
 }
