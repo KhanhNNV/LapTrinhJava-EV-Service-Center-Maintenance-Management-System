@@ -10,12 +10,16 @@ import edu.uth.evservice.repositories.ICustomerPackageContractRepository;
 import edu.uth.evservice.repositories.IUserRepository;
 import edu.uth.evservice.repositories.IServicePackageRepository;
 import edu.uth.evservice.requests.CustomerPackageContractRequest;
+import edu.uth.evservice.requests.NotificationRequest;
 import edu.uth.evservice.services.ICustomerPackageContractService;
+import edu.uth.evservice.services.INotificationService;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,6 +30,7 @@ public class CustomerPackageContractServiceImpl implements ICustomerPackageContr
 private final ICustomerPackageContractRepository contractRepository;
     private final IUserRepository userRepository;
     private final IServicePackageRepository packageRepository;
+    private final INotificationService notificationService;
 
     @Override
     @Transactional
@@ -120,5 +125,82 @@ private final ICustomerPackageContractRepository contractRepository;
                         .endDate(contract.getEndDate())
                         .status(contract.getStatus().name()) // Chuyển Enum sang String
                         .build();
+    }
+
+
+    // --- JOB 1: TỰ ĐỘNG CHUYỂN TRẠNG THÁI HẾT HẠN (Chạy 0h đêm) ---
+    @Scheduled(cron = "0 0 0 * * ?")
+    @Transactional
+    public void scanAndExpireContracts() {
+        LocalDate today = LocalDate.now();
+        // Tìm các gói đang ACTIVE mà ngày kết thúc < hôm nay
+        List<CustomerPackageContract> expiredContracts = contractRepository
+                .findByStatusAndEndDateBefore(ContractStatus.ACTIVE, today);
+
+        for (CustomerPackageContract contract : expiredContracts) {
+            contract.setStatus(ContractStatus.EXPIRED);
+        }
+        contractRepository.saveAll(expiredContracts);
+        System.out.println("Đã cập nhật trạng thái EXPIRED cho {} hợp đồng.");
+    }
+
+    // --- JOB 2: NHẮC NHỞ BẢO DƯỠNG (Chạy 9h sáng) ---
+    @Scheduled(cron = "0 0 0 * * ?")
+    //@Scheduled(fixedRate = 60000) //Nếu muốn test ngay
+    @Transactional
+    public void scanAndNotifyMaintenance() {
+        List<CustomerPackageContract> activeContracts = contractRepository.findAllByStatus(ContractStatus.ACTIVE);
+        LocalDate today = LocalDate.now();
+
+        for (CustomerPackageContract contract : activeContracts) {
+            LocalDate startDate = contract.getStartDate();
+            long monthsBetween = ChronoUnit.MONTHS.between(startDate, today);
+
+            // Logic: Tròn chu kỳ 3 tháng (3, 6, 9...) VÀ đúng ngày
+            if (monthsBetween > 0 && monthsBetween % 3 == 0) {
+                LocalDate expectedDate = startDate.plusMonths(monthsBetween);
+
+                if (today.equals(expectedDate)) {
+                    // Kiểm tra chặn trùng lặp: Nếu hôm nay đã gửi rồi thì bỏ qua
+                    if (today.equals(contract.getLastMaintenanceNotificationDate())) {
+                        continue;
+                    }
+
+                    // Gửi thông báo
+                    sendMaintenanceNotification(contract, monthsBetween);
+
+                    // Lưu lại trạng thái đã gửi
+                    contract.setLastMaintenanceNotificationDate(today);
+                    contractRepository.save(contract);
+                }
+            }
+        }
+    }
+
+    // Hàm helper để gửi thông báo cho gọn code
+    private void sendMaintenanceNotification(CustomerPackageContract contract, long monthCount) {
+        User customer = contract.getUser();
+
+        NotificationRequest notiRequest = new NotificationRequest();
+        notiRequest.setUserId(customer.getUserId());
+        notiRequest.setTitle("Nhắc nhở Bảo dưỡng Định kỳ");
+
+        // Nội dung: "Gói dịch vụ [Tên gói] của bạn đã sử dụng được [3] tháng. Vui lòng mang xe đến bảo dưỡng."
+        String message = String.format(
+                "Gói dịch vụ '%s' của bạn đã hoạt động được %d tháng. " +
+                        "Đã đến lúc bảo dưỡng định kỳ (Chu kỳ 3 tháng/lần). " +
+                        "Vui lòng đặt lịch hẹn sớm nhất.",
+                contract.getServicePackage().getPackageName(),
+                monthCount
+        );
+
+        notiRequest.setMessage(message);
+
+        // Gọi service thông báo
+        try {
+            notificationService.createNotification(notiRequest);
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage());
+        }
     }
 }

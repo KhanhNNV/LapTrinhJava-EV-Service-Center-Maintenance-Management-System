@@ -27,6 +27,9 @@ public class CustomerPackageContract {
     @Column(name = "contract_name")
     String contractName;
 
+    @Column(name = "last_maintenance_notification_date")
+    private LocalDate lastMaintenanceNotificationDate;
+
     @ManyToOne
     @JoinColumn(name = "user_id", referencedColumnName = "user_id", nullable = false)
     User user;
