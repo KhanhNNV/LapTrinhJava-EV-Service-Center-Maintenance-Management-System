@@ -9,7 +9,7 @@ export const TechnicianLayout = () => {
       <div className="min-h-screen flex w-full bg-background">
         <TechnicianSidebar />
         <div className="flex-1 flex flex-col">
-          <DashboardHeader title="Cổng thông tin kỹ thuật viên" />
+          <DashboardHeader title="Technician Dashboard" />
           <main className="flex-1 p-6">
             <Outlet />
           </main>

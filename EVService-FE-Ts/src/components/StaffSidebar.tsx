@@ -7,14 +7,14 @@ import {
     MessageSquare,
     Settings,
     LogOut,
+    Receipt
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation, useNavigate } from "react-router-dom";
 import { authService } from "@/services/auth.ts";
 import { toast } from "sonner";
 import { useConversations } from "@/services/chatService";
-// Bạn có thể bỏ import Badge nếu không dùng ở đâu khác, hoặc giữ lại
-// import { Badge } from "@/components/ui/badge";
+
 
 import {
     Sidebar,
@@ -33,6 +33,7 @@ const menuItems = [
     { title: "Tổng quan", url: "/dashboard/staff", icon: LayoutDashboard },
     { title: "Lịch hẹn", url: "/dashboard/staff/appointments", icon: Calendar },
     { title: "Khách hàng", url: "/dashboard/staff/customers", icon: Users },
+    { title: "Quản lý hóa đơn", url: "/dashboard/staff/invoice", icon: Receipt },
     { title: "Báo giá", url: "/dashboard/staff/quotes", icon: DollarSign },
     { title: "Tin nhắn", url: "/dashboard/staff/messages", icon: MessageSquare },
     { title: "Cài đặt", url: "/dashboard/staff/settings", icon: Settings },

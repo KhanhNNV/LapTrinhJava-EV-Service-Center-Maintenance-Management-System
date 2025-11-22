@@ -16,7 +16,8 @@ import {
     AppointmentDto, 
     VehicleDto 
 } from '@/services/appointmentService.ts';
-
+import { useCustomerInvoices, InvoiceDto, useCreatePayment } from '@/services/customerInvoices.ts';
+import {useMemo} from "react";
 export default function CustomerDashboard() {
   // 1. Sử dụng Hooks từ service để tận dụng caching
   const { data: vehicles, isLoading: vehiclesLoading } = useCustomerVehicles();
@@ -33,6 +34,45 @@ export default function CustomerDashboard() {
     .sort((a, b) => new Date(a.appointmentDate).getTime() - new Date(b.appointmentDate).getTime())
     .slice(0, 3);
 
+  // lấy chi phí tháng này
+    const { data: invoices, isLoading } = useCustomerInvoices();
+
+    // --- LOGIC TÍNH TỔNG CHI PHÍ THÁNG NÀY ---
+    const currentMonthCost = useMemo(() => {
+        if (!invoices) return 0;
+
+        const now = new Date();
+        const currentMonth = now.getMonth(); // Tháng 0-11
+        const currentYear = now.getFullYear();
+
+        return invoices.reduce((total, invoice) => {
+            // 1. Kiểm tra ngày hoàn thành
+            if (!invoice.completedTime) return total;
+
+            const invoiceDate = new Date(invoice.completedTime);
+
+            // 2. Kiểm tra có đúng tháng và năm hiện tại không
+            const isCurrentMonth =
+                invoiceDate.getMonth() === currentMonth &&
+                invoiceDate.getFullYear() === currentYear;
+
+            // 3. (Tùy chọn) Chỉ cộng nếu đã thanh toán (paymentStatus === 'PAID')
+            // Nếu muốn tính cả hóa đơn nợ thì bỏ điều kiện invoice.paymentStatus bên dưới đi
+            const isPaid = invoice.paymentStatus === 'PAID';
+
+            if (isCurrentMonth && isPaid) {
+                return total + Number(invoice.grandTotal || 0);
+            }
+
+            return total;
+        }, 0);
+    }, [invoices]);
+
+    // Format số tiền để hiển thị
+    const formattedMonthCost = new Intl.NumberFormat('vi-VN', {
+        style: 'currency',
+        currency: 'VND'
+    }).format(currentMonthCost);
   // Helper: Màu sắc trạng thái (Đồng bộ với Appointments.tsx)
   const getStatusColor = (status: string) => {
     const colors: any = {
@@ -67,13 +107,13 @@ export default function CustomerDashboard() {
       color: 'text-purple-600',
       bgColor: 'bg-purple-50',
     },
-    {
-      title: 'Chi phí tháng này',
-      value: '0 VND', // Tạm thời hardcode vì chưa có API Transaction
-      icon: DollarSign,
-      color: 'text-green-600',
-      bgColor: 'bg-green-50',
-    },
+      {
+          title: 'Chi phí tháng này',
+          value: isLoading ? '...' : formattedMonthCost,
+          icon: DollarSign,
+          color: 'text-green-600',
+          bgColor: 'bg-green-50',
+      },
   ];
 
   return (
@@ -228,30 +268,6 @@ export default function CustomerDashboard() {
         </Card>
       </div>
 
-      {/* Maintenance Reminders - Phần này có thể phát triển thêm logic kiểm tra ngày bảo dưỡng */}
-      <Card className="shadow-sm border-orange-100 bg-orange-50/30">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-orange-700 text-lg">
-            <AlertCircle className="w-5 h-5" />
-            Nhắc nhở bảo dưỡng
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between p-3 bg-white border border-orange-100 rounded-lg shadow-sm">
-            <div>
-              <p className="font-medium text-gray-900">Kiểm tra định kỳ</p>
-              <p className="text-sm text-muted-foreground">
-                Đừng quên đặt lịch bảo dưỡng định kỳ để đảm bảo an toàn.
-              </p>
-            </div>
-            <Link to="/dashboard/customer/appointments">
-              <Button size="sm" className="bg-orange-600 hover:bg-orange-700 text-white">
-                Đặt lịch ngay
-              </Button>
-            </Link>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Quick Actions */}
       <div className="grid gap-4 md:grid-cols-3">

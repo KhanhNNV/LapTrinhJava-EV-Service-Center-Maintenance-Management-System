@@ -20,6 +20,12 @@ import java.util.List;
 public class InvoiceController {
     IInvoiceService invoiceService;
 
+    @GetMapping
+    @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
+    public ResponseEntity<List<InvoiceDto>> getAllInvoices(Authentication authentication) {
+        return ResponseEntity.ok().body(invoiceService.getAllInvoices());
+    }
+
     // staff tạo hóa đơn đã completed
     @PostMapping("/{ticketId}")
     @PreAuthorize("hasAnyRole('STAFF','ADMIN')")
@@ -51,7 +57,7 @@ public class InvoiceController {
     }
 
     @PutMapping("/{invoiceId}/status")
-    @PreAuthorize("hasAnyRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','STAFF')")
     public ResponseEntity<InvoiceDto> updatePaymentStatus(
             @PathVariable Integer invoiceId,
             @RequestParam String status) {

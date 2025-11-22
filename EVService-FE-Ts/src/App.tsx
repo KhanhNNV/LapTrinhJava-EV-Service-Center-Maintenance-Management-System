@@ -63,6 +63,8 @@ import {useCustomerInvoices} from "@/services/customerInvoices.ts";
 import PaymentResult from "@/pages/PaymentResult";
 import CustomerPackagesPage from "@/pages/customer/CustomerPackagesPage.tsx";
 import MyContractsPage from "@/pages/customer/MyContractsPage.tsx";
+import InvoicesManagement from "@/pages/staff/InvoicesManagement.tsx";
+import InvoicePage from "@/pages/admin/InvoicesManagement.tsx";
 
 const queryClient = new QueryClient();
 
@@ -135,6 +137,7 @@ const App = () => (
                         <Route path="messages" element={<StaffMessages />} />
                         <Route path="notifications" element={<StaffNotifications />} />
                         <Route path="settings" element={<SettingsPage />} />
+                        <Route path="invoice" element={<InvoicesManagement />} />
                     </Route>
 
                     {/* Admin Routes */}
@@ -161,6 +164,7 @@ const App = () => (
                         <Route path="settings" element={<SettingsPage />} />
                         <Route path="users/:role" element={<RoleBasedUserList />} />
                         <Route path="chat" element={<AdminChatMonitor />} />
+                        <Route path="invoiceManagement" element={<InvoicePage />} />
 
                     </Route>
 

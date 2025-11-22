@@ -9,7 +9,7 @@ import {
     Table, TableBody, TableCell, TableHead, TableHeader, TableRow
 } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
-import { Receipt, Calendar, CreditCard, Loader2, Wrench, Eye, User, Phone, CheckCircle } from 'lucide-react';
+import {Receipt, Calendar, CreditCard, Loader2, Wrench, Eye, User, Phone, CheckCircle, Banknote} from 'lucide-react';
 import { useCustomerInvoices, InvoiceDto, useCreatePayment } from '@/services/customerInvoices.ts';
 import { usePagination } from "@/hooks/usePagination";
 import { PaginationControls } from "@/components/common/PaginationControls";
@@ -113,6 +113,13 @@ export default function Invoices() {
         }
     };
 
+    const handleCashInstruction = () => {
+        toast.info("Vui lòng đến quầy thu ngân để thanh toán tiền mặt. Nhân viên sẽ cập nhật trạng thái ngay sau khi nhận tiền.", {
+            duration: 5000,
+            icon: <Banknote className="w-5 h-5 text-blue-500"/>
+        });
+    };
+
     return (
         <div className="space-y-6">
             {/* ... Phần Render UI giữ nguyên ... */}
@@ -173,7 +180,7 @@ export default function Invoices() {
                                         </div>
                                     </CardContent>
 
-                                    <CardFooter className="grid grid-cols-2 gap-3 bg-slate-50/50 p-4">
+                                    <CardFooter className="grid grid-cols-3 gap-3 bg-slate-50/50 p-4">
                                         <Button
                                             variant="outline"
                                             className="w-full"
@@ -186,14 +193,24 @@ export default function Invoices() {
                                                 <CheckCircle className="w-4 h-4 mr-2" /> Đã thanh toán
                                             </div>
                                         ) : (
-                                            <Button
-                                                className="w-full bg-blue-600 hover:bg-blue-700"
-                                                type="button"
-                                                onClick={(e) => handlePayment(invoice.id, e)}
-                                                disabled={isPaying}
-                                            >
-                                                {isPaying ? <Loader2 className="animate-spin w-4 h-4 mr-2" /> : "Thanh toán"}
-                                            </Button>
+                                            <>
+                                                <Button
+                                                    className="w-full bg-blue-600 hover:bg-blue-700"
+                                                    type="button"
+                                                    onClick={(e) => handlePayment(invoice.id, e)}
+                                                    disabled={isPaying}
+                                                >
+                                                    {isPaying ? <Loader2 className="animate-spin w-4 h-4 mr-2" /> : "Thanh toán VNPay"}
+                                                </Button>
+                                                <Button
+                                                    variant="secondary"
+                                                    onClick={handleCashInstruction}
+                                                    className="bg-gray-100 hover:bg-gray-200 text-gray-700"
+                                                >
+                                                    <Banknote className="w-4 h-4 mr-2" /> Thanh toán tiền mặt
+                                                </Button>
+                                            </>
+
                                         )}
                                     </CardFooter>
                                 </Card>

@@ -11,7 +11,7 @@ export interface UserProfile {
   address: string;
 }
 export interface UpdateProfile{
-  fullname: string;
+  fullName: string;
   address: string;
   phoneNumber: string;
 }

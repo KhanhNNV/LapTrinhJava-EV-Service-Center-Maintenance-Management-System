@@ -261,7 +261,7 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
         if (staff != null) {
             NotificationRequest staffNoti = new NotificationRequest();
             staffNoti.setUserId(staff.getUserId());
-            staffNoti.setTitle("Kỹ thuật viên đã hoàn thành công việc ✅");
+            staffNoti.setTitle("Kỹ thuật viên đã hoàn thành công việc ");
             staffNoti.setMessage("Phiếu dịch vụ #" + savedTicket.getTicketId() +
                     " (Khách: " + customer.getFullName() + ") đã được hoàn tất. " +
                     "Vui lòng kiểm tra và tạo hóa đơn.");

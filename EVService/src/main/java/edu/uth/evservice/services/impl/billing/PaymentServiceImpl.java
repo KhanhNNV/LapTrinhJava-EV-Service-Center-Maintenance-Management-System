@@ -3,6 +3,9 @@ package edu.uth.evservice.services.impl.billing;
 import java.util.HashMap;
 import java.util.Map;
 
+import edu.uth.evservice.models.User;
+import edu.uth.evservice.requests.NotificationRequest;
+import edu.uth.evservice.services.INotificationService;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
@@ -31,6 +34,7 @@ public class PaymentServiceImpl implements IPaymentService {
     private final IPaymentTransactionRepository transactionRepository;
     private final VnPayHelper vnPayHelper;
     private final VnPayConfig vnPayConfig;
+    private final INotificationService notificationService;
 
     //.(HELPER) Hàm kiểm tra hóa đơn có hợp lệ để thanh toán không
     private Invoice validateInvoice(Integer invoiceId, Integer customerId) {
@@ -144,7 +148,23 @@ public class PaymentServiceImpl implements IPaymentService {
 
                 invoiceRepository.save(invoice);
                 transactionRepository.save(transaction);
+                // 2. Thông báo cho STAFF (Người phụ trách lịch hẹn)
+                try {
+                    System.out.println("da chay thong bao");
+                    User staff = invoice.getServiceTicket().getAppointment().getStaff();
+                    if (staff != null) {
+                        NotificationRequest staffNoti = new NotificationRequest();
+                        staffNoti.setUserId(staff.getUserId());
+                        staffNoti.setTitle("Hóa đơn đã thanh toán (VNPAY) ");
+                        staffNoti.setMessage("Khách hàng " + invoice.getUser().getFullName() +
+                                " đã thanh toán xong hóa đơn #" + invoice.getInvoiceId() + " qua VNPAY.");
+                        notificationService.createNotification(staffNoti);
+                    }
+                } catch (Exception e) {
+                    System.err.println("Lỗi gửi thông báo cho nhân viên: " + e.getMessage());
+                }
                 return Map.of("RspCode", "00", "Message", "Xac nhan thanh cong");
+
             }
             else{
                 //~ GIAO DỊCH THẤT BẠI

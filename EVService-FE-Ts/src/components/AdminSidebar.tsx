@@ -11,7 +11,7 @@ import {
     Briefcase,
     ShieldCheck,
     LogOut,
-    Bell, MessageSquare
+    Bell, MessageSquare, Receipt
 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -89,6 +89,8 @@ const items = [
         url: "/dashboard/admin/chat",
         icon: MessageSquare,
     },
+
+    { title: "Quản lý hóa đơn", url: "/dashboard/admin/invoiceManagement", icon: Receipt },
   {
     title: "Trung tâm dịch vụ",
     url: "/dashboard/admin/service-centers",
@@ -116,6 +118,8 @@ const items = [
       },
     ],
   },
+
+
   {
     title: "Báo cáo & Thống kê",
     icon: BarChart3,
