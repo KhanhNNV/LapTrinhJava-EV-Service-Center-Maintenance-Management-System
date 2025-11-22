@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import edu.uth.evservice.models.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -14,12 +15,6 @@ import edu.uth.evservice.dtos.InvoiceDto;
 import edu.uth.evservice.dtos.TicketPartDto;
 import edu.uth.evservice.dtos.TicketServiceItemDto;
 import edu.uth.evservice.exception.ResourceNotFoundException;
-import edu.uth.evservice.models.Appointment;
-import edu.uth.evservice.models.Invoice;
-import edu.uth.evservice.models.ServiceTicket;
-import edu.uth.evservice.models.TicketPart;
-import edu.uth.evservice.models.TicketServiceItem;
-import edu.uth.evservice.models.User;
 import edu.uth.evservice.models.enums.PaymentMethod;
 import edu.uth.evservice.models.enums.PaymentStatus;
 import edu.uth.evservice.models.enums.ServiceTicketStatus;
@@ -166,12 +161,12 @@ public class InvoiceServiceImpl implements IInvoiceService {
                         List<TicketServiceItem> serviceItems = ticketItemRepo.findByServiceTicket_TicketId(ticketId);
                         List<TicketPart> parts = ticketPartRepo.findByTicket_TicketId(ticketId);
 
-                        // Tính tổng tiền items (Lưu ý: nên nhân với Quantity)
-                        double subtotalItems = serviceItems.stream()
-                                        .mapToDouble(item -> item.getQuantity() * item.getUnitPriceAtTimeOfService())
-                                        .sum();
+                        // Tính tổng tiền items
+                    double subtotalItems = serviceItems.stream()
+                            .mapToDouble(TicketServiceItem::getUnitPriceAtTimeOfService)
+                            .sum();
 
-                        // Tính tổng tiền parts
+                    // Tính tổng tiền parts
                         double subtotalParts = parts.stream()
                                         .mapToDouble(part -> part.getQuantity() * part.getUnitPriceAtTimeOfService())
                                         .sum();
