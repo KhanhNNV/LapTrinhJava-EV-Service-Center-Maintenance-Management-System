@@ -191,7 +191,7 @@ public class InvoiceServiceImpl implements IInvoiceService {
                 .collect(Collectors.toList());
 
         double grandTotal = serviceTotal + partTotal;
-
+        
         return InvoiceDto.builder()
                 .id(ticket.getInvoice().getInvoiceId())
                 // Thông tin chung
@@ -216,6 +216,7 @@ public class InvoiceServiceImpl implements IInvoiceService {
                 .serviceTotal(serviceTotal)
                 .partTotal(partTotal)
                 .grandTotal(grandTotal)
+                .paymentStatus(invoice.getPaymentStatus())
                 .build();
     }
 

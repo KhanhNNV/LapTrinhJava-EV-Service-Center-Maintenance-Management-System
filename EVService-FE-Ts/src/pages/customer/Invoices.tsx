@@ -137,13 +137,20 @@ export default function Invoices() {
                                     {/* ... Nội dung Card ... */}
                                     <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
                                         <div className="font-bold text-lg flex items-center gap-2">
-                                            <Receipt className="w-5 h-5 text-blue-600" />
+                                            <Receipt className="w-5 h-5 text-green-600" />
                                             Hóa đơn #{invoice.id}
                                         </div>
-                                        
-                                        <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                                            Hoàn thành
-                                        </Badge>
+
+                                        {invoice.paymentStatus === 'PAID' ? (
+
+                                            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-300">
+                                                Đã thanh toán
+                                            </Badge>
+                                        ) : (
+                                            <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
+                                                Chưa thanh toán
+                                            </Badge>
+                                        )}
                                     </CardHeader>
 
                                     <CardContent className="space-y-3 flex-1">
