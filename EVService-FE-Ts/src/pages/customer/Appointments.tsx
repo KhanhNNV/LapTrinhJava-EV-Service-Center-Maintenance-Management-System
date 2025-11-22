@@ -50,6 +50,10 @@ import {
   AppointmentDto,
 } from "@/services/appointmentService.ts";
 import { useNavigate } from "react-router-dom";
+import {
+  useCustomerContracts,
+  CustomerContractDto,
+} from "@/services/appointmentService.ts";
 
 export default function Appointments() {
   const [isBookingDialogOpen, setIsBookingDialogOpen] = useState(false);
@@ -64,6 +68,8 @@ export default function Appointments() {
     appointmentTime: "",
     note: "",
     centerId: "",
+    contractId: null,
+    contractName: "",
   });
 
   // State cho sorting và filtering
@@ -82,6 +88,8 @@ export default function Appointments() {
     useCustomerAppointments();
   const { data: servicePackages, isLoading: isLoadingPackages } =
     useServicePackages();
+  const { data: contracts, isLoading: isLoadingContracts } =
+    useCustomerContracts();
 
   // Mutations
   const bookAppointmentMutation = useBookAppointment();
@@ -118,12 +126,12 @@ export default function Appointments() {
     return vehicle ? vehicle.licensePlate : `ID: ${vehicleId}`;
   };
 
-  // const formatCurrency = (amount: number) => {
-  //   return new Intl.NumberFormat("vi-VN", {
-  //     style: "currency",
-  //     currency: "VND",
-  //   }).format(amount);
-  // };
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
+    }).format(amount);
+  };
 
   // --- HÀM XỬ LÝ MỞ DIALOG ĐẶT LỊCH ---
   const handleOpenBookingDialog = () => {
@@ -155,6 +163,17 @@ export default function Appointments() {
     setIsBookingDialogOpen(true);
   };
 
+  const handleContractSelection = (
+    contractId: number,
+    contractName: string
+  ) => {
+    setFormData({
+      ...formData,
+      contractId: contractId,
+      contractName: contractName, // Lưu contractName đã chọn
+    });
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     bookAppointmentMutation.mutate(formData, {
@@ -167,6 +186,8 @@ export default function Appointments() {
           appointmentTime: "",
           note: "",
           centerId: "",
+          contractId: null,
+          contractName: "",
         });
       },
     });
@@ -309,63 +330,92 @@ export default function Appointments() {
                     </SelectContent>
                   </Select>
                 </div>
-
-                {/* Gói dịch vụ */}
-                {/* <div className="space-y-2">
-                  <Label>Gói dịch vụ</Label>
+                {/* Chọn gói dịch vụ đã đăng ký */}
+                <div className="space-y-2">
+                  <Label>Gói dịch vụ đã đăng ký</Label>
                   <Select
-                    value={formData.serviceType}
-                    onValueChange={(value) =>
-                      setFormData({ ...formData, serviceType: value })
-                    }
+                    value={formData.contractId?.toString() || ""}
+                    onValueChange={(value) => {
+                      const selectedContract = contracts.find(
+                        (contract) => contract.contractId.toString() === value
+                      );
+                      if (selectedContract) {
+                        // Khi chọn hợp đồng, lưu thông tin hợp đồng và dịch vụ
+                        handleContractSelection(
+                          selectedContract.contractId,
+                          selectedContract.packageName
+                        );
+                      }
+                    }}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Chọn gói dịch vụ" />
+                      <SelectValue
+                        placeholder={
+                          isLoadingContracts
+                            ? "Đang tải..."
+                            : "Chọn gói dịch vụ đã đăng ký"
+                        }
+                      />
                     </SelectTrigger>
                     <SelectContent>
-                      {servicePackages?.map((pkg: ServicePackageDto) => (
-                        <SelectItem key={pkg.packageId} value={pkg.packageName}>
-                          <div className="flex flex-col items-start">
-                            <span className="font-medium">
-                              {pkg.packageName}
-                            </span>
-                            <span className="text-xs text-muted-foreground">
-                              {pkg.description} - {formatCurrency(pkg.price)}
-                            </span>
-                          </div>
-                        </SelectItem>
-                      ))}
-                      {!servicePackages?.length && (
-                        <SelectItem value="Checking" disabled>
-                          Đang tải gói dịch vụ...
-                        </SelectItem>
+                      {contracts?.length ? (
+                        contracts
+                          .filter(
+                            (c: CustomerContractDto) => c.status === "ACTIVE"
+                          ) // Chỉ lấy hợp đồng ACTIVE
+                          .map((c: CustomerContractDto) => (
+                            <SelectItem
+                              key={c.contractId}
+                              value={c.contractId.toString()}
+                            >
+                              <div className="flex flex-col items-start">
+                                <span className="font-medium">
+                                  {c.packageName} {/* Tên gói dịch vụ */}
+                                </span>
+                                <span className="text-xs text-muted-foreground">
+                                  {new Date(c.startDate).toLocaleDateString(
+                                    "vi-VN"
+                                  )}{" "}
+                                  →{" "}
+                                  {new Date(c.endDate).toLocaleDateString(
+                                    "vi-VN"
+                                  )}{" "}
+                                  {/* Ngày bắt đầu và kết thúc */}
+                                </span>
+                              </div>
+                            </SelectItem>
+                          ))
+                      ) : (
+                        <div className="p-2 text-sm text-muted-foreground">
+                          Bạn chưa đăng ký gói dịch vụ nào
+                        </div>
                       )}
                     </SelectContent>
                   </Select>
-                </div> */}
-
-                {/* Gói dịch vụ (Hardcoded) */}
-                <div className="space-y-2">
-                  <Label>Loại dịch vụ</Label>
-                  <Select
-                    value={formData.serviceType}
-                    onValueChange={(value) =>
-                      setFormData({ ...formData, serviceType: value })
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Chọn loại dịch vụ" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Bảo dưỡng tổng quát">
-                        Bảo dưỡng tổng quát
-                      </SelectItem>
-                      <SelectItem value="Sửa chữa hư hỏng">
-                        Sửa chữa hư hỏng
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
                 </div>
+
+                {/* Nếu không có hợp đồng, chọn dịch vụ cứng (Bảo dưỡng xe và Sửa chữa xe) */}
+                {!formData.contractId && (
+                  <div className="space-y-2">
+                    <Label>Dịch vụ</Label>
+                    <Select
+                      value={formData.serviceType}
+                      onValueChange={(value) =>
+                        setFormData({ ...formData, serviceType: value })
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Chọn dịch vụ (nếu chưa đăng kí gói)" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Bảo dưỡng xe">
+                          Bảo dưỡng xe
+                        </SelectItem>
+                        <SelectItem value="Sửa chữa xe">Sửa chữa xe</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
 
                 {/* Ngày + Giờ */}
                 <div className="grid grid-cols-2 gap-4">
@@ -503,7 +553,9 @@ export default function Appointments() {
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
                         <h3 className="font-semibold text-lg text-gray-900">
-                          {appointment.serviceType}
+                          {appointment.contractId
+                            ? appointment.contractName // Nếu có hợp đồng, hiển thị contractName
+                            : appointment.serviceType}
                         </h3>
 
                         {/* Badge trạng thái */}

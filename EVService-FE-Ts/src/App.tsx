@@ -15,7 +15,7 @@ import CustomerDashboard from "./pages/customer/Dashboard";
 import Vehicles from "./pages/customer/Vehicles";
 import Appointments from "./pages/customer/Appointments";
 import History from "./pages/customer/History";
-import Invoices from '@/pages/customer/Invoices.tsx';
+import Invoices from "@/pages/customer/Invoices.tsx";
 import Notifications from "./pages/customer/Notifications";
 import CustomerChat from "./pages/customer/CustomerChat";
 import StaffDashboard from "./pages/staff/Dashboard";
@@ -61,6 +61,8 @@ import AdminChatMonitor from "@/pages/admin/AdminChatMonitor.tsx";
 
 import {useCustomerInvoices} from "@/services/customerInvoices.ts";
 import PaymentResult from "@/pages/PaymentResult";
+import CustomerPackagesPage from "@/pages/customer/CustomerPackagesPage.tsx";
+import MyContractsPage from "@/pages/customer/MyContractsPage.tsx";
 
 const queryClient = new QueryClient();
 
@@ -103,6 +105,15 @@ const App = () => (
             <Route path="appointments" element={<Appointments />} />
             <Route path="history" element={<History />} />
             <Route path="payments" element={<Invoices />} />
+            <Route
+              path="/dashboard/customer/packages"
+              element={<CustomerPackagesPage />}
+            />
+            <Route
+              path="/dashboard/customer/contracts"
+              element={<MyContractsPage />}
+            />
+
             <Route path="notifications" element={<Notifications />} />
             <Route path="messages" element={<CustomerChat />} />
             <Route path="settings" element={<SettingsPage />} />

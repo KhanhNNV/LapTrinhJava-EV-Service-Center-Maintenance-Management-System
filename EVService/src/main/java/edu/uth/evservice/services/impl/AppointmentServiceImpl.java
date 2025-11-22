@@ -10,10 +10,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 
 import edu.uth.evservice.dtos.AppointmentDto;
 import edu.uth.evservice.dtos.TechnicianWithCertificateDto;
@@ -338,7 +335,7 @@ public class AppointmentServiceImpl implements IAppointmentService {
     }
 
     @Override
-    public List<AppointmentDto> getAppointmentByTechnician(Integer technicianId,String statusStr) {
+    public List<AppointmentDto> getAppointmentByTechnician(Integer technicianId, String statusStr) {
         User tech = userRepository.findById(technicianId)
                 .orElseThrow(
                         () -> new ResourceNotFoundException(
@@ -450,7 +447,8 @@ public class AppointmentServiceImpl implements IAppointmentService {
                 .appointmentId(a.getAppointmentId())
                 .appointmentDate(a.getAppointmentDate())
                 .appointmentTime(a.getAppointmentTime())
-                .serviceType(a.getServiceType())
+                .serviceType(a.getServiceType() != null ? a.getServiceType() : null)
+                .contractName(a.getContract() != null ? a.getContract().getContractName() : null)
                 .status(a.getStatus().name())
                 .note(a.getNote())
                 .customerId(a.getCustomer().getUserId())

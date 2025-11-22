@@ -215,7 +215,7 @@ export default function TechnicianMyAppointments() {
                             <Card key={appt.appointmentId} className="hover:shadow-md flex flex-col h-full">
                                 <CardHeader className="pb-2">
                                     <div className="flex justify-between items-start">
-                                        <CardTitle className="text-lg">{appt.serviceType}</CardTitle>
+                                        <CardTitle className="text-lg">{appt.serviceType != "" ? appt.serviceType : appt.contractName}</CardTitle>
                                         <Badge className={statusColors[appt.status]}>{getStatusText(appt.status)}</Badge>
                                     </div>
                                 </CardHeader>

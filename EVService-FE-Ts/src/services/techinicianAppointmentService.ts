@@ -4,13 +4,15 @@ import api from "./api";
 export interface Appointment {
     appointmentId: number;
     status: string;
-    serviceType: string;
+    serviceType?: string;
+    contractName?: string;
     note: string;
     updatedAt: string;
     // Các ID để dùng khi fetch chi tiết
     customerId: number;
     vehicleId: number;
     centerId: number;
+
 
     staffName: string;
     technicianName: string;

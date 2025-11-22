@@ -238,7 +238,11 @@ export default function History() {
                                     <span className="text-gray-500 col-span-1">Mã lịch hẹn:</span>
                                     <span className="col-span-2 font-medium">{selectedAppointment.appointmentId}</span>
                                     <span className="text-gray-500 col-span-1">Dịch vụ:</span>
-                                    <span className="col-span-2 font-medium">{getServiceDescription(selectedAppointment.serviceType)}</span>
+                                    <span className="col-span-2 font-medium">
+                                      {selectedAppointment.serviceType
+                                          ? getServiceDescription(selectedAppointment.serviceType)
+                                          : selectedAppointment.contractName}
+                                    </span>
                                     <span className="text-gray-500 col-span-1">Trạng thái:</span>
                                     <span className={`col-span-2 font-medium ${selectedAppointment.status === "COMPLETED" ? "text-green-600" : "text-red-600"}`}>
                                         {getStatusText(selectedAppointment.status)}
