@@ -194,7 +194,7 @@ export default function AdminServicePackages() {
       setIsCreateOpen(false);
       resetForm();
       fetchPackages();
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: "Error",
         description:
@@ -234,7 +234,7 @@ export default function AdminServicePackages() {
       setEditingPackage(null);
       resetForm();
       fetchPackages();
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: "Error",
         description:
@@ -254,7 +254,7 @@ export default function AdminServicePackages() {
         description: "Gói dịch vụ đã được xóa thành công",
       });
       fetchPackages();
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: "Error",
         description:
@@ -316,15 +316,20 @@ export default function AdminServicePackages() {
             placeholder="Ví dụ: Gói bảo dưỡng toàn diện"
           />
         </div>
-        <div>
-          <Label>Giá (VNĐ)</Label>
-          <Input
-            type="number"
-            value={form.price}
-            disabled
-            className="bg-muted cursor-not-allowed"
-          />
-        </div>
+          <div>
+              <Label>Giá (VNĐ)</Label>
+              <Input
+                  type="number"
+                  value={form.price}
+                  onChange={(e) =>
+                      handleFormChange(
+                          "price",
+                          e.target.value ? Number(e.target.value) : ""
+                      )
+                  }
+                  min={0}
+              />
+          </div>
         <div>
           <Label>Thời hạn (tháng)</Label>
           <Input

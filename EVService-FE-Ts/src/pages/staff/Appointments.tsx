@@ -67,7 +67,7 @@ interface Appointment {
   vehicleId?: number; // ID xe trong lịch hẹn
   vehicle?: Vehicle; // Object xe nếu DTO trả về sẵn
   serviceCenter?: {
-    name: string;
+    centerName: string;
     address: string;
   };
 }
@@ -709,7 +709,7 @@ export default function StaffAppointments() {
                   </h4>
                   <p className="text-sm font-medium">
                     {viewingAppointment.serviceCenter
-                      ? viewingAppointment.serviceCenter.name
+                      ? viewingAppointment.serviceCenter.centerName
                       : "Trung tâm chính"}
                   </p>
                 </div>

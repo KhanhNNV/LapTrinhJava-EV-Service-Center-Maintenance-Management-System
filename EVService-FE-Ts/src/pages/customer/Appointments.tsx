@@ -676,7 +676,7 @@ export default function Appointments() {
             </p>
             <Button
               className="bg-[#007AFF] hover:bg-[#0066CC]"
-              onClick={() => setIsBookingDialogOpen(true)}
+              onClick={handleOpenBookingDialog}
             >
               <Plus className="w-4 h-4 mr-2" />
               Đặt lịch ngay
