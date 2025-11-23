@@ -1,6 +1,8 @@
 package edu.uth.evservice.services.impl;
 
 import edu.uth.evservice.dtos.SalaryDto;
+import edu.uth.evservice.models.Invoice;
+import edu.uth.evservice.models.enums.PaymentStatus;
 import edu.uth.evservice.models.enums.ServiceTicketStatus;
 import edu.uth.evservice.repositories.IServiceTicketRepository;
 import edu.uth.evservice.requests.UpdateBaseSalaryRequest;
@@ -79,7 +81,15 @@ public class SalaryServiceImpl implements ISalaryService {
                                         return false;
                                     }
                                 })
-                                .count();
+                                .mapToDouble(ticket -> {
+                                    // Lấy Invoice liên quan đến Ticket
+                                    Invoice invoice = ticket.getInvoice(); // Do bạn đã có @OneToOne map
+                                    if (invoice != null && invoice.getPaymentStatus() == PaymentStatus.PAID) {
+                                        return invoice.getTotalAmount();
+                                    }
+                                    return 0.0;
+                                })
+                                .sum();
 
                         bonus = Math.round(totalTicketValue * commissionRate);
                     }
