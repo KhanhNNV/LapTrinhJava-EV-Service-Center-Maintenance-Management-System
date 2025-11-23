@@ -71,6 +71,12 @@ export interface AISuggestionResponse {
     analysisPeriod: string;
     totalEstimatedCost: number;
 }
+
+export const getTicketsByVehicleId = async (vehicleId: number) => {
+    const response = await api.get(`/api/service-tickets/vehicle/${vehicleId}/history`);
+    return response.data;
+};
+
 export const technicianTicketService = {
     // Lấy danh sách vé dịch vụ của kỹ thuật viên
     getMyTickets: async (technicianId: number | undefined): Promise<ServiceTicket[]> => {
@@ -135,4 +141,6 @@ export const technicianTicketService = {
         return response.data;
     },
 
+
+    
 };

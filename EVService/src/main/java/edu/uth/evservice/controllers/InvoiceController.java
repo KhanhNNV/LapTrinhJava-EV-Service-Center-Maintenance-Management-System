@@ -66,4 +66,10 @@ public class InvoiceController {
 
         return ResponseEntity.ok(updatedInvoiceDto);
     }
+
+    @GetMapping("/user/{userId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<InvoiceDto>> getInvoicesByUserId(@PathVariable Integer userId) {
+        return ResponseEntity.ok(invoiceService.getInvoicesByUserId(userId));
+    }
 }

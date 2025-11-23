@@ -50,7 +50,7 @@ const techSchema = employeeSchema.extend({
 
 export function CreateUserDialog({ onSuccess }: { onSuccess?: () => void }) {
   const [open, setOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<"CUSTOMER" | "STAFF" | "TECHNICIAN">("CUSTOMER");
+  const [activeTab, setActiveTab] = useState<"CUSTOMER" | "STAFF" | "TECHNICIAN">("STAFF");
   const [isLoading, setIsLoading] = useState(false);
   
   // Dữ liệu danh mục từ API

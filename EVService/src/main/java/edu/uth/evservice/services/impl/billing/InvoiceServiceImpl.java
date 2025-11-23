@@ -123,7 +123,8 @@ public class InvoiceServiceImpl implements IInvoiceService {
         List<TicketPart> parts = ticketPartRepo.findByTicket_TicketId(ticketId);
 
         double subtotalItems = serviceItems.stream().mapToDouble(TicketServiceItem::getUnitPriceAtTimeOfService).sum();
-        double subtotalParts = parts.stream().mapToDouble(part -> part.getQuantity() * part.getUnitPriceAtTimeOfService()).sum();
+        double subtotalParts = parts.stream()
+                .mapToDouble(part -> part.getQuantity() * part.getUnitPriceAtTimeOfService()).sum();
         double grandTotal = subtotalParts + subtotalItems;
 
         User customer = serviceTicket.getAppointment().getCustomer();
@@ -203,14 +204,14 @@ public class InvoiceServiceImpl implements IInvoiceService {
 
     // --- CÁC HÀM MAPPER DTO ---
     private InvoiceDto toDto(Invoice invoice,
-                             List<TicketServiceItem> serviceItems,
-                             List<TicketPart> parts,
-                             double serviceTotal,
-                             double partTotal,
-                             String staffName,
-                             String technicianName)
-    {
-        if (invoice == null) return null;
+            List<TicketServiceItem> serviceItems,
+            List<TicketPart> parts,
+            double serviceTotal,
+            double partTotal,
+            String staffName,
+            String technicianName) {
+        if (invoice == null)
+            return null;
 
         Integer ticketId = null;
         Integer contractId = null;
@@ -279,5 +280,17 @@ public class InvoiceServiceImpl implements IInvoiceService {
                 .quantity(part.getQuantity())
                 .unitPriceAtTimeOfService(part.getUnitPriceAtTimeOfService())
                 .build();
+    }
+
+    @Override
+    public List<InvoiceDto> getInvoicesByUserId(Integer userId) {
+        if (!userRepo.existsById(userId)) {
+            throw new ResourceNotFoundException("Không tìm thấy người dùng với ID: " + userId);
+        }
+
+        return invoiceRepo.findByUser_UserId(userId, PageRequest.of(0, 1000, Sort.by("invoiceDate").descending()))
+                .stream()
+                .map(this::convertToDetailedDto)
+                .collect(Collectors.toList());
     }
 }

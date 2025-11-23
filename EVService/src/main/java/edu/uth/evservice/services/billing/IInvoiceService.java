@@ -16,4 +16,6 @@ public interface IInvoiceService {
     Page<InvoiceDto> getMyInvoices(Integer userId, int page, int limit);
 
     List<InvoiceDto> getAllInvoices();
+
+    List<InvoiceDto> getInvoicesByUserId(Integer userId);
 }

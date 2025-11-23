@@ -141,4 +141,12 @@ public class ServiceTicketController {
         List<ServiceTicketDto> history = ticketService.getTicketsByTechnicianId(technicianId);
         return ResponseEntity.ok(history);
     }
+
+
+    @GetMapping("/vehicle/{vehicleId}/history")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<ServiceTicketDto>> getTicketsByVehicleId(@PathVariable Integer vehicleId) {
+        List<ServiceTicketDto> history = ticketService.getTicketsByVehicleId(vehicleId);
+        return ResponseEntity.ok(history);
+    }
 }

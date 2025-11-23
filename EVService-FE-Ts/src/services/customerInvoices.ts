@@ -90,6 +90,7 @@ export function useAllInvoices() {
     });
 }
 
+
 export const updateInvoiceStatus = async (invoiceId: number) => {
 
     const res = await api.put(`/api/invoices/${invoiceId}/status`, null, {
@@ -117,3 +118,8 @@ export function useConfirmCashPayment() {
         },
     });
 }
+
+export const getInvoicesByUserId = async (userId: number) => {
+    const response = await api.get(`/api/invoices/user/${userId}`);
+    return response.data;
+};

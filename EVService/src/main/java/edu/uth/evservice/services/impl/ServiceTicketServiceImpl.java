@@ -461,7 +461,8 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
                     // Thông báo rõ: Kho nào đang thiếu hàng
                     notiRequest.setMessage("Cảnh báo: Mặt hàng '" + part.getPartName() +
                             "' tại " + techCenter.getCenterName() + // <-- Ghi rõ tên trung tâm thiếu hàng
-                            " đã xuống mức thấp (" + updatedInventory.getQuantity() + "/" + updatedInventory.getMinQuantity() + "). Cần điều phối nhập hàng.");
+                            " đã xuống mức thấp (" + updatedInventory.getQuantity() + "/"
+                            + updatedInventory.getMinQuantity() + "). Cần điều phối nhập hàng.");
 
                     notificationService.createNotification(notiRequest);
                 }
@@ -634,4 +635,16 @@ public class ServiceTicketServiceImpl implements IServiceTicketService {
         return center;
     }
 
+    @Override
+    public List<ServiceTicketDto> getTicketsByVehicleId(Integer vehicleId) {
+        // Kiểm tra xe có tồn tại không
+        if (!vehicleRepo.existsById(vehicleId)) {
+            throw new ResourceNotFoundException("Không tìm thấy phương tiện với ID: " + vehicleId);
+        }
+
+        return ticketRepo.findByAppointment_Vehicle_VehicleIdOrderByStartTimeDesc(vehicleId)
+                .stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
+    }
 }
