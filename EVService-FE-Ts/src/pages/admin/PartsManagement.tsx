@@ -126,7 +126,7 @@ export default function PartsManagement() {
     // Mở Dialog tạo mới
     const handleOpenCreate = () => {
         setEditingPart(null);
-        form.reset({ partName: "", unitPrice: 0.01, initialStock: 0 });
+        form.reset({ partName: "", unitPrice: 1000, initialStock: 0 });
         setIsDialogOpen(true);
     };
 
@@ -366,10 +366,10 @@ export default function PartsManagement() {
                                             <FormControl>
                                                 <Input
                                                     type="number"
-                                                    placeholder="0.00"
+                                                    placeholder="1000"
                                                     {...field}
                                                     onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                                                    step="0.01"
+                                                    step="1000"
                                                 />
                                             </FormControl>
                                             <FormMessage />
@@ -387,10 +387,10 @@ export default function PartsManagement() {
                                             <FormControl>
                                                 <Input
                                                     type="number"
-                                                    placeholder="0.00"
+                                                    placeholder="1000"
                                                     {...field}
                                                     onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                                                    step="0.01"
+                                                    step="1000"
                                                 />
                                             </FormControl>
                                             <FormMessage />
