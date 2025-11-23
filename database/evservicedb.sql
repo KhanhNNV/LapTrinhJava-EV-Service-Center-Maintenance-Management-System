@@ -29,7 +29,7 @@ CREATE TABLE `appointments` (
   `created_at` datetime(6) DEFAULT NULL,
   `note` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `service_type` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL,
-  `status` enum('ASSIGNED','CANCELED','CHECKED_IN','COMPLETED','CONFIRMED','IN_PROGRESS','PENDING') COLLATE utf8mb4_unicode_ci NOT NULL,
+  `status` enum('ASSIGNED','CANCELLED','CHECKED_IN','COMPLETED','CONFIRMED','IN_PROGRESS','PENDING') COLLATE utf8mb4_unicode_ci NOT NULL,
   `updated_at` datetime(6) DEFAULT NULL,
   `technician_id` int DEFAULT NULL,
   `center_id` int NOT NULL,
@@ -50,7 +50,7 @@ CREATE TABLE `appointments` (
   CONSTRAINT `FK8rj1bo0yghp7xxocvsdxts3dd` FOREIGN KEY (`center_id`) REFERENCES `service_centers` (`center_id`),
   CONSTRAINT `FKalpncq8pxtwld2wmgw4sxct70` FOREIGN KEY (`vehicle_id`) REFERENCES `vehicles` (`vehicle_id`),
   CONSTRAINT `FKi31x63g3sb93cwo03xuexx6qa` FOREIGN KEY (`technician_id`) REFERENCES `users` (`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -59,7 +59,7 @@ CREATE TABLE `appointments` (
 
 LOCK TABLES `appointments` WRITE;
 /*!40000 ALTER TABLE `appointments` DISABLE KEYS */;
-INSERT INTO `appointments` VALUES (1,'2025-11-20','09:00:00.000000','2025-11-15 14:30:00.000000','Khách hàng muốn kiểm tra thêm hệ thống điện','Thay dầu định kỳ','PENDING',NULL,2,1,NULL,7,5,1),(2,'2025-11-21','10:00:00.000000','2025-11-15 14:35:00.000000',NULL,'Kiểm tra ắc quy','PENDING',NULL,2,1,NULL,8,5,2),(3,'2025-11-22','11:00:00.000000','2025-11-15 14:40:00.000000','Khách hàng yêu cầu kiểm tra phanh','Bảo dưỡng tổng quát','PENDING',NULL,3,1,NULL,9,5,3),(4,'2025-11-23','13:00:00.000000','2025-11-15 14:45:00.000000',NULL,'Cập nhật phần mềm','PENDING',NULL,3,1,NULL,10,5,4),(5,'2025-11-24','14:00:00.000000','2025-11-15 14:50:00.000000','Khách hàng muốn thay lốp mới loại tốt','Thay lốp','PENDING',NULL,2,1,NULL,11,5,5),(6,'2025-11-25','15:00:00.000000','2025-11-15 14:55:00.000000',NULL,'Kiểm tra hệ thống điện','PENDING',NULL,2,1,NULL,12,5,6),(7,'2025-11-26','09:30:00.000000','2025-11-15 15:00:00.000000',NULL,'Bảo dưỡng tổng quát','PENDING',NULL,3,1,NULL,13,5,7),(8,'2025-11-27','10:30:00.000000','2025-11-15 15:05:00.000000','Khách hàng yêu cầu kiểm tra pin','Thay dầu định kỳ','PENDING',NULL,3,1,NULL,14,5,8),(9,'2025-11-28','11:30:00.000000','2025-11-15 15:10:00.000000',NULL,'Cập nhật phần mềm','PENDING',NULL,2,1,NULL,15,5,9),(10,'2025-11-29','13:30:00.000000','2025-11-15 15:15:00.000000','Khách hàng yêu cầu thay loại lốp chính hãng','Thay lốp','PENDING',NULL,2,1,NULL,16,5,10);
+INSERT INTO `appointments` VALUES (1,'2025-11-24','13:04:00.000000','2025-11-23 11:04:25.401096','','Bảo dưỡng xe','COMPLETED','2025-11-23 11:37:38.699947',3,1,NULL,7,6,1),(2,'2025-11-26','11:09:00.000000','2025-11-23 11:09:28.746812','','Sửa chữa xe','COMPLETED','2025-11-23 11:43:55.041120',2,1,NULL,8,6,2),(3,'2025-11-23','04:20:00.000000','2025-11-23 11:12:34.163262','','Bảo dưỡng xe','COMPLETED','2025-11-23 11:44:51.695073',3,1,NULL,9,6,3),(4,'2025-11-23','11:46:00.000000','2025-11-23 11:46:37.610561','','Sửa chữa xe','COMPLETED','2025-11-23 11:48:10.216423',3,2,NULL,7,6,1),(5,'2025-11-23','12:10:00.000000','2025-11-23 12:10:41.181406','','Sửa chữa xe','COMPLETED','2025-11-23 12:15:46.287345',4,1,NULL,8,6,2),(6,'2025-11-23','12:11:00.000000','2025-11-23 12:11:14.394276','','Sửa chữa xe','COMPLETED','2025-11-23 12:14:36.211083',3,2,NULL,9,6,3),(7,'2025-11-23','12:13:00.000000','2025-11-23 12:13:06.458861','','Sửa chữa xe','COMPLETED','2025-11-23 12:15:13.542105',3,1,NULL,10,6,4);
 /*!40000 ALTER TABLE `appointments` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -78,7 +78,7 @@ CREATE TABLE `certificates` (
   `issuing_organization` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `validity_period` int NOT NULL,
   PRIMARY KEY (`certificate_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -87,7 +87,7 @@ CREATE TABLE `certificates` (
 
 LOCK TABLES `certificates` WRITE;
 /*!40000 ALTER TABLE `certificates` DISABLE KEYS */;
-INSERT INTO `certificates` VALUES (1,'Chứng chỉ sửa chữa xe điện cơ bản','ELECTRIC_CAR_REPAIR','Đào tạo kỹ thuật cơ bản về xe ô tô điện','EV Training Center',1825),(2,'Chứng chỉ sửa chữa xe điện nâng cao','ELECTRIC_CAR_REPAIR','Kỹ năng nâng cao về hệ thống điện và pin ô tô điện','EV Training Center',1825),(3,'Chứng chỉ bảo dưỡng hệ thống pin','ELECTRIC_CAR_REPAIR','Đào tạo chuyên sâu về pin và quản lý năng lượng xe điện','EV Training Center',1825);
+INSERT INTO `certificates` VALUES (1,'Chứng chỉ kỹ thuật sửa chữa xe ô tô điện','ELECTRIC_CAR_REPAIR','Chứng chỉ xác nhận kỹ thuật viên có đủ kỹ năng để sửa chữa và bảo dưỡng xe ô tô điện.','Bộ Giao Thông Vận Tải',1825),(2,'Chứng chỉ kỹ thuật sửa chữa xe máy điện','ELECTRIC_MOTORBIKE_REPAIR','Chứng chỉ xác nhận kỹ thuật viên có đủ kỹ năng để sửa chữa và bảo dưỡng xe máy điện.','Bộ Giao Thông Vận Tải',1825);
 /*!40000 ALTER TABLE `certificates` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -133,8 +133,9 @@ CREATE TABLE `customer_package_contracts` (
   `contract_id` int NOT NULL AUTO_INCREMENT,
   `contract_name` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `end_date` date NOT NULL,
+  `last_maintenance_notification_date` date DEFAULT NULL,
   `start_date` date NOT NULL,
-  `status` enum('ACTIVE','CANCELLED','EXPIRED') COLLATE utf8mb4_unicode_ci NOT NULL,
+  `status` enum('ACTIVE','CANCELLED','EXPIRED','PENDING') COLLATE utf8mb4_unicode_ci NOT NULL,
   `package_id` int NOT NULL,
   `user_id` int NOT NULL,
   PRIMARY KEY (`contract_id`),
@@ -142,7 +143,7 @@ CREATE TABLE `customer_package_contracts` (
   KEY `FK9c3t6cxp0x2fc71cbpy29xrpl` (`user_id`),
   CONSTRAINT `FK9c3t6cxp0x2fc71cbpy29xrpl` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`),
   CONSTRAINT `FKmq1wqmwel4vkdyfcfbkgm024n` FOREIGN KEY (`package_id`) REFERENCES `service_packages` (`package_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -151,8 +152,37 @@ CREATE TABLE `customer_package_contracts` (
 
 LOCK TABLES `customer_package_contracts` WRITE;
 /*!40000 ALTER TABLE `customer_package_contracts` DISABLE KEYS */;
-INSERT INTO `customer_package_contracts` VALUES (1,'Hợp đồng gói cơ bản - Khách hàng 01','2026-11-14','2025-11-15','ACTIVE',1,7),(2,'Hợp đồng gói cơ bản - Khách hàng 02','2026-11-14','2025-11-15','ACTIVE',1,8),(3,'Hợp đồng gói nâng cao - Khách hàng 03','2026-11-14','2025-11-15','ACTIVE',2,9),(4,'Hợp đồng gói cơ bản - Khách hàng 04','2026-11-14','2025-11-15','ACTIVE',1,10);
+INSERT INTO `customer_package_contracts` VALUES (1,'Gói 1 năm','2026-11-23',NULL,'2025-11-23','PENDING',1,7);
 /*!40000 ALTER TABLE `customer_package_contracts` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `email_verification_tokens`
+--
+
+DROP TABLE IF EXISTS `email_verification_tokens`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `email_verification_tokens` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `created_at` datetime(6) NOT NULL,
+  `expires_at` datetime(6) NOT NULL,
+  `token` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `user_id` int NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `UKewmvysc7e9y6uy7og2c21axa9` (`token`),
+  KEY `FKi1c4mmamlb8keqt74k4lrtwhc` (`user_id`),
+  CONSTRAINT `FKi1c4mmamlb8keqt74k4lrtwhc` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `email_verification_tokens`
+--
+
+LOCK TABLES `email_verification_tokens` WRITE;
+/*!40000 ALTER TABLE `email_verification_tokens` DISABLE KEYS */;
+/*!40000 ALTER TABLE `email_verification_tokens` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -175,7 +205,7 @@ CREATE TABLE `inventories` (
   KEY `FKiqa43c68rmb98ks6ng3frlxwp` (`center_id`),
   CONSTRAINT `FKbcj2jyphxpdxijrrs4gjrvecd` FOREIGN KEY (`part_id`) REFERENCES `parts` (`part_id`),
   CONSTRAINT `FKiqa43c68rmb98ks6ng3frlxwp` FOREIGN KEY (`center_id`) REFERENCES `service_centers` (`center_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -184,7 +214,7 @@ CREATE TABLE `inventories` (
 
 LOCK TABLES `inventories` WRITE;
 /*!40000 ALTER TABLE `inventories` DISABLE KEYS */;
-INSERT INTO `inventories` VALUES (1,'2025-11-15',10,50,'2025-11-15',1,1),(2,'2025-11-15',5,30,'2025-11-15',2,1),(3,'2025-11-15',5,20,'2025-11-15',3,2);
+INSERT INTO `inventories` VALUES (1,'2025-11-23',5,99,'2025-11-23',2,1),(2,'2025-11-23',5,30,'2025-11-23',4,1),(3,'2025-11-23',5,15,'2025-11-23',10,1),(4,'2025-11-23',5,15,'2025-11-23',8,1),(5,'2025-11-23',5,30,'2025-11-23',5,1),(6,'2025-11-23',5,30,'2025-11-23',6,1),(7,'2025-11-23',5,30,'2025-11-23',11,1),(8,'2025-11-23',5,48,'2025-11-23',2,2),(9,'2025-11-23',5,40,'2025-11-23',3,2),(10,'2025-11-23',5,29,'2025-11-23',4,2),(11,'2025-11-23',5,29,'2025-11-23',6,2),(12,'2025-11-23',5,30,'2025-11-23',5,2),(13,'2025-11-23',5,30,'2025-11-23',7,2),(14,'2025-11-23',5,15,'2025-11-23',8,2),(15,'2025-11-23',5,13,'2025-11-23',10,2),(16,'2025-11-23',5,20,'2025-11-23',12,2),(17,'2025-11-23',5,15,'2025-11-23',9,2),(18,'2025-11-23',5,14,'2025-11-23',11,2),(19,'2025-11-23',5,20,'2025-11-23',12,1),(20,'2025-11-23',5,15,'2025-11-23',9,1);
 /*!40000 ALTER TABLE `inventories` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -197,18 +227,21 @@ DROP TABLE IF EXISTS `invoices`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `invoices` (
   `invoice_id` int NOT NULL AUTO_INCREMENT,
-  `invoice_date` date NOT NULL,
+  `invoice_date` datetime(6) NOT NULL,
   `payment_method` enum('BANK_TRANSFER','CASH','CREDIT_CARD','MOMO','UNSPECIFIED','VNPAY') COLLATE utf8mb4_unicode_ci NOT NULL,
   `payment_status` enum('CANCELLED','PAID','PENDING') COLLATE utf8mb4_unicode_ci NOT NULL,
   `total_amount` double NOT NULL,
-  `ticket_id` int NOT NULL,
+  `contract_id` int DEFAULT NULL,
+  `ticket_id` int DEFAULT NULL,
   `user_id` int NOT NULL,
   PRIMARY KEY (`invoice_id`),
   UNIQUE KEY `UKb46n151aehmo7ekv39o6b0pl5` (`ticket_id`),
+  KEY `FKmnj7bejtnflnsxi1xqap88kvc` (`contract_id`),
   KEY `FKbwr4d4vyqf2bkoetxtt8j9dx7` (`user_id`),
   CONSTRAINT `FKbwr4d4vyqf2bkoetxtt8j9dx7` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`),
-  CONSTRAINT `FKimen4lsicpbopj9w5qljlc0w9` FOREIGN KEY (`ticket_id`) REFERENCES `service_tickets` (`ticket_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  CONSTRAINT `FKimen4lsicpbopj9w5qljlc0w9` FOREIGN KEY (`ticket_id`) REFERENCES `service_tickets` (`ticket_id`),
+  CONSTRAINT `FKmnj7bejtnflnsxi1xqap88kvc` FOREIGN KEY (`contract_id`) REFERENCES `customer_package_contracts` (`contract_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -217,7 +250,7 @@ CREATE TABLE `invoices` (
 
 LOCK TABLES `invoices` WRITE;
 /*!40000 ALTER TABLE `invoices` DISABLE KEYS */;
-INSERT INTO `invoices` VALUES (11,'2025-11-15','CASH','PAID',5500000,1,7),(12,'2025-11-15','BANK_TRANSFER','PAID',5600000,2,8),(13,'2025-11-15','CREDIT_CARD','PAID',5700000,3,9),(14,'2025-11-16','CASH','PAID',5800000,4,10),(15,'2025-11-16','BANK_TRANSFER','PAID',5900000,5,11),(16,'2025-11-16','CASH','PAID',6000000,6,12),(17,'2025-11-17','CREDIT_CARD','PAID',6100000,7,13),(18,'2025-11-17','BANK_TRANSFER','PAID',6200000,8,14),(19,'2025-11-17','CASH','PAID',6300000,9,15),(20,'2025-11-18','CREDIT_CARD','PAID',6400000,10,16);
+INSERT INTO `invoices` VALUES (1,'2025-11-23 11:04:37.912713','UNSPECIFIED','PENDING',1740000,1,NULL,7),(2,'2025-11-23 11:38:39.909738','UNSPECIFIED','PENDING',420000,NULL,1,7),(3,'2025-11-23 11:49:09.084758','UNSPECIFIED','PENDING',240000,NULL,4,7),(4,'2025-11-23 11:49:13.644063','UNSPECIFIED','PENDING',420000,NULL,3,9),(5,'2025-11-23 11:51:07.522793','UNSPECIFIED','PENDING',420000,NULL,2,8),(6,'2025-11-23 12:15:59.344643','UNSPECIFIED','PENDING',900000,NULL,6,10),(7,'2025-11-23 12:16:04.133072','UNSPECIFIED','PENDING',370000,NULL,5,9),(8,'2025-11-23 12:16:08.981467','UNSPECIFIED','PENDING',900000,NULL,7,8);
 /*!40000 ALTER TABLE `invoices` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -269,7 +302,7 @@ CREATE TABLE `notifications` (
   PRIMARY KEY (`notification_id`),
   KEY `FK9y21adhxn0ayjhfocscqox7bh` (`user_id`),
   CONSTRAINT `FK9y21adhxn0ayjhfocscqox7bh` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=36 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -278,6 +311,7 @@ CREATE TABLE `notifications` (
 
 LOCK TABLES `notifications` WRITE;
 /*!40000 ALTER TABLE `notifications` DISABLE KEYS */;
+INSERT INTO `notifications` VALUES (1,'2025-11-23 11:24:51.591761',_binary '','Lịch hẹn #1 đã được nhân viên xác nhận. Vui lòng đến quầy và check-in lúc 13:04 ngày 2025-11-24.','Lịch hẹn của bạn đã được xác nhận!',7),(2,'2025-11-23 11:24:52.867908',_binary '','Lịch hẹn #2 đã được nhân viên xác nhận. Vui lòng đến quầy và check-in lúc 11:09 ngày 2025-11-26.','Lịch hẹn của bạn đã được xác nhận!',8),(3,'2025-11-23 11:24:55.012652',_binary '\0','Lịch hẹn #3 đã được nhân viên xác nhận. Vui lòng đến quầy và check-in lúc 04:20 ngày 2025-11-23.','Lịch hẹn của bạn đã được xác nhận!',9),(4,'2025-11-23 11:25:07.000770',_binary '','Bạn vừa được gán lịch hẹn #1 vào lúc 13:04 ngày 2025-11-24','Bạn có cuộc hẹn mới!',3),(5,'2025-11-23 11:37:38.705333',_binary '','Dịch vụ cho xe [30A-12345] (Phiếu #1) đã được hoàn thành. Vui lòng đợi thông báo hóa đơn để thanh toán.','Dịch vụ của bạn đã hoàn tất!',7),(6,'2025-11-23 11:37:38.708849',_binary '','Phiếu dịch vụ #1 (Khách: Phạm Ngọc Hùng Đức) đã được hoàn tất. Vui lòng kiểm tra và tạo hóa đơn.','Kỹ thuật viên đã hoàn thành công việc ',6),(7,'2025-11-23 11:38:39.922032',_binary '','Hóa đơn #2 với tổng số tiền 420000.0 đã được tạo. Vui lòng thanh toán.','Hóa đơn mới cho dịch vụ của bạn!',7),(8,'2025-11-23 11:42:59.457300',_binary '','Bạn vừa được gán lịch hẹn #2 vào lúc 11:09 ngày 2025-11-26','Bạn có cuộc hẹn mới!',2),(9,'2025-11-23 11:43:04.727319',_binary '\0','Bạn vừa được gán lịch hẹn #3 vào lúc 04:20 ngày 2025-11-23','Bạn có cuộc hẹn mới!',3),(10,'2025-11-23 11:43:55.044113',_binary '','Dịch vụ cho xe [51K-678.90] (Phiếu #2) đã được hoàn thành. Vui lòng đợi thông báo hóa đơn để thanh toán.','Dịch vụ của bạn đã hoàn tất!',8),(11,'2025-11-23 11:43:55.050028',_binary '','Phiếu dịch vụ #2 (Khách: Customer 01) đã được hoàn tất. Vui lòng kiểm tra và tạo hóa đơn.','Kỹ thuật viên đã hoàn thành công việc ',6),(12,'2025-11-23 11:44:51.697077',_binary '\0','Dịch vụ cho xe [43C1-101.12] (Phiếu #3) đã được hoàn thành. Vui lòng đợi thông báo hóa đơn để thanh toán.','Dịch vụ của bạn đã hoàn tất!',9),(13,'2025-11-23 11:44:51.698079',_binary '','Phiếu dịch vụ #3 (Khách: Customer 02) đã được hoàn tất. Vui lòng kiểm tra và tạo hóa đơn.','Kỹ thuật viên đã hoàn thành công việc ',6),(14,'2025-11-23 11:46:45.202292',_binary '','Lịch hẹn #4 đã được nhân viên xác nhận. Vui lòng đến quầy và check-in lúc 11:46 ngày 2025-11-23.','Lịch hẹn của bạn đã được xác nhận!',7),(15,'2025-11-23 11:46:49.595879',_binary '\0','Bạn vừa được gán lịch hẹn #4 vào lúc 11:46 ngày 2025-11-23','Bạn có cuộc hẹn mới!',3),(16,'2025-11-23 11:48:10.218478',_binary '','Dịch vụ cho xe [30A-12345] (Phiếu #4) đã được hoàn thành. Vui lòng đợi thông báo hóa đơn để thanh toán.','Dịch vụ của bạn đã hoàn tất!',7),(17,'2025-11-23 11:48:10.220514',_binary '','Phiếu dịch vụ #4 (Khách: Phạm Ngọc Hùng Đức) đã được hoàn tất. Vui lòng kiểm tra và tạo hóa đơn.','Kỹ thuật viên đã hoàn thành công việc ',6),(18,'2025-11-23 11:49:09.094888',_binary '\0','Hóa đơn #3 với tổng số tiền 240000.0 đã được tạo. Vui lòng thanh toán.','Hóa đơn mới cho dịch vụ của bạn!',7),(19,'2025-11-23 11:49:13.651830',_binary '\0','Hóa đơn #4 với tổng số tiền 420000.0 đã được tạo. Vui lòng thanh toán.','Hóa đơn mới cho dịch vụ của bạn!',9),(20,'2025-11-23 11:51:07.534647',_binary '','Hóa đơn #5 với tổng số tiền 420000.0 đã được tạo. Vui lòng thanh toán.','Hóa đơn mới cho dịch vụ của bạn!',8),(21,'2025-11-23 12:13:26.826783',_binary '','Lịch hẹn #5 đã được nhân viên xác nhận. Vui lòng đến quầy và check-in lúc 12:10 ngày 2025-11-23.','Lịch hẹn của bạn đã được xác nhận!',8),(22,'2025-11-23 12:13:27.700565',_binary '\0','Lịch hẹn #6 đã được nhân viên xác nhận. Vui lòng đến quầy và check-in lúc 12:11 ngày 2025-11-23.','Lịch hẹn của bạn đã được xác nhận!',9),(23,'2025-11-23 12:13:28.286170',_binary '\0','Lịch hẹn #7 đã được nhân viên xác nhận. Vui lòng đến quầy và check-in lúc 12:13 ngày 2025-11-23.','Lịch hẹn của bạn đã được xác nhận!',10),(24,'2025-11-23 12:13:35.280295',_binary '\0','Bạn vừa được gán lịch hẹn #5 vào lúc 12:10 ngày 2025-11-23','Bạn có cuộc hẹn mới!',4),(25,'2025-11-23 12:13:39.189408',_binary '\0','Bạn vừa được gán lịch hẹn #6 vào lúc 12:11 ngày 2025-11-23','Bạn có cuộc hẹn mới!',3),(26,'2025-11-23 12:13:43.214261',_binary '\0','Bạn vừa được gán lịch hẹn #7 vào lúc 12:13 ngày 2025-11-23','Bạn có cuộc hẹn mới!',3),(27,'2025-11-23 12:14:36.211889',_binary '\0','Dịch vụ cho xe [43C1-101.12] (Phiếu #5) đã được hoàn thành. Vui lòng đợi thông báo hóa đơn để thanh toán.','Dịch vụ của bạn đã hoàn tất!',9),(28,'2025-11-23 12:14:36.211889',_binary '\0','Phiếu dịch vụ #5 (Khách: Customer 02) đã được hoàn tất. Vui lòng kiểm tra và tạo hóa đơn.','Kỹ thuật viên đã hoàn thành công việc ',6),(29,'2025-11-23 12:15:13.542105',_binary '\0','Dịch vụ cho xe [29B1-567.89] (Phiếu #6) đã được hoàn thành. Vui lòng đợi thông báo hóa đơn để thanh toán.','Dịch vụ của bạn đã hoàn tất!',10),(30,'2025-11-23 12:15:13.542105',_binary '\0','Phiếu dịch vụ #6 (Khách: Customer 03) đã được hoàn tất. Vui lòng kiểm tra và tạo hóa đơn.','Kỹ thuật viên đã hoàn thành công việc ',6),(31,'2025-11-23 12:15:46.287345',_binary '','Dịch vụ cho xe [51K-678.90] (Phiếu #7) đã được hoàn thành. Vui lòng đợi thông báo hóa đơn để thanh toán.','Dịch vụ của bạn đã hoàn tất!',8),(32,'2025-11-23 12:15:46.287345',_binary '\0','Phiếu dịch vụ #7 (Khách: Customer 01) đã được hoàn tất. Vui lòng kiểm tra và tạo hóa đơn.','Kỹ thuật viên đã hoàn thành công việc ',6),(33,'2025-11-23 12:15:59.348893',_binary '\0','Hóa đơn #6 với tổng số tiền 900000.0 đã được tạo. Vui lòng thanh toán.','Hóa đơn mới cho dịch vụ của bạn!',10),(34,'2025-11-23 12:16:04.149443',_binary '\0','Hóa đơn #7 với tổng số tiền 370000.0 đã được tạo. Vui lòng thanh toán.','Hóa đơn mới cho dịch vụ của bạn!',9),(35,'2025-11-23 12:16:08.981467',_binary '','Hóa đơn #8 với tổng số tiền 900000.0 đã được tạo. Vui lòng thanh toán.','Hóa đơn mới cho dịch vụ của bạn!',8);
 /*!40000 ALTER TABLE `notifications` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -304,6 +338,7 @@ CREATE TABLE `package_service_item` (
 
 LOCK TABLES `package_service_item` WRITE;
 /*!40000 ALTER TABLE `package_service_item` DISABLE KEYS */;
+INSERT INTO `package_service_item` VALUES (1,1),(1,2),(1,3),(1,4),(1,5),(1,6),(1,7),(1,8),(1,9),(3,1),(3,2),(3,3),(3,4),(3,5),(3,6),(3,7),(3,8),(3,9),(2,1),(2,2),(2,3),(2,4),(2,5),(2,6),(2,7),(2,8),(2,9);
 /*!40000 ALTER TABLE `package_service_item` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -320,7 +355,7 @@ CREATE TABLE `parts` (
   `part_name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
   `unit_price` double NOT NULL,
   PRIMARY KEY (`part_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -329,8 +364,37 @@ CREATE TABLE `parts` (
 
 LOCK TABLES `parts` WRITE;
 /*!40000 ALTER TABLE `parts` DISABLE KEYS */;
-INSERT INTO `parts` VALUES (1,1500000,'Lốp xe',2000000),(2,2800000,'Ắc quy',3500000),(3,350000,'Dầu động cơ',500000),(4,900000,'Hệ thống phanh',1200000);
+INSERT INTO `parts` VALUES (2,250000,'Má Phanh Đĩa (Bộ)',350000),(3,80000,'Má Phanh Cơ (Bộ)',120000),(4,140000,'Lọc Gió Điều Hòa',200000),(5,500000,'Lốp Xe Không Săm (Mẫu Phổ thông)',700000),(6,250000,'Lốp Xe Có Săm (Mẫu Cơ bản)',350000),(7,100000,'Bóng Đèn Pha LED',150000),(8,120000,'Dầu Hộp Số Giảm Tốc (1 lít)',180000),(9,180000,'Dung Dịch Nước Làm Mát Pin',250000),(10,600000,'Ắc Quy 12V Phụ (Lead-Acid)',850000),(11,190000,'Dây Curoa (Vành đai truyền động)',280000),(12,120000,'Hộp số tốc độ',180000);
 /*!40000 ALTER TABLE `parts` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `password_reset_tokens`
+--
+
+DROP TABLE IF EXISTS `password_reset_tokens`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `password_reset_tokens` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `created_at` datetime(6) NOT NULL,
+  `expires_at` datetime(6) NOT NULL,
+  `token` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `user_id` int NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `UK71lqwbwtklmljk3qlsugr1mig` (`token`),
+  KEY `FKk3ndxg5xp6v7wd4gjyusp15gq` (`user_id`),
+  CONSTRAINT `FKk3ndxg5xp6v7wd4gjyusp15gq` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `password_reset_tokens`
+--
+
+LOCK TABLES `password_reset_tokens` WRITE;
+/*!40000 ALTER TABLE `password_reset_tokens` DISABLE KEYS */;
+/*!40000 ALTER TABLE `password_reset_tokens` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -383,7 +447,7 @@ CREATE TABLE `service_centers` (
   PRIMARY KEY (`center_id`),
   UNIQUE KEY `UK8xtjfixnfmc1kj19hr8kqd87s` (`email`),
   UNIQUE KEY `UK8o22g6m910w195u65pw9b9c39` (`phone_number`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -392,7 +456,7 @@ CREATE TABLE `service_centers` (
 
 LOCK TABLES `service_centers` WRITE;
 /*!40000 ALTER TABLE `service_centers` DISABLE KEYS */;
-INSERT INTO `service_centers` VALUES (1,'Quận 1, TP. Hồ Chí Minh','EV Service Center HCM','hcm.center@ev.com','0909000111'),(2,'Quận Hoàn Kiếm, Hà Nội','EV Service Center Hà Nội','hanoi.center@ev.com','0909000222');
+INSERT INTO `service_centers` VALUES (1,'Số 2, đường Võ Oanh, phường 25, quận Bình Thạnh, tp.HCM','Trung Tâm Sửa Chữa Quận Bình Thạnh','Trungtam01@gmail.com','0396437386'),(2,'10 Đường 12, Bình Khánh, Thủ Đức, Thành phố Hồ Chí Minh','Trung Tâm Sửa Chữa Thủ Đức','Trungtam02@gmail.com','0396246727'),(3,'Đ. Nguyễn Trãi, P. Văn Quán, Nam Từ Liêm, Hà Nội','Trung Tâm Sửa Chữa Hà Nội','Trungtam03@gmail.com','0395467547');
 /*!40000 ALTER TABLE `service_centers` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -420,7 +484,6 @@ CREATE TABLE `service_item_parts` (
 
 LOCK TABLES `service_item_parts` WRITE;
 /*!40000 ALTER TABLE `service_item_parts` DISABLE KEYS */;
-INSERT INTO `service_item_parts` VALUES (1,3,1),(1,2,2),(1,2,3),(1,3,3),(1,4,3),(4,1,5),(1,4,6),(2,4,8);
 /*!40000 ALTER TABLE `service_item_parts` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -437,7 +500,7 @@ CREATE TABLE `service_items` (
   `item_name` varchar(30) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL,
   `price` double NOT NULL,
   PRIMARY KEY (`item_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -446,7 +509,7 @@ CREATE TABLE `service_items` (
 
 LOCK TABLES `service_items` WRITE;
 /*!40000 ALTER TABLE `service_items` DISABLE KEYS */;
-INSERT INTO `service_items` VALUES (1,'Thay dầu định kỳ cho xe điện, bao gồm lọc dầu và kiểm tra hệ thống bôi trơn','Thay dầu động cơ',500000),(2,'Đo điện áp, kiểm tra dung lượng pin/ắc quy và tình trạng kết nối','Kiểm tra ắc quy',300000),(3,'Kiểm tra và bảo dưỡng toàn bộ hệ thống điện, cơ khí và an toàn của xe','Bảo dưỡng tổng quát',1200000),(4,'Cập nhật phần mềm điều khiển động cơ, pin và hệ thống giải trí','Cập nhật phần mềm',450000),(5,'Thay lốp mới chính hãng, cân chỉnh bánh xe và kiểm tra áp suất','Thay lốp',900000),(6,'Kiểm tra toàn bộ hệ thống phanh, bao gồm đĩa, má và dầu phanh','Kiểm tra phanh',600000),(7,'Vệ sinh khoang động cơ, hệ thống điện và các chi tiết liên quan','Vệ sinh khoang động cơ',350000),(8,'Thay má phanh chính hãng, bao gồm kiểm tra đĩa và hiệu chuẩn hệ thống','Thay má phanh',700000),(9,'Vệ sinh, kiểm tra hoạt động và nạp gas hệ thống điều hòa','Kiểm tra điều hòa',400000),(10,'Cân chỉnh và hiệu chuẩn các cảm biến: ABS, cảm biến lùi, hỗ trợ lái','Hiệu chuẩn cảm biến',300000);
+INSERT INTO `service_items` VALUES (1,'Kiểm tra  20 điểm an toàn cơ bản: phanh, lốp, đèn, còi, hệ thống lái, độ căng xích/dây curoa, kiểm tra pin 12V và rò rỉ dung dịch (nếu có).','Kiểm Tra Tổng Quát',50000),(2,'Tháo má phanh cũ, vệ sinh cụm phanh, lắp má phanh mới, điều chỉnh hành trình phanh.','Thay Má Phanh (Đĩa/Cơ)',70000),(3,'Bơm lốp theo đúng áp suất tiêu chuẩn của nhà sản xuất, kiểm tra độ mòn và hư hỏng bề mặt lốp.','Căn Chỉnh/Bơm Lốp',20000),(4,'Tháo lọc cũ, vệ sinh khoang lọc, lắp đặt lọc gió điều hòa mới.','Thay Lọc Gió Điều Hòa',40000),(5,'Phân tích tình trạng từng cell pin, thực hiện quy trình cân bằng cell để tối ưu hóa hiệu suất và tuổi thọ pin.','Kiểm Tra & Cân Bằng Pin',300000),(6,'Tháo ắc quy cũ, vệ sinh cực nối, lắp đặt ắc quy 12V mới, kiểm tra sạc.','Thay Ắc Quy 12V Phụ',50000),(7,'Tháo xả dầu cũ, vệ sinh ốc xả dầu, bơm dầu hộp số mới theo đúng tiêu chuẩn.','Thay Dầu Hộp Số Giảm Tốc',90000),(8,'Chẩn đoán và sửa chữa các lỗi đơn giản về điện (cầu chì, dây dẫn hở, đèn, còi). Tính phí theo giờ làm việc.','Sửa Chữa Hệ Thống Điện',150000),(9,'Kết nối máy chẩn đoán, kiểm tra và cài đặt phiên bản phần mềm mới nhất cho Bộ điều khiển (Controller) hoặc các hệ thống liên quan.','Cập Nhật Phần Mềm Hệ Thống',100000);
 /*!40000 ALTER TABLE `service_items` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -464,7 +527,7 @@ CREATE TABLE `service_packages` (
   `package_name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `price` double NOT NULL,
   PRIMARY KEY (`package_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -473,7 +536,7 @@ CREATE TABLE `service_packages` (
 
 LOCK TABLES `service_packages` WRITE;
 /*!40000 ALTER TABLE `service_packages` DISABLE KEYS */;
-INSERT INTO `service_packages` VALUES (1,'Bảo dưỡng cơ bản cho xe điện',365,'Gói cơ bản',1000000),(2,'Bảo dưỡng nâng cao và kiểm tra tổng quát',365,'Gói nâng cao',2000000);
+INSERT INTO `service_packages` VALUES (1,'',12,'Gói 1 năm',1740000),(2,'',24,'Gói 2 năm',6960000),(3,'',36,'Gói 3 năm',13920000);
 /*!40000 ALTER TABLE `service_packages` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -497,7 +560,7 @@ CREATE TABLE `service_tickets` (
   KEY `FKp9aj4v2h7pefdwh3o99x7jc8t` (`technician_id`),
   CONSTRAINT `FKn6dpapdh8lsx3w5idil2h91um` FOREIGN KEY (`appointment_id`) REFERENCES `appointments` (`appointment_id`),
   CONSTRAINT `FKp9aj4v2h7pefdwh3o99x7jc8t` FOREIGN KEY (`technician_id`) REFERENCES `users` (`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -506,17 +569,7 @@ CREATE TABLE `service_tickets` (
 
 LOCK TABLES `service_tickets` WRITE;
 /*!40000 ALTER TABLE `service_tickets` DISABLE KEYS */;
-INSERT INTO `service_tickets` VALUES 
-(1,'2025-11-15 10:00:00.000000','Kiểm tra hệ thống điện','2025-11-15 09:00:00.000000','COMPLETED',1,2),
-(2,'2025-11-15 11:00:00.000000',NULL,'2025-11-15 10:00:00.000000','COMPLETED',2,2),
-(3,'2025-11-15 12:00:00.000000','Kiểm tra phanh','2025-11-15 11:00:00.000000','COMPLETED',3,3),
-(4,'2025-11-16 14:00:00.000000',NULL,'2025-11-16 13:00:00.000000','COMPLETED',4,3),
-(5,'2025-11-16 15:00:00.000000','Thay lốp mới','2025-11-16 14:00:00.000000','COMPLETED',5,2),
-(6,'2025-11-16 16:00:00.000000',NULL,'2025-11-16 15:00:00.000000','COMPLETED',6,2),
-(7,'2025-11-17 10:30:00.000000',NULL,'2025-11-17 09:30:00.000000','COMPLETED',7,3),
-(8,'2025-11-17 11:30:00.000000','Kiểm tra pin','2025-11-17 10:30:00.000000','COMPLETED',8,3),
-(9,'2025-11-17 12:30:00.000000',NULL,'2025-11-17 11:30:00.000000','COMPLETED',9,2),
-(10,'2025-11-18 14:30:00.000000','Thay lốp chính hãng','2025-11-18 13:30:00.000000','COMPLETED',10,2);
+INSERT INTO `service_tickets` VALUES (1,'2025-11-23 11:37:38.698950','','2025-11-23 11:36:01.219502','COMPLETED',1,3),(2,'2025-11-23 11:43:55.038794','','2025-11-23 11:43:31.513340','COMPLETED',2,2),(3,'2025-11-23 11:44:51.694071','','2025-11-23 11:44:17.288225','COMPLETED',3,3),(4,'2025-11-23 11:48:10.214421','','2025-11-23 11:47:04.610625','COMPLETED',4,3),(5,'2025-11-23 12:14:36.208765','','2025-11-23 12:14:12.792182','COMPLETED',6,3),(6,'2025-11-23 12:15:13.542105','','2025-11-23 12:14:51.155283','COMPLETED',7,3),(7,'2025-11-23 12:15:46.287345','','2025-11-23 12:15:27.524115','COMPLETED',5,4);
 /*!40000 ALTER TABLE `service_tickets` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -548,7 +601,7 @@ CREATE TABLE `technician_certificates` (
 
 LOCK TABLES `technician_certificates` WRITE;
 /*!40000 ALTER TABLE `technician_certificates` DISABLE KEYS */;
-INSERT INTO `technician_certificates` VALUES (2,'T2-CB-230310','2028-03-10','2023-03-10','Hoàn thành khóa sửa chữa cơ bản',1),(3,'T3-CB-230420','2028-04-20','2023-04-20','Đạt chứng chỉ cơ bản xe điện',1),(3,'T3-NC-240215','2029-02-15','2024-02-15','Hoàn thành khóa sửa chữa nâng cao',2),(4,'T4-NC-230601','2028-06-01','2023-06-01','Chứng chỉ nâng cao dành cho kỹ thuật viên',2),(2,'T2-PIN-240105','2029-01-05','2024-01-05','Chứng chỉ chuyên sâu về hệ thống pin',3),(4,'T4-PIN-240312','2029-03-12','2024-03-12','Chứng chỉ bảo dưỡng pin EV',3);
+INSERT INTO `technician_certificates` VALUES (2,'ABC-123','2030-10-26','2025-10-27','',1),(4,'ABC-234','2030-10-29','2025-10-30','',1),(3,'ABC-125','2030-10-26','2025-10-27','',2);
 /*!40000 ALTER TABLE `technician_certificates` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -577,7 +630,7 @@ CREATE TABLE `ticket_parts` (
 
 LOCK TABLES `ticket_parts` WRITE;
 /*!40000 ALTER TABLE `ticket_parts` DISABLE KEYS */;
-INSERT INTO `ticket_parts` VALUES (2,2000000,1,5),(2,2000000,1,10),(1,3500000,2,1),(1,3500000,2,7),(1,500000,3,2),(1,500000,3,4),(1,500000,3,6),(1,500000,3,8),(1,500000,3,9),(1,1200000,4,3);
+INSERT INTO `ticket_parts` VALUES (1,350000,2,1),(1,350000,2,2),(1,350000,2,3),(1,200000,4,4),(1,350000,6,5),(1,850000,10,6),(1,850000,10,7);
 /*!40000 ALTER TABLE `ticket_parts` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -606,7 +659,7 @@ CREATE TABLE `ticket_service_items` (
 
 LOCK TABLES `ticket_service_items` WRITE;
 /*!40000 ALTER TABLE `ticket_service_items` DISABLE KEYS */;
-INSERT INTO `ticket_service_items` VALUES (1,500000,1,2),(1,300000,2,1),(1,300000,2,7),(1,1200000,3,4),(1,450000,4,6),(1,800000,5,5),(1,800000,5,10),(1,600000,6,3),(1,350000,7,8),(1,400000,9,9);
+INSERT INTO `ticket_service_items` VALUES (0,70000,2,1),(0,70000,2,2),(0,70000,2,3),(0,20000,3,5),(0,40000,4,4),(0,50000,6,6),(0,50000,6,7);
 /*!40000 ALTER TABLE `ticket_service_items` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -620,8 +673,11 @@ DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
   `user_id` int NOT NULL AUTO_INCREMENT,
   `address` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT NULL,
+  `base_salary` bigint DEFAULT NULL,
+  `commission_rate` double DEFAULT NULL,
   `created_at` datetime(6) DEFAULT NULL,
   `email` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `enabled` bit(1) NOT NULL,
   `full_name` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT NULL,
   `password` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `phone_number` varchar(15) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -635,7 +691,7 @@ CREATE TABLE `users` (
   UNIQUE KEY `UK9q63snka3mdh91as4io72espi` (`phone_number`),
   KEY `FKnwuxsl4ux127j20jj0yakgp8g` (`center_id`),
   CONSTRAINT `FKnwuxsl4ux127j20jj0yakgp8g` FOREIGN KEY (`center_id`) REFERENCES `service_centers` (`center_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -644,7 +700,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (1,'EV Center - HCM','2025-11-15 14:04:14.052247','HungDuc@gmail.com','Hùng Đức','$2a$10$jceuNY7pkKuWO8AjxPLm5O/6E5K3FcU23HOhDdcieRQNEKkVsL9PS','0392700973','ADMIN',NULL,'hungduc',1),(2,'TP. Hồ Chí Minh','2025-11-15 14:12:34.192127','tech01@example.com','Kỹ thuật viên 01','$2a$10$OvlIsuWnwkW31p7EFcFpA.Y05NCtmc4iCqibQH8CvZ0uTSSTiveE2','0909051232','TECHNICIAN',NULL,'tech01',1),(3,'TP. Hồ Chí Minh','2025-11-15 14:12:52.336868','tech02@example.com','Kỹ thuật viên 02','$2a$10$ChMpJi0P4qd6mAHQAnAWP.8YK.t1LUvwuK2XclAcf0H8sQkc.Vr5y','0909051236','TECHNICIAN',NULL,'tech02',1),(4,'TP. Hồ Chí Minh','2025-11-15 14:13:29.163703','tech03@example.com','Kỹ thuật viên 03','$2a$10$cxBqGipwtftQ.IVk4p2Uk.X8dMDLw4YXgAQK49rX73rhgE7xWz9JW','0909051231','TECHNICIAN',NULL,'tech03',2),(5,'TP HCM','2025-11-15 14:15:50.521421','staff01@example.com','Nhân viên 01','$2a$10$aXnPQ19lcau58Trz5dWyduWhwQnT6tFQvzuRKeIZ4vQit6XI38X7q','0909777559','STAFF',NULL,'staff01',1),(6,'TP HCM','2025-11-15 14:16:11.244582','staff02@example.com','Nhân viên 02','$2a$10$dKx88jqkex73MuDJWl40fe0fRqV3oDhjZw1WRw.Kcy0SIa/xXsLm6','0909777556','STAFF',NULL,'staff02',2),(7,'TP. Hồ Chí Minh','2025-11-15 14:18:35.482303','customer01@gmail.com','Khách hàng 01','$2a$10$ToGLBI0tYtzB7.pL.9wjZOuEhauCtqyJGgC3YsTzIzWNBEdOYfDPO','0900000001','CUSTOMER',NULL,'customer01',NULL),(8,'TP. Hồ Chí Minh','2025-11-15 14:18:41.942916','customer02@gmail.com','Khách hàng 02','$2a$10$OpwtD6VM2lv48YxExDbIPeEgb0B0bSEZxaAP6uqIbN7A5u.42sGUe','0900000002','CUSTOMER',NULL,'customer02',NULL),(9,'TP. Hồ Chí Minh','2025-11-15 14:18:52.197352','customer03@gmail.com','Khách hàng 03','$2a$10$bWPLoo6wmCwyhvmdKhIb1ufPejbTsFMQMrQBHUP34B5t0hSTuYkL2','0900000003','CUSTOMER',NULL,'customer03',NULL),(10,'TP. Hồ Chí Minh','2025-11-15 14:18:59.466383','customer04@gmail.com','Khách hàng 04','$2a$10$x2SoklkcccTo3wjAkujx.u8Itqu8nislGTubMvT4KyQOhCqw5/o52','0900000004','CUSTOMER',NULL,'customer04',NULL),(11,'TP. Hồ Chí Minh','2025-11-15 14:19:06.525417','customer05@gmail.com','Khách hàng 05','$2a$10$Z/xnkUKuNeluzBAXIHJkPe6vCJ8ab83Lz76B7JRq7GCpbNWnghJoC','0900000005','CUSTOMER',NULL,'customer05',NULL),(12,'TP. Hồ Chí Minh','2025-11-15 14:19:13.892137','customer06@gmail.com','Khách hàng 06','$2a$10$j539XtHO8V1YQZfASKZXkOZsBVpydrnBXxZ6EesA66UDG1uuvgDjW','0900000006','CUSTOMER',NULL,'customer06',NULL),(13,'TP. Hồ Chí Minh','2025-11-15 14:19:24.052723','customer07@gmail.com','Khách hàng 07','$2a$10$LR/b3eO3xZImQMnWNYALauRCnNb49Rj2BoI4auVm86Kgb6yWXHO7m','0900000007','CUSTOMER',NULL,'customer07',NULL),(14,'TP. Hồ Chí Minh','2025-11-15 14:19:38.343207','customer08@gmail.com','Khách hàng 08','$2a$10$06lq2nE7/g.spIZ/kTOXS.gN7GfS0iHT17BZKs/uXUuUkoG2NPw4m','0900000008','CUSTOMER',NULL,'customer08',NULL),(15,'TP. Hồ Chí Minh','2025-11-15 14:19:45.732235','customer09@gmail.com','Khách hàng 09','$2a$10$mMeqjHkk0YbI776shCNX9uadVzq3uU3v/cpEsCMFpNpVK1qwKhDHS','0900000009','CUSTOMER',NULL,'customer09',NULL),(16,'TP. Hồ Chí Minh','2025-11-15 14:19:52.711446','customer10@gmail.com','Khách hàng 10','$2a$10$46GFLXMl.qsJoARuRnXbZuKvjMCAIKuX1QzFIvOw3vUsvph7wUlg2','0900000010','CUSTOMER',NULL,'customer10',NULL);
+INSERT INTO `users` VALUES (1,NULL,NULL,NULL,'2025-11-23 09:21:40.742549','phamngochungduc@gmail.com',_binary '','Hùng Đức','$2a$10$Fs6I.AG2sMJjEafqne3qOumaTkRePnfvz0QLj2Tdb10Rv7vtFnw0W',NULL,'ADMIN',NULL,'admin01',NULL),(2,NULL,NULL,NULL,'2025-11-23 09:49:29.747829','tech01@gmail.com',_binary '\0','Technician 01','$2a$10$TD9IP8CrycspXah/lUoNyOgCyww9LXFAXbTBMM7nlEaXOgNpZmJQW','0394374775','TECHNICIAN',NULL,'tech01',1),(3,NULL,NULL,NULL,'2025-11-23 09:50:35.471983','tech02@gmail.com',_binary '\0','Technician 02','$2a$10$KQYmyiBoa/lvIAl.AutFp.gVnZwYGYiScNZc3jCpe9626aiYlBM7y','0394374774','TECHNICIAN',NULL,'tech02',2),(4,NULL,NULL,NULL,'2025-11-23 09:52:17.154022','tech03@gmail.com',_binary '\0','Technician 03','$2a$10$mxe3Uwv0VDdTn7QHK0JJxu5racyffFyStZBITw6sGGmgtWDs1hgci','0394374772','TECHNICIAN',NULL,'tech03',2),(5,NULL,NULL,NULL,'2025-11-23 09:52:52.726155','staff01@gmail.com',_binary '\0','Staff 01','$2a$10$4DrTV1onFTv8kos4EWtzxuS1MBH50et6xllnaJ9pfxXNBq1iDJQta','0393643727','STAFF','2025-11-23 09:54:16.162826','STAFF',1),(6,NULL,NULL,NULL,'2025-11-23 09:53:35.527806','staff02@gmail.com',_binary '\0','Staff 02','$2a$10$nUzDsKiwdH.piwy6oyFPn.oltuU2mH7C0A5cshmFeo7BDb1iPF.6a','0394374771','STAFF',NULL,'staff02',2),(7,NULL,NULL,NULL,'2025-11-23 11:01:58.926121','ducpnh0577@ut.edu.vn',_binary '','Phạm Ngọc Hùng Đức','$2a$10$EyD3Zkm5WwXCUx0znYwwN.I5V9SmIkFmvFLwuE3vW5QprsgePCp.e','0900000001','CUSTOMER','2025-11-23 11:40:22.421005','duc123',NULL),(8,NULL,NULL,NULL,'2025-11-23 11:06:48.959204','phamduckun123456+acc1@gmail.com',_binary '','Customer 01','$2a$10$5UZ6t8apxqgFH/2RjdrrwenJosnSNSmayF.p8oqQvdhai5mSbsKRK','0900000002','CUSTOMER',NULL,'customer01',NULL),(9,NULL,NULL,NULL,'2025-11-23 11:10:54.368624','phamduckun123456+acc2@gmail.com',_binary '','Customer 02','$2a$10$2/7XgPRUV6JKKGNL/DZ.jOmYCfFjZDKX1qfBB32iY.CqTRO4EQim.','0900000003','CUSTOMER',NULL,'customer02',NULL),(10,NULL,NULL,NULL,'2025-11-23 11:30:35.977745','phamduckun123456+acc3@gmail.com',_binary '','Customer 03','$2a$10$t/6wUTNeM6V/w.2.yhAom.k2SXB8C0IYPklKpCwv.3E3kiHBMDfzC','0392762672','CUSTOMER','2025-11-23 11:33:46.494897','customer03',NULL);
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -670,7 +726,7 @@ CREATE TABLE `vehicles` (
   KEY `FKo4u5y92lt2sx8y2dc1bb9sewc` (`user_id`),
   CONSTRAINT `FKo4u5y92lt2sx8y2dc1bb9sewc` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`),
   CONSTRAINT `FKp30vti0brmwl0idlejcb6yc9x` FOREIGN KEY (`center_id`) REFERENCES `service_centers` (`center_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -679,7 +735,7 @@ CREATE TABLE `vehicles` (
 
 LOCK TABLES `vehicles` WRITE;
 /*!40000 ALTER TABLE `vehicles` DISABLE KEYS */;
-INSERT INTO `vehicles` VALUES (1,'Toyota','51A-00001','Vios','2025-10-01','ELECTRIC_CAR',1,7),(2,'Nissan','51A-00002','Leaf','2025-10-05','ELECTRIC_CAR',1,8),(3,'Tesla','51A-00003','Model 3','2025-09-25','ELECTRIC_CAR',1,9),(4,'BMW','51A-00004','i3','2025-10-10','ELECTRIC_CAR',1,10),(5,'Volkswagen','51A-00005','e-Golf','2025-10-15','ELECTRIC_CAR',1,11),(6,'Kia','51A-00006','Soul EV','2025-10-20','ELECTRIC_CAR',1,12),(7,'Chevrolet','51A-00007','Bolt EV','2025-09-30','ELECTRIC_CAR',1,13),(8,'Mercedes','51A-00008','EQC','2025-10-18','ELECTRIC_CAR',1,14),(9,'Renault','51A-00009','Zoe','2025-10-12','ELECTRIC_CAR',1,15),(10,'Nissan','51A-00010','Leaf','2025-09-28','ELECTRIC_CAR',1,16);
+INSERT INTO `vehicles` VALUES (1,'VinFast','30A-12345','VF e34','2025-11-23','ELECTRIC_MOTORBIKE',NULL,7),(2,'Porsche','51K-678.90','Taycan','2025-11-23','ELECTRIC_CAR',NULL,8),(3,'Pega','43C1-101.12','Newtech 3','2025-11-23','ELECTRIC_MOTORBIKE',NULL,9),(4,'VinFast','29B1-567.89','Klara S','2025-11-23','ELECTRIC_MOTORBIKE',NULL,10);
 /*!40000 ALTER TABLE `vehicles` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -696,4 +752,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-11-15 16:07:12
+-- Dump completed on 2025-11-23 12:20:11
