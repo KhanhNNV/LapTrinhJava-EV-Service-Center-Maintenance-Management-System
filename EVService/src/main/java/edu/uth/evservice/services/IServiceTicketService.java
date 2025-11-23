@@ -48,4 +48,6 @@ public interface IServiceTicketService {
 
     TicketPartDto updatePartOnTicket(Integer ticketId, UpdatePartQuantityRequest request, Integer technicianId);
 
+    List<ServiceTicketDto> getTicketsByVehicleId(Integer vehicleId);
+
 }

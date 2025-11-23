@@ -18,4 +18,6 @@ public interface IServiceTicketRepository extends JpaRepository<ServiceTicket, I
 
     // Tìm tickets theo technician
     List<ServiceTicket> findByTechnician_UserId(Integer technicianId);
+
+    List<ServiceTicket> findByAppointment_Vehicle_VehicleIdOrderByStartTimeDesc(Integer vehicleId);
 }

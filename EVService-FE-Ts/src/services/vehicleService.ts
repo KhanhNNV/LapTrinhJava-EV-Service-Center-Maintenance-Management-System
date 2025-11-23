@@ -34,4 +34,10 @@ export const vehicleService = {
     });
     return res.data;
   },
+
+  async getVehicleHistory(vehicleId: number) {
+    const response = await api.get(`/api/service-tickets/vehicle/${vehicleId}/history`);
+    return response.data;
+  }
 };
+

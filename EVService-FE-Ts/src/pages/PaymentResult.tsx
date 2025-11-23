@@ -70,16 +70,16 @@ export default function PaymentResult() {
                     <Button variant="outline" className="flex-1" onClick={() => window.close()}>
                         Đóng Tab
                     </Button>
-                    <Button 
+                    {/* <Button 
                         className={`flex-1 ${isSuccess ? "bg-blue-600" : "bg-red-600"}`}
-                        onClick={() => navigate("dashboard/customer/payments")}
+                        onClick={() => navigate("dashboard/customer")}
                     >
                         {isSuccess ? (
                             <><Home className="w-4 h-4 mr-2"/> Về danh sách</>
                         ) : (
                             <><RotateCcw className="w-4 h-4 mr-2"/> Thử lại</>
                         )}
-                    </Button>
+                    </Button> */}
                 </CardFooter>
             </Card>
         </div>
