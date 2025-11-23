@@ -10,7 +10,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Trash2, Plus, Loader2, Edit, Save, X } from "lucide-react";
+import { Trash2, Plus, Loader2, Edit, Save, X, Eye, EyeOff } from "lucide-react"; // Đã thêm Eye, EyeOff
 
 // Import services
 import { userService, User } from "@/services/userService";
@@ -26,13 +26,16 @@ interface EditUserDialogProps {
 
 export function EditUserDialog({ user, open, onOpenChange, onSuccess }: EditUserDialogProps) {
   // Form hook cho User Info
-  const { register, handleSubmit, setValue, reset, watch } = useForm();
+  const { register, handleSubmit, setValue, reset, watch, getValues } = useForm();
 
   // Local State
   const [serviceCenters, setServiceCenters] = useState<ServiceCenter[]>([]);
-  const [allCertificates, setAllCertificates] = useState<Certificate[]>([]); // Danh sách loại chứng chỉ để chọn
-  const [userCertificates, setUserCertificates] = useState<any[]>([]); // Danh sách chứng chỉ CỦA User
+  const [allCertificates, setAllCertificates] = useState<Certificate[]>([]);
+  const [userCertificates, setUserCertificates] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+
+  // State hiển thị mật khẩu
+  const [showPassword, setShowPassword] = useState(false);
 
   // State cho form chứng chỉ
   const [certForm, setCertForm] = useState({
@@ -41,12 +44,12 @@ export function EditUserDialog({ user, open, onOpenChange, onSuccess }: EditUser
     issueDate: "",
     notes: ""
   });
-  const [editingCertId, setEditingCertId] = useState<number | null>(null); // ID của loại chứng chỉ đang sửa (nếu có)
+  const [editingCertId, setEditingCertId] = useState<number | null>(null);
 
   // --- 1. LOAD DỮ LIỆU KHI MỞ DIALOG ---
   useEffect(() => {
     if (open && user) {
-      // Reset form User Info
+      // Reset form User Info (Thêm trường password rỗng)
       reset({
         fullName: user.fullName,
         phoneNumber: user.phoneNumber,
@@ -54,8 +57,11 @@ export function EditUserDialog({ user, open, onOpenChange, onSuccess }: EditUser
         role: user.role,
         email: user.email,
         username: user.username,
+        password: "", // Mặc định để trống
+        serviceCenterId: user.serviceCenterId ? user.serviceCenterId.toString() : "", // Map sẵn ID nếu có
       });
 
+      setShowPassword(false); // Reset trạng thái mắt
       loadReferenceData();
     }
   }, [open, user, reset]);
@@ -69,8 +75,9 @@ export function EditUserDialog({ user, open, onOpenChange, onSuccess }: EditUser
         const centers = await serviceCenterService.getAllServiceCenters();
         setServiceCenters(centers);
 
-        // Map Center Name -> ID
-        if (user.centerName) {
+        // Logic cũ map theo tên, nhưng tốt nhất là map theo ID nếu User object có centerId
+        // Fallback map theo tên như code cũ của bạn
+        if (user.centerName && !getValues("serviceCenterId")) {
           const currentCenter = centers.find((c) => c.centerName === user.centerName);
           if (currentCenter) {
             setValue("serviceCenterId", currentCenter.centerId.toString());
@@ -80,11 +87,8 @@ export function EditUserDialog({ user, open, onOpenChange, onSuccess }: EditUser
 
       // 2.2 Load Certificates (Nếu là Tech)
       if (user.role === "TECHNICIAN") {
-        // Lấy danh sách tất cả loại chứng chỉ hệ thống
         const allCerts = await certificateService.getAllCertificates();
         setAllCertificates(allCerts);
-
-        // Lấy danh sách chứng chỉ CỦA USER này
         await loadUserCertificates(user.userId);
       }
     } catch (error) {
@@ -106,15 +110,36 @@ export function EditUserDialog({ user, open, onOpenChange, onSuccess }: EditUser
   // --- 3. XỬ LÝ SUBMIT CẬP NHẬT USER ---
   const onSubmitUser = async (data: any) => {
     if (!user) return;
+
+    // --- KIỂM TRA THAY ĐỔI (DIRTY CHECK) ---
+    const isInfoChanged =
+      data.fullName !== user.fullName ||
+      data.phoneNumber !== user.phoneNumber ||
+      data.address !== (user.address || "") ||
+      ((user.role === "STAFF" || user.role === "TECHNICIAN") &&
+        data.serviceCenterId &&
+        Number(data.serviceCenterId) !== user.serviceCenterId
+      );
+    const isPasswordChanged = data.password && data.password.trim() !== "";
+
+    if (!isInfoChanged && !isPasswordChanged) {
+      toast.info("Nội dung không thay đổi.");
+      return;
+    }
+
     try {
       setLoading(true);
-      const updatePayload = {
+      const updatePayload: any = {
         fullName: data.fullName,
         phoneNumber: data.phoneNumber,
         address: data.address,
         centerId: (user.role === "STAFF" || user.role === "TECHNICIAN")
-          ? Number(data.serviceCenterId) : null
+          ? Number(data.serviceCenterId) : null,
       };
+
+      if (isPasswordChanged) {
+        updatePayload.password = data.password;
+      }
 
       await userService.updateUser(user.userId, updatePayload);
 
@@ -130,7 +155,6 @@ export function EditUserDialog({ user, open, onOpenChange, onSuccess }: EditUser
 
   // --- 4. CÁC HÀM XỬ LÝ CHỨNG CHỈ ---
 
-  // Chọn chứng chỉ để sửa
   const handleEditCertClick = (cert: any) => {
     setEditingCertId(cert.certificateId); // Lưu lại ID loại chứng chỉ đang sửa
     setCertForm({
@@ -150,7 +174,7 @@ export function EditUserDialog({ user, open, onOpenChange, onSuccess }: EditUser
   // Lưu chứng chỉ (Thêm mới hoặc Cập nhật)
   const handleSaveCert = async () => {
     if (!user) return;
-    
+
     // Validate cơ bản
     if (!certForm.certificateId || !certForm.credentialId || !certForm.issueDate) {
       toast.warning("Vui lòng nhập đủ Loại, Mã số và Ngày cấp.");
@@ -211,24 +235,25 @@ export function EditUserDialog({ user, open, onOpenChange, onSuccess }: EditUser
         <DialogHeader>
           <DialogTitle>Chỉnh sửa người dùng: {user.fullName}</DialogTitle>
         </DialogHeader>
-
+        {/* Thêm items-start để căn lề trên, tránh ô này cao ô kia thấp bị lệch label */}
+        <div className="grid grid-cols-3 gap-4 bg-muted/50 p-4 rounded-lg border mb-4 items-start">
+          <div className="col-span-1">
+            <Label className="text-xs text-muted-foreground">Username</Label>
+            {/* break-words: Tự động xuống dòng nếu từ quá dài */}
+            <div className="font-medium text-sm break-words mt-1">{user.username}</div>
+          </div>
+          <div className="col-span-1">
+            <Label className="text-xs text-muted-foreground">Email</Label>
+            {/* break-all: Cắt ký tự xuống dòng nếu là chuỗi liền mạch như email dài */}
+            <div className="font-medium text-sm break-words mt-1">{user.email}</div>
+          </div>
+          <div className="col-span-1">
+            <Label className="text-xs text-muted-foreground">Role</Label>
+            <div className="font-bold text-sm text-primary break-words mt-1">{user.role}</div>
+          </div>
+        </div>
         {/* FORM USER INFO */}
         <form onSubmit={handleSubmit(onSubmitUser)} className="space-y-6">
-          {/* Read-only info block */}
-          <div className="grid grid-cols-3 gap-4 bg-muted/50 p-4 rounded-lg border">
-            <div>
-              <Label className="text-xs text-muted-foreground">Username</Label>
-              <div className="font-medium text-sm">{user.username}</div>
-            </div>
-            <div>
-              <Label className="text-xs text-muted-foreground">Email</Label>
-              <div className="font-medium text-sm">{user.email}</div>
-            </div>
-            <div>
-              <Label className="text-xs text-muted-foreground">Role</Label>
-              <div className="font-bold text-sm text-primary">{user.role}</div>
-            </div>
-          </div>
 
           {/* Editable fields */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -240,18 +265,44 @@ export function EditUserDialog({ user, open, onOpenChange, onSuccess }: EditUser
               <Label>Số điện thoại</Label>
               <Input {...register("phoneNumber")} />
             </div>
-            <div className="col-span-2 space-y-2">
+            <div className="space-y-2">
+              <Label>Mật khẩu mới (Tùy chọn)</Label>
+              <div className="relative">
+                <Input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Giữ nguyên nếu để trống"
+                  className="pr-10"
+                  {...register("password")}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  onClick={() => setShowPassword(!showPassword)}
+                  tabIndex={-1}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4 text-gray-500" />
+                  ) : (
+                    <Eye className="h-4 w-4 text-gray-500" />
+                  )}
+                </Button>
+              </div>
+            </div>
+
+            <div className="space-y-2">
               <Label>Địa chỉ</Label>
               <Input {...register("address")} />
             </div>
 
             {/* Service Center Dropdown */}
             {(user.role === "STAFF" || user.role === "TECHNICIAN") && (
-              <div className="col-span-2 space-y-2 p-3 bg-blue-50 rounded border border-blue-100">
+              <div className="col-span-1 md:col-span-2 space-y-2 p-3 bg-blue-50 rounded border border-blue-100">
                 <Label className="text-blue-700 font-semibold">Trạm dịch vụ trực thuộc</Label>
                 <Select
                   onValueChange={(val) => setValue("serviceCenterId", val)}
-                  defaultValue={watch("serviceCenterId")}
+                  value={watch("serviceCenterId")}
                 >
                   <SelectTrigger className="bg-white">
                     <SelectValue placeholder="-- Chọn trạm dịch vụ --" />
@@ -268,7 +319,7 @@ export function EditUserDialog({ user, open, onOpenChange, onSuccess }: EditUser
             )}
           </div>
 
-          {/* --- KHỐI QUẢN LÝ CHỨNG CHỈ (Chỉ hiện nếu là Technician) --- */}
+          {/* --- KHỐI QUẢN LÝ CHỨNG CHỈ */}
           {user.role === "TECHNICIAN" && (
             <div className="border-t pt-4 mt-4">
               <div className="flex justify-between items-center mb-3">
@@ -280,7 +331,6 @@ export function EditUserDialog({ user, open, onOpenChange, onSuccess }: EditUser
                 </h3>
               </div>
 
-              {/* Danh sách chứng chỉ hiện có */}
               <div className="space-y-2 mb-4 max-h-[180px] overflow-y-auto pr-1 border rounded p-2 bg-slate-50">
                 {userCertificates.length === 0 && (
                   <p className="text-xs text-gray-400 italic text-center">Chưa có chứng chỉ nào.</p>
@@ -318,12 +368,10 @@ export function EditUserDialog({ user, open, onOpenChange, onSuccess }: EditUser
                   {editingCertId ? "✏️ Đang chỉnh sửa chứng chỉ" : "➕ Thêm chứng chỉ mới"}
                 </Label>
                 <div className="grid grid-cols-12 gap-2 items-end">
-                  {/* Dropdown Loại chứng chỉ */}
                   <div className="col-span-4">
-                    <Select 
-                      value={certForm.certificateId} 
+                    <Select
+                      value={certForm.certificateId}
                       onValueChange={(val) => setCertForm({ ...certForm, certificateId: val })}
-                      // Khi đang sửa thì không cho đổi loại chứng chỉ (vì ID là khóa chính)
                       disabled={!!editingCertId}
                     >
                       <SelectTrigger className="h-8 text-xs bg-white">
@@ -339,17 +387,15 @@ export function EditUserDialog({ user, open, onOpenChange, onSuccess }: EditUser
                     </Select>
                   </div>
 
-                  {/* Input Mã số */}
                   <div className="col-span-3">
                     <Input
                       className="h-8 text-xs bg-white"
-                      placeholder="Mã số (ABC-123)"
+                      placeholder="Mã số"
                       value={certForm.credentialId}
                       onChange={e => setCertForm({ ...certForm, credentialId: e.target.value })}
                     />
                   </div>
 
-                  {/* Input Ngày cấp */}
                   <div className="col-span-3">
                     <Input
                       type="date"
@@ -359,7 +405,6 @@ export function EditUserDialog({ user, open, onOpenChange, onSuccess }: EditUser
                     />
                   </div>
 
-                  {/* Nút Action */}
                   <div className="col-span-2 flex gap-1">
                     <Button type="button" size="sm" className="h-8 px-2 bg-blue-600 hover:bg-blue-700" onClick={handleSaveCert}>
                       {editingCertId ? <Save className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
@@ -372,18 +417,17 @@ export function EditUserDialog({ user, open, onOpenChange, onSuccess }: EditUser
                   </div>
                 </div>
                 <div className="mt-2">
-                   <Input 
-                      className="h-8 text-xs bg-white" 
-                      placeholder="Ghi chú thêm (tùy chọn)..."
-                      value={certForm.notes}
-                      onChange={e => setCertForm({...certForm, notes: e.target.value})}
-                   />
+                  <Input
+                    className="h-8 text-xs bg-white"
+                    placeholder="Ghi chú thêm..."
+                    value={certForm.notes}
+                    onChange={e => setCertForm({ ...certForm, notes: e.target.value })}
+                  />
                 </div>
               </div>
             </div>
           )}
 
-          {/* Footer Dialog */}
           <DialogFooter className="mt-6">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Đóng
