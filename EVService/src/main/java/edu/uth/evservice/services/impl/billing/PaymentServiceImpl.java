@@ -3,7 +3,10 @@ package edu.uth.evservice.services.impl.billing;
 import java.util.HashMap;
 import java.util.Map;
 
+import edu.uth.evservice.models.CustomerPackageContract;
 import edu.uth.evservice.models.User;
+import edu.uth.evservice.models.enums.*;
+import edu.uth.evservice.repositories.ICustomerPackageContractRepository;
 import edu.uth.evservice.requests.NotificationRequest;
 import edu.uth.evservice.services.INotificationService;
 import org.springframework.security.access.AccessDeniedException;
@@ -14,10 +17,6 @@ import edu.uth.evservice.dtos.payment.PaymentDto;
 import edu.uth.evservice.exception.ResourceNotFoundException;
 import edu.uth.evservice.models.Invoice;
 import edu.uth.evservice.models.PaymentTransaction;
-import edu.uth.evservice.models.enums.PaymentGateway;
-import edu.uth.evservice.models.enums.PaymentMethod;
-import edu.uth.evservice.models.enums.PaymentStatus;
-import edu.uth.evservice.models.enums.TransactionStatus;
 import edu.uth.evservice.repositories.IInvoiceRepository;
 import edu.uth.evservice.repositories.IPaymentTransactionRepository;
 import edu.uth.evservice.services.billing.IPaymentService;
@@ -35,6 +34,7 @@ public class PaymentServiceImpl implements IPaymentService {
     private final VnPayHelper vnPayHelper;
     private final VnPayConfig vnPayConfig;
     private final INotificationService notificationService;
+    private final ICustomerPackageContractRepository  customerPackageContractRepository;
 
     //.(HELPER) Hàm kiểm tra hóa đơn có hợp lệ để thanh toán không
     private Invoice validateInvoice(Integer invoiceId, Integer customerId) {
@@ -146,8 +146,15 @@ public class PaymentServiceImpl implements IPaymentService {
                 invoice.setPaymentStatus(PaymentStatus.PAID);
                 invoice.setPaymentMethod(PaymentMethod.VNPAY);
 
+                CustomerPackageContract contract = invoice.getContract();
+                contract.setStatus(ContractStatus.ACTIVE);
+
+                customerPackageContractRepository.save(contract);
                 invoiceRepository.save(invoice);
                 transactionRepository.save(transaction);
+
+
+
                 // 2. Thông báo cho STAFF (Người phụ trách lịch hẹn)
                 try {
                     System.out.println("da chay thong bao");

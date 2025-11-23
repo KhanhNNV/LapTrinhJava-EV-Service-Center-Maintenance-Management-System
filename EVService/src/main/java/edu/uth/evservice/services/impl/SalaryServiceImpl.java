@@ -1,6 +1,8 @@
 package edu.uth.evservice.services.impl;
 
 import edu.uth.evservice.dtos.SalaryDto;
+import edu.uth.evservice.models.enums.ServiceTicketStatus;
+import edu.uth.evservice.repositories.IServiceTicketRepository;
 import edu.uth.evservice.requests.UpdateBaseSalaryRequest;
 import edu.uth.evservice.requests.UpdateBaseSalaryByRoleRequest;
 import edu.uth.evservice.requests.UpdateCommissionRateByRoleRequest;
@@ -24,7 +26,8 @@ import java.util.stream.Collectors;
 public class SalaryServiceImpl implements ISalaryService {
 
     private final IUserRepository userRepository;
-    private final ITicketServiceItemRepository ticketServiceItemRepository;
+
+    private final IServiceTicketRepository serviceTicketRepository;;
 
     private static final Double DEFAULT_COMMISSION_RATE = 0.30;
 
@@ -56,23 +59,27 @@ public class SalaryServiceImpl implements ISalaryService {
 
                         commissionRate = user.getCommissionRate() != null ? user.getCommissionRate() : DEFAULT_COMMISSION_RATE;
 
-                        double totalTicketValue = ticketServiceItemRepository.findAll()
+                        double totalTicketValue = serviceTicketRepository.findAll()
                                 .stream()
-                                .filter(item -> {
-                                    if (item.getServiceTicket() == null) return false;
-                                    if (item.getServiceTicket().getTechnician() == null) return false;
-                                    if (!item.getServiceTicket().getTechnician().getUserId().equals(user.getUserId())) return false;
+                                .filter(ticket -> {
+                                    // 1. Check null cơ bản
+                                    if (ticket == null || ticket.getTechnician() == null) return false;
 
-                                    if (item.getServiceTicket().getInvoice() == null) return false;
+                                    // 2. Check đúng Technician không
+                                    if (!ticket.getTechnician().getUserId().equals(user.getUserId())) return false;
 
+                                    // 3. Check trạng thái có phải là "HOÀN THÀNH" không?
+                                    if (ticket.getStatus() != ServiceTicketStatus.COMPLETED) return false;
+
+                                    // 4. Check tháng hoàn thành (EndTime)
+                                    if (ticket.getEndTime() == null) return false;
                                     try {
-                                        return YearMonth.from(item.getServiceTicket().getInvoice().getInvoiceDate()).equals(month);
+                                        return YearMonth.from(ticket.getEndTime()).equals(month);
                                     } catch (Exception e) {
                                         return false;
                                     }
                                 })
-                                .mapToDouble(i -> i.getUnitPriceAtTimeOfService() * i.getQuantity())
-                                .sum();
+                                .count();
 
                         bonus = Math.round(totalTicketValue * commissionRate);
                     }

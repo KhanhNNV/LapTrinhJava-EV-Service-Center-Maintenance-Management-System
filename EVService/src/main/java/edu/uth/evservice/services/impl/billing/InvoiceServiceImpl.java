@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import edu.uth.evservice.models.*;
+import edu.uth.evservice.models.enums.ContractStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -39,6 +40,8 @@ public class InvoiceServiceImpl implements IInvoiceService {
     private final ITicketServiceItemRepository ticketItemRepo;
     private final IUserRepository userRepo;
     private final INotificationService notificationService;
+
+    private final ICustomerPackageContractRepository customerPackageContractRepo;
 
     // --- 1. HÀM HELPER RIÊNG ---
     private InvoiceDto convertToDetailedDto(Invoice invoice) {
@@ -185,7 +188,13 @@ public class InvoiceServiceImpl implements IInvoiceService {
         if (status == PaymentStatus.PAID &&
                 (invoice.getPaymentMethod() == PaymentMethod.UNSPECIFIED || invoice.getPaymentMethod() == null)) {
             invoice.setPaymentMethod(PaymentMethod.CASH);
+
         }
+
+        CustomerPackageContract contract = invoice.getContract();
+        contract.setStatus(ContractStatus.ACTIVE);
+
+        customerPackageContractRepo.save(contract);
 
         Invoice savedInvoice = invoiceRepo.save(invoice);
 

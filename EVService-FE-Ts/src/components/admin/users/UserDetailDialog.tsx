@@ -303,14 +303,15 @@ const UserDetailDialog: React.FC<UserDetailDialogProps> = ({ user, isOpen, onClo
 
                                             <div className="space-y-6 relative pl-4 border-l border-gray-200 ml-2">
                                                 {historyList.slice(0, 3).map((item: any, idx: number) => (
-                                                    <div key={idx} className="relative pl-6">
+                                                    <div key={item.appointmentId} className="relative pl-6">
                                                         <div className="absolute -left-[21px] top-1 h-3 w-3 rounded-full bg-blue-500 border-4 border-white shadow-sm"></div>
                                                         <div className="bg-gray-50 p-4 rounded-lg border hover:bg-blue-50/50 transition-colors">
                                                             <div className="flex justify-between items-start">
                                                                 <div>
                                                                     <p className="font-semibold text-gray-900">{item.serviceType || item.appointment?.serviceType || "Dịch vụ"}</p>
                                                                     <p className="text-sm text-gray-500 mt-1 flex items-center gap-2">
-                                                                        <Clock className="w-3 h-3" /> {formatDate(item.appointmentDate || item.startTime, true)}
+                                                                        {formatDate(item.appointmentDate)}{" "}
+                                                                        {item.appointmentTime ? `- ${item.appointmentTime}` : ""}
                                                                     </p>
                                                                 </div>
                                                                 {renderStatusBadge(item.status)}

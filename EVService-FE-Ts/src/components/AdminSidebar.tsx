@@ -142,12 +142,14 @@ const items = [
       },
     ],
   },
+
+    { title: "Quản lý Kho", url: "/dashboard/admin/inventory", icon: Package },
   {
     title: "Cài đặt",
     url: "/dashboard/admin/settings",
     icon: Settings,
   },
-  { title: "Quản lý Kho", url: "/dashboard/admin/inventory", icon: Package },
+
 ];
 
 export function AdminSidebar() {
