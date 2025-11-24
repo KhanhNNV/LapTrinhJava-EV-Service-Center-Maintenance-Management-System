@@ -23,4 +23,7 @@ public interface IAppointmentRepository extends JpaRepository<Appointment, Integ
 
     List<Appointment> findByAssignedTechnician_UserIdAndAppointmentDate(Integer technicianId,
             LocalDate appointmentDate);
+
+    List<Appointment> findByCenter_CenterId(Integer centerId);
+    List<Appointment> findByStatusAndCenter_CenterId(AppointmentStatus status, Integer centerId);
 }

@@ -44,13 +44,10 @@ public class ServiceCenter {
     @OneToMany(mappedBy = "serviceCenter", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<User> users = new ArrayList<>();;
     @Builder.Default
-    @OneToMany(mappedBy = "serviceCenter", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Vehicle> vehicles = new ArrayList<>();;
-    @Builder.Default
     @OneToMany(mappedBy = "center", cascade = CascadeType.ALL)
-    private List<Appointment> appointments = new ArrayList<>();;
+    private List<Appointment> appointments = new ArrayList<>();
     @Builder.Default
     @OneToMany(mappedBy = "serviceCenter", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Inventory> inventories = new ArrayList<>();;
+    private List<Inventory> inventories = new ArrayList<>();
 
 }

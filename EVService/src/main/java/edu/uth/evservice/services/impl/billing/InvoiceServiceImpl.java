@@ -192,10 +192,11 @@ public class InvoiceServiceImpl implements IInvoiceService {
         }
 
         CustomerPackageContract contract = invoice.getContract();
-        contract.setStatus(ContractStatus.ACTIVE);
+        if (contract != null) {
+            contract.setStatus(ContractStatus.ACTIVE);
 
-        customerPackageContractRepo.save(contract);
-
+            customerPackageContractRepo.save(contract);
+        }
         Invoice savedInvoice = invoiceRepo.save(invoice);
 
         try {

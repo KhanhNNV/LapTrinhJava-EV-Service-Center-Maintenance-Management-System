@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import edu.uth.evservice.dtos.ServiceCenterDto;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
@@ -53,6 +54,56 @@ public class AppointmentServiceImpl implements IAppointmentService {
     @Override
     public List<AppointmentDto> getAllAppointments() {
         return appointmentRepository.findAll().stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<AppointmentDto> getAppointmentsByStaffCenter(Integer staffId) {
+        // 1. Lấy thông tin Staff để tìm CenterId
+        User staff = userRepository.findById(staffId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy nhân viên với ID: " + staffId));
+
+        // Đảm bảo Staff có centerId
+        if (staff.getServiceCenter() == null) {
+            // Có thể thay thế bằng một List rỗng thay vì ném exception tùy theo logic nghiệp vụ
+            return List.of();
+        }
+
+        Integer centerId = staff.getServiceCenter().getCenterId();
+
+        // 2. Lấy tất cả lịch hẹn của trung tâm
+        List<Appointment> appointments = appointmentRepository.findByCenter_CenterId(centerId);
+
+        return appointments.stream().map(this::toDto).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<AppointmentDto> getAppointmentsByCenterAndStatus(Integer staffId, String statusStr) {
+        // 1. Kiểm tra trạng thái hợp lệ
+        AppointmentStatus appointmentStatus;
+        try {
+            appointmentStatus = AppointmentStatus.valueOf(statusStr.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Trạng thái không hợp lệ: " + statusStr);
+        }
+
+        // 2. Lấy CenterId của Staff
+        User staff = userRepository.findById(staffId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy nhân viên với ID: " + staffId));
+
+        if (staff.getServiceCenter() == null) {
+            // Nếu Staff chưa được gán trung tâm, trả về danh sách rỗng
+            return List.of();
+        }
+
+        Integer centerId = staff.getServiceCenter().getCenterId();
+
+        // 3. Truy vấn Repository
+        List<Appointment> appointments = appointmentRepository.findByStatusAndCenter_CenterId(appointmentStatus, centerId);
+
+
+        return appointments.stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());
     }
@@ -238,6 +289,8 @@ public class AppointmentServiceImpl implements IAppointmentService {
             throw new IllegalStateException("Chỉ có thể gợi ý kỹ thuật viên khi lịch hẹn đã check-in.");
         }
 
+        Integer requiredCenterId = appointment.getCenter().getCenterId();
+
         // 2. Xác định loại chứng chỉ cần
         Vehicle vehicle = appointment.getVehicle();
         CertificateType requiredType = switch (vehicle.getVehicleType()) {
@@ -255,8 +308,11 @@ public class AppointmentServiceImpl implements IAppointmentService {
         Map<User, LocalDate> techExpiryMap = new HashMap<>();
         for (TechnicianCertificate tc : validCerts) {
             User tech = tc.getTechnician();
-            LocalDate expiry = tc.getExpiryDate();
-            techExpiryMap.merge(tech, expiry, (old, newE) -> old.isAfter(newE) ? old : newE);
+            if (tech.getServiceCenter() != null && tech.getServiceCenter().getCenterId().equals(requiredCenterId)) {
+                LocalDate expiry = tc.getExpiryDate();
+                // Nếu KTV thuộc trung tâm, thêm vào map
+                techExpiryMap.merge(tech, expiry, (old, newE) -> old.isAfter(newE) ? old : newE);
+            }
         }
 
         // 5. Chuyển thành DTO
@@ -288,6 +344,13 @@ public class AppointmentServiceImpl implements IAppointmentService {
         User technician = userRepository.findById(technicianId)
                 .orElseThrow(
                         () -> new ResourceNotFoundException("Không tìm thấy kỹ thuật viên với ID: " + technicianId));
+
+        Integer appointmentCenterId = appointment.getCenter().getCenterId();
+        Integer technicianCenterId = technician.getServiceCenter() != null ? technician.getServiceCenter().getCenterId() : null;
+        if (technicianCenterId == null || !technicianCenterId.equals(appointmentCenterId)) {
+            throw new IllegalArgumentException(
+                    "Kỹ thuật viên không thuộc trung tâm dịch vụ của lịch hẹn này.");
+        }
 
         // Kiểm tra KTV có chứng chỉ phù hợp với loại xe không
         List<TechnicianWithCertificateDto> suggested = getSuggestedTechniciansForAppointment(appointmentId);
@@ -443,6 +506,14 @@ public class AppointmentServiceImpl implements IAppointmentService {
     }
 
     private AppointmentDto toDto(Appointment a) {
+        ServiceCenterDto centerDto = null;
+        if (a.getCenter() != null) {
+            centerDto = ServiceCenterDto.builder()
+                    .centerId(a.getCenter().getCenterId())
+                    .centerName(a.getCenter().getCenterName())
+                    .address(a.getCenter().getAddress())
+                    .build();
+        }
         return AppointmentDto.builder()
                 .appointmentId(a.getAppointmentId())
                 .appointmentDate(a.getAppointmentDate())
@@ -459,7 +530,7 @@ public class AppointmentServiceImpl implements IAppointmentService {
                 .technicianId(a.getAssignedTechnician() != null ? a.getAssignedTechnician().getUserId() : null)
                 .technicianName(a.getAssignedTechnician() != null ? a.getAssignedTechnician().getFullName() : null)
                 .vehicleId(a.getVehicle().getVehicleId())
-                .centerId(a.getCenter().getCenterId())
+                .serviceCenter(centerDto)
                 .contractId(a.getContract() != null ? a.getContract().getContractId() : null)
                 .contractName(a.getContract() != null ? a.getContract().getContractName() : null)
                 .ticketId(a.getServiceTicket() != null ? a.getServiceTicket().getTicketId() : null)

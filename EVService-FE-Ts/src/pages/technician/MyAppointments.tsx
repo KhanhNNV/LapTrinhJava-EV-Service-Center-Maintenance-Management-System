@@ -67,7 +67,7 @@ export default function TechnicianMyAppointments() {
         try {
             const data = await technicianService.getMyAppointments(currentUser?.id, filterStatus);
             const sortData = data.sort((a, b) =>
-                new Date(b.appointmentDate).getTime() - new Date(a.appointmentDate).getTime()
+                new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
             );
             setAppointments(sortData);
         } catch (error) {

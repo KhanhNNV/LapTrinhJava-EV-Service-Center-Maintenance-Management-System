@@ -21,16 +21,39 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AppointmentController {
 
-        private final IAppointmentService appointmentService;
+    private final IAppointmentService appointmentService;
 
-        // Lay tat ca lich hen
-        @GetMapping
+    // Lay tat ca lich hen
+    @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+    public ResponseEntity<List<AppointmentDto>> getAllAppointments() {
+            List<AppointmentDto> appointments = appointmentService.getAllAppointments();
+            return ResponseEntity.ok(appointments);
+    }
 
-        @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
-        public ResponseEntity<List<AppointmentDto>> getAllAppointments() {
-                List<AppointmentDto> appointments = appointmentService.getAllAppointments();
-                return ResponseEntity.ok(appointments);
-        }
+    @GetMapping("/center/staff")
+    @PreAuthorize("hasRole('STAFF')")
+    public ResponseEntity<List<AppointmentDto>> getAppointmentsByStaffCenter(Authentication authentication) {
+        Integer staffId = Integer.parseInt(authentication.getName());
+
+        List<AppointmentDto> appointments = appointmentService.getAppointmentsByStaffCenter(staffId);
+
+        return ResponseEntity.ok(appointments);
+    }
+
+    @GetMapping("/center/status/{status}")
+    @PreAuthorize("hasRole('STAFF')")
+    public ResponseEntity<List<AppointmentDto>> getAppointmentsByStaffCenterAndStatus(
+            @PathVariable String status,
+            Authentication authentication) {
+
+        Integer staffId = Integer.parseInt(authentication.getName());
+
+        List<AppointmentDto> appointments = appointmentService.getAppointmentsByCenterAndStatus(staffId, status);
+
+        return ResponseEntity.ok(appointments);
+    }
+
 
         // Customer lay danh sach lich hen cua minh
         @GetMapping("/myAppointments")

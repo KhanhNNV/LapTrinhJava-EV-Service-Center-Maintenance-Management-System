@@ -118,9 +118,9 @@ export default function StaffAppointments() {
 
   const fetchAppointments = async () => {
     try {
-      let url = "/api/appointments";
+      let url = "/api/appointments/center/staff";
       if (filterStatus !== "ALL") {
-        url = `/api/appointments/status/${filterStatus}`;
+        url = `/api/appointments/center/status/${filterStatus}`;
       }
       const { data } = await api.get<Appointment[]>(url);
       setAppointments(data);

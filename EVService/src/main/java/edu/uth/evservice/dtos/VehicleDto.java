@@ -17,6 +17,5 @@ public class VehicleDto {
     private String licensePlate;
     private LocalDate recentMaintenanceDate;
     private Integer userId;
-    private Integer centerId;
     private VehicleType vehicleType;
 }

@@ -10,6 +10,9 @@ import edu.uth.evservice.requests.AppointmentRequest;
 public interface IAppointmentService {
     List<AppointmentDto> getAllAppointments();
 
+    List<AppointmentDto> getAppointmentsByStaffCenter(Integer staffId);
+    List<AppointmentDto> getAppointmentsByCenterAndStatus(Integer staffId, String status);
+
     AppointmentDto getAppointmentById(Integer id);
 
     AppointmentDto updateAppointment(Integer id, AppointmentRequest request);

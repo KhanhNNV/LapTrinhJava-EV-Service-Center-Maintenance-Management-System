@@ -147,9 +147,11 @@ public class PaymentServiceImpl implements IPaymentService {
                 invoice.setPaymentMethod(PaymentMethod.VNPAY);
 
                 CustomerPackageContract contract = invoice.getContract();
-                contract.setStatus(ContractStatus.ACTIVE);
+                if(contract != null){
+                    contract.setStatus(ContractStatus.ACTIVE);
 
-                customerPackageContractRepository.save(contract);
+                    customerPackageContractRepository.save(contract);
+                }
                 invoiceRepository.save(invoice);
                 transactionRepository.save(transaction);
 

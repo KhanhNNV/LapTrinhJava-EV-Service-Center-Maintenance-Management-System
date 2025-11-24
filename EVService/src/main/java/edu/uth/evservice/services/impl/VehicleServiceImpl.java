@@ -43,14 +43,6 @@ public class VehicleServiceImpl implements IVehicleService {
             throw new IllegalStateException("Biển số xe " + request.getLicensePlate() + " đã tồn tại.");
         }
 
-        // 3. Tìm ServiceCenter (tái sử dụng logic từ hàm createVehicle cũ của bạn)
-        // Nếu việc đăng ký xe không cần gán trung tâm ngay, bạn có thể bỏ phần này.
-        ServiceCenter center = null;
-        if (request.getCenterId() != null) {
-            center = serviceCenterRepository.findById(request.getCenterId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy trung tâm dịch vụ"));
-        }
-
         // 4. Tạo đối tượng Vehicle
         Vehicle vehicle = Vehicle.builder()
                 .model(request.getModel())
@@ -134,8 +126,6 @@ public class VehicleServiceImpl implements IVehicleService {
                 .brand(vehicle.getBrand())
                 .licensePlate(vehicle.getLicensePlate())
                 .recentMaintenanceDate(vehicle.getRecentMaintenanceDate())
-                .userId(vehicle.getUser() != null ? vehicle.getUser().getUserId() : null)
-                .centerId(vehicle.getServiceCenter() != null ? vehicle.getServiceCenter().getCenterId() : null)
                 .vehicleType(vehicle.getVehicleType())
                 .build();
     }

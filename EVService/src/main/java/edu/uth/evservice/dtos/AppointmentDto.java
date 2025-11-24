@@ -35,6 +35,8 @@ public class AppointmentDto {
     String staffName;
     Integer vehicleId;
     Integer centerId;
+    String centerName;
+    ServiceCenterDto serviceCenter;
     Integer technicianId;
     String technicianName;
     Integer contractId;
