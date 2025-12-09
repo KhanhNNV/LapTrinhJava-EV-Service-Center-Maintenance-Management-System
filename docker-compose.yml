@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  # 1. Database MySQL
+  mysqldb:
+    image: mysql:8.0.44-debian # Hoặc phiên bản mysql bạn đang dùng
+    container_name: evservice_mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: evservicedb
+      MYSQL_USER: EVServiceDb
+      MYSQL_PASSWORD: 123456
+    ports:
+      - "3307:3306" # Map port 3307 máy thật -> 3306 container (như bạn yêu cầu)
+    volumes:
+      - db_data:/var/lib/mysql # Lưu dữ liệu để không bị mất khi tắt container
+    networks:
+      - ev_network
+
+  # 2. Backend Spring Boot
+  backend:
+    build: ./EVService
+    container_name: evservice_backend
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      # Cấu hình Spring Boot kết nối MySQL trong môi trường Docker
+      # Lưu ý: "mysqldb" là tên service database ở trên
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysqldb:3306/evservicedb?useSSL=false&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: EVServiceDb
+      SPRING_DATASOURCE_PASSWORD: 123456
+    depends_on:
+      - mysqldb # Đợi DB chạy xong mới chạy Backend
+    networks:
+      - ev_network
+
+  # 3. Frontend React
+  frontend:
+    build: ./EVService-FE-Ts
+    container_name: evservice_frontend
+    restart: always
+    ports:
+      - "5173:80" # Map port 5173 máy thật -> 80 (Nginx) của container
+    depends_on:
+      - backend
+    networks:
+      - ev_network
+
+# Định nghĩa volume để lưu data DB
+volumes:
+  db_data:
+
+# Định nghĩa network để các container nhìn thấy nhau
+networks:
+  ev_network:
+    driver: bridge
