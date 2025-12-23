@@ -133,8 +133,8 @@ public class AuthenticationServiceImpl implements IAuthenticaionService {
         // Tạo token xác thực bằng JwtService
         String token = jwtService.generateVerificationToken(request);
 
-        // Gửi email
-        String link = verifyEmailUrl + token;
+        // Gửi email - thêm ?token= vào URL để frontend có thể đọc được
+        String link = verifyEmailUrl + "?token=" + token;
         emailService.sendVerificationEmail(request.getEmail(), link);
 
         return "Vui lòng kiểm tra email để hoàn tất đăng ký.";
@@ -210,7 +210,7 @@ public class AuthenticationServiceImpl implements IAuthenticaionService {
                 .build();
         emailVerificationTokenRepository.save(verifyToken);
 
-        String link = verifyEmailUrl + token;
+        String link = verifyEmailUrl + "?token=" + token;
         emailService.sendVerificationEmail(user.getEmail(), link);
 
         return "Email xác thực đã được gửi lại!";
@@ -242,7 +242,7 @@ public class AuthenticationServiceImpl implements IAuthenticaionService {
                 .build();
         passwordResetTokenRepository.save(resetToken);
 
-        String resetLink = resetPasswordUrl + token;
+        String resetLink = resetPasswordUrl + "?token=" + token;
         emailService.sendPasswordResetEmail(user.getEmail(), resetLink);
     }
 

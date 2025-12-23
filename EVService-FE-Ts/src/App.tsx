@@ -79,7 +79,9 @@ const App = () => (
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/auth/callback" element={<AuthCallbackPage />} />
+          {/* Email verify: hỗ trợ cả /auth/verify-email (cũ) và /verify-email (mới) */}
           <Route path="/auth/verify-email" element={<VerifyEmailPage />} />
+          <Route path="/verify-email" element={<VerifyEmailPage />} />
           <Route
             path="/auth/email-verify-sent"
             element={<EmailVerificationSentPage />}
@@ -88,7 +90,9 @@ const App = () => (
             path="/auth/forgot-password"
             element={<ForgotPasswordPage />}
           />
+          {/* Reset password: hỗ trợ cả /auth/reset-password (cũ) và /reset-password (mới) */}
           <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="/payment-result" element={<PaymentResult />} />
             <Route path="/services" element={<ServicesPage />} />
             <Route path="/about" element={<AboutPage />} />

@@ -51,8 +51,8 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         // ~ Cho phép danh sách các đường dẫn nào truy cập ở đây chỉ có 1 là FE với port
-        // 5173
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173"));
+        // 5173 và 5174 (khi port 5173 bị chiếm dụng)
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173", "http://localhost:5174"));
         // ~ Cho phép các phương thức được sử dụng
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"));
         // ~ Cho phép các header mà FE gửi kèm
