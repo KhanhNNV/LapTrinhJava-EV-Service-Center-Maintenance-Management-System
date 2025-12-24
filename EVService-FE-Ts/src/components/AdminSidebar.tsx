@@ -11,7 +11,7 @@ import {
     Briefcase,
     ShieldCheck,
     LogOut,
-    Bell, MessageSquare, Receipt
+    Bell, MessageSquare, Receipt, Camera
 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -55,6 +55,11 @@ const items = [
     url: "/dashboard/admin",
     icon: LayoutDashboard,
   },
+    {
+        title: "Test Camera",
+        url: "/dashboard/admin/camera-test",
+        icon: Camera,
+    },
 
   { title: "Thông báo", url: "/dashboard/admin/notifications", icon: Bell },
   {

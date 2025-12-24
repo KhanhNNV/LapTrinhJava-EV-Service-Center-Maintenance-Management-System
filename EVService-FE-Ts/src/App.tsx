@@ -65,6 +65,7 @@ import CustomerPackagesPage from "@/pages/customer/CustomerPackagesPage.tsx";
 import MyContractsPage from "@/pages/customer/MyContractsPage.tsx";
 import InvoicesManagement from "@/pages/staff/InvoicesManagement.tsx";
 import InvoicePage from "@/pages/admin/InvoicesManagement.tsx";
+import CameraTest from "@/pages/admin/CameraTest.tsx";
 
 const queryClient = new QueryClient();
 
@@ -150,7 +151,7 @@ const App = () => (
                         }
                     >
                         <Route index element={<AdminDashboard />} />
-
+                        <Route path="camera-test" element={<CameraTest />} />
                         <Route path="service-centers" element={<AdminServiceCenters />} />
                         <Route path="inventory" element={<InventoryManager />} />
                         <Route path="packages" element={<AdminServicePackages />} />

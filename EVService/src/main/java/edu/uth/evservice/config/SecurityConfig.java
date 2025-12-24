@@ -4,6 +4,7 @@ import java.util.Arrays;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -52,7 +53,7 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         // ~ Cho phép danh sách các đường dẫn nào truy cập ở đây chỉ có 1 là FE với port
         // 5173
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173"));
+        configuration.setAllowedOriginPatterns(Arrays.asList("http://localhost:5173","https://vince-calisthenic-gudrun.ngrok-free.dev"));
         // ~ Cho phép các phương thức được sử dụng
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"));
         // ~ Cho phép các header mà FE gửi kèm
@@ -78,8 +79,12 @@ public class SecurityConfig {
                 // ~ CSRF là cơ chế xác thực dự trên cookie/session
                 .csrf(AbstractHttpConfigurer::disable)
 
+
+
                 // ~ Định nghĩa các quy tắc cho các request
                 .authorizeHttpRequests(authorize -> authorize
+
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
                         // - Cho phép tất cả request auth đều có thể truy cập bỏi bất cứ ai
                         // - Cho phép các cổng thanh toán gọi IPN và Return URLs

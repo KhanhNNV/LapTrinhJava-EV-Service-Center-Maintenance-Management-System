@@ -8,6 +8,24 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 5173,
+
+      allowedHosts: [
+          "vince-calisthenic-gudrun.ngrok-free.dev"
+      ],
+      proxy: {
+          "/api": {
+              target: "http://localhost:8080",
+              changeOrigin: true,
+              secure: false,
+          },
+          "/auth": {
+              target: "http://localhost:8080",
+              changeOrigin: true,
+              secure: false,
+          },
+
+      },
+
   },
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
   resolve: {
